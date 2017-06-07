@@ -1,18 +1,13 @@
 from __future__ import print_function
-import pandas
-import numpy as np
-
-def print_status(msg):
-	print("> "+str(msg))
-
-print_status("Loading libraries...")
-
-from tia.bbg import LocalTerminal
-import pandas as pd
 import json
+import numpy as np
+import pandas
+from tia.bbg import LocalTerminal
+from utilities import *
 
 tickers_json = "./test_tickers.json"
 fields_json = "./field table.json"
+batch_size = 1000
 
 print_status("Loading json settings...")
 with open(tickers_json) as tickers_file:
@@ -23,29 +18,30 @@ with open(fields_json) as fields_file:
 print_status("Crawling data...")
 
 for sector in tickers_table.keys():
-	print_status("  Crawling %s sector..."%sector)
-	#result = LocalTerminal.get_historical(tickers_table[sector], fields_table.keys(), start='6/1/2017', end='6/5/2017', ignore_field_error=1)
-	result = LocalTerminal.get_historical(tickers_table[sector], fields_table.keys(), period='MONTHLY', start='1/1/2016', end='1/1/2017')
-	tmp_frame = result.as_frame()
-	dates = []
-	tickers = []
-	fields = []
-	values = []
-	i = 0
-	cols = list(tmp_frame)
+	print_status("\tCrawling %s sector..."%sector)
+	csv_file = open(sector+".csv", "w")
+	write_row(csv_file, "date", "ticker", "field", "value")
 
-	for index, row in tmp_frame.iterrows():
-		date = index
-		for col in cols:
-			ticker = col[0]
-			field = col[1]
-			dates.append(date)
-			tickers.append(ticker)
-			fields.append(field)
-			values.append(row[col])
-			i += 1
-	data = {'date': dates, 'ticker': tickers, 'field':fields, 'value':values}
-	result_frame = pandas.DataFrame(data)		
-	result_frame.to_csv(sector+".csv", index = False)
+	batches = batch_data(tickers_table[sector], batch_size)
+	i = 1
+
+	for (begin, end) in batches:
+		print_status("\t Batch %d/%d"%(i, len(batches)))
+		result = LocalTerminal.get_historical(tickers_table[sector][begin:end], fields_table.keys(), period='QUARTERLY', start='12/31/1980', end='31/12/2010')
+		print_status("\t Received data from Bloomberg, parsing...")
+		tmp_frame = result.as_frame()
+
+		cols = list(tmp_frame)
+
+		for index, row in tmp_frame.iterrows():
+			date = index
+			for col in cols:
+				ticker = col[0]
+				field = col[1]
+				value = row[col]
+				write_row(csv_file, date, ticker, field, value)
+		i += 1
+
+	csv_file.close()
 
 print_status("Done.")

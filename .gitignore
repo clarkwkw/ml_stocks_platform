@@ -1,1 +1,4 @@
-/crawler/data/
+crawler/historical data
+crawler/tickers
+*.pyc
+*.csv
