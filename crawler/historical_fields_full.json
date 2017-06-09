@@ -25,5 +25,7 @@
 	"ARD_CAPITAL_EXPENDITURES":			"capital expenditures",
 	"ARD_TOT_CASHFLOWS_FROM_INVESTING":	"cash from investing activities",
 	"ARD_TOT_CASHFLOWS_FROM_FINANCING":	"cash from financing activities",
-	"ARD_NET_CHANGE_IN_CASH":			"net change in cash"
+	"ARD_NET_CHANGE_IN_CASH":			"net change in cash",
+	"PX_LAST": 							"last price",
+	"PX_OPEN": 							"opening price"
 }

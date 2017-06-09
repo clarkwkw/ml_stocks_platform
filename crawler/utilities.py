@@ -3,8 +3,8 @@ import pandas
 def print_status(msg):
 	print("> "+str(msg))
 
-def batch_data(tickers, batch_size):
-	length = len(tickers)
+def batch_data(series, batch_size):
+	length = len(series)
 	batches = length//batch_size
 	if length%batch_size != 0:
 		batches += 1
@@ -19,5 +19,5 @@ def batch_data(tickers, batch_size):
 
 def write_row(f, date, ticker, field, value):
 	if pandas.isnull(value):
-		value = ""
+		value = "nan"
 	f.write("%s, %s, %s, %s\n"%(str(date), str(ticker), str(field), str(value)))
