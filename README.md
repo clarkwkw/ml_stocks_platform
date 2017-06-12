@@ -39,5 +39,5 @@ Definition:
 
 Reference: https://www.chicagobooth.edu/~/media/FE874EE65F624AAEBD0166B1974FD74D.pdf
 
-### Accryal Based on Cash Flow (Bradshaw et al., 2002)
+### Accrual Based on Cash Flow (Bradshaw et al., 2002)
 ***`AC = Income Before Extraordinary Items − Net Cash Flows from Operating Activities`***
