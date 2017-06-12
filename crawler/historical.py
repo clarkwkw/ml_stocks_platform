@@ -7,7 +7,7 @@ from utilities import *
 tickers_json = "./test_tickers.json"
 fields_json = "./historical_fields.json"
 batch_size = 1000
-frequency = "QUARTERLY"
+frequency = "DAILY"
 start_date = '12/31/1980'
 end_date = '31/12/2010'
 

@@ -1,4 +1,9 @@
 import pandas
+import getpass
+try:
+	import sqlalchemy
+except ImportError:
+	print("> sqlachemy & mysqldb are required for mysql connection")
 
 def print_status(msg):
 	print("> "+str(msg))
@@ -20,4 +25,14 @@ def batch_data(series, batch_size):
 def write_row(f, date, ticker, field, value):
 	if pandas.isnull(value):
 		value = "nan"
-	f.write("%s, %s, %s, %s\n"%(str(date), str(ticker), str(field), str(value)))
+	f.write("%s, %s ,%s ,%s\n"%(str(date), str(ticker), str(field), str(value)))
+
+def mysql_connection(host, database, username):
+	print_status('Connecting to %s@%s'%(username, host))
+	password = getpass.getpass('MYSQL Password:')
+
+	engine = sqlalchemy.create_engine('mysql+mysqldb://%s:%s@%s'%(username, password, host))
+	engine.execute('USE %s'%database)
+
+	return engine
+

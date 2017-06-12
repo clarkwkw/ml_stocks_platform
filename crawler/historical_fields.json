@@ -1,4 +1,5 @@
 {
-	"PX_LAST": 							"Last price",
-	"PX_OPEN": 							"Opening price"
+	"PX_LAST":							"last_price",
+	"PX_OPEN":							"opening_price",
+	"PX_VOLUME":						"volume"
 }
