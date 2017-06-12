@@ -41,3 +41,5 @@ Reference: https://www.chicagobooth.edu/~/media/FE874EE65F624AAEBD0166B1974FD74D
 
 ### Accrual Based on Cash Flow (Bradshaw et al., 2002)
 ***`AC = Income Before Extraordinary Items − Net Cash Flows from Operating Activities`***
+
+Reference: http://onlinelibrary.wiley.com/doi/10.1111/1475-679X.00003/epdf
