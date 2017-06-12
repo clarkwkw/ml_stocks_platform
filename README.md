@@ -4,7 +4,7 @@
 Listed in `crawler/historical_fields_full.json`.
 
 ## Other Financial Indicators
-### Financial Health (Piotroski, J., 2000)
+### Financial Health (Piotroski, 2000)
 ***`F_SCORE =	F_ROA + F_ΔROA + F_CFO + F_ACCRUAL + F_ΔMARGIN + F_ΔTURN + F_ΔLEVER + F_ΔLIQUID + EQ_OFFER`***
 
 Definition:
@@ -38,3 +38,6 @@ Definition:
 `ΔLEVER`: Historical change in the ratio of total long-term debt to average total assets.
 
 Reference: https://www.chicagobooth.edu/~/media/FE874EE65F624AAEBD0166B1974FD74D.pdf
+
+### Accryal Based on Cash Flow (Bradshaw et al., 2002)
+***`AC = Income Before Extraordinary Items − Net Cash Flows from Operating Activities`***
