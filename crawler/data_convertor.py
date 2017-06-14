@@ -37,12 +37,13 @@ def new_parsed_df(ticker, dates, sector):
 	df = pandas.DataFrame(data, index = dates, columns = id_fields+list(direct_fields.values())+list(indirect_fields.keys()))
 	return df
 
-def fill_by_ticker_and_save(ticker, sector, mutex, mysql_conn):
+def fill_by_ticker_and_save(ticker, sector, mysql_conn):
 	try:
+		global progress
 		sql_query = "SELECT date, field, value FROM %s WHERE ticker = '%s' ORDER BY date asc;"%(raw_table, ticker)
-		mutex.acquire()
+		conn_mutex.acquire()
 		raw_df = pandas.read_sql(sql_query, mysql_conn, coerce_float = False, parse_dates = ["date"])
-		mutex.release()
+		conn_mutex.release()
 		parsed_df = new_parsed_df(ticker, raw_df.date.unique(), sector)
 		for index, row in raw_df.iterrows():
 			date = row['date']
@@ -51,17 +52,28 @@ def fill_by_ticker_and_save(ticker, sector, mutex, mysql_conn):
 			parsed_df.loc[date, target_field] = val
 		parsed_df = filling.fill_direct_prev(parsed_df, direct_fields.values())
 		parsed_df = filling.fill_indirect(parsed_df, indirect_fields)
-		mutex.acquire()
+		conn_mutex.acquire()
 		#parsed_df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False)
 		parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
-		mutex.release()
+		conn_mutex.release()
+		progress_mutex.acquire()
+		progress += 1
+		progress_mutex.release()
+		print_status("Processed %d/%d tickers"%(progress, tickers_count))
 	except Exception as e:
 		traceback.print_exc()
 
-mysql_conn = mysql_connection(host, database, username)
-
-with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
-	mutex = multiprocessing.Lock()
+if __name__ == '__main__':
+	mysql_conn = mysql_connection(host, database, username)
+	conn_mutex = multiprocessing.Lock()
+	tickers_count = 0
+	progress = 0
+	progress_mutex = multiprocessing.Lock()
 	for sector in tickers_table.keys():
-		for ticker in tickers_table[sector]:
-			executor.submit(fill_by_ticker_and_save, ticker, sector, mutex, mysql_conn)
+		tickers_count += len(tickers_table[sector])
+	print_status("Firing request for %d tickers..."%tickers_count)
+	with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
+		for sector in tickers_table.keys():
+			for ticker in tickers_table[sector]:
+				executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn)
+print_status("Done.")
