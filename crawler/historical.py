@@ -5,7 +5,7 @@ from tia.bbg import LocalTerminal
 from utilities import *
 
 tickers_json = "./test_tickers.json"
-fields_json = "./bloomberg_fields_test.json"
+fields_json = "./fields.json"
 batch_size = 1000
 frequency = "DAILY"
 start_date = '12/31/1980'
@@ -16,6 +16,7 @@ with open(tickers_json) as tickers_file:
 	tickers_table = json.load(tickers_file)
 with open(fields_json) as fields_file:
 	fields_table = json.load(fields_file)
+	direct_fields_table = fields_table["direct_fields"]
 
 print_status("Crawling data...")
 
@@ -29,7 +30,7 @@ for sector in tickers_table.keys():
 
 	for (begin, end) in batches:
 		print_status("\t Batch %d/%d"%(i, len(batches)))
-		result = LocalTerminal.get_historical(tickers_table[sector][begin:end], fields_table.keys(), period = frequency, start = start_date, end = end_date)
+		result = LocalTerminal.get_historical(tickers_table[sector][begin:end], direct_fields_table.keys(), period = frequency, start = start_date, end = end_date)
 		print_status("\t Received data from Bloomberg, parsing...")
 		result = result.as_map()
 
