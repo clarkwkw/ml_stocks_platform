@@ -30,9 +30,12 @@ def write_row(f, date, ticker, field, value):
 def mysql_connection(host, database, username):
 	print_status('Connecting to %s@%s'%(username, host))
 	password = getpass.getpass('MYSQL Password:')
-
-	engine = sqlalchemy.create_engine('mysql+mysqldb://%s:%s@%s'%(username, password, host))
-	engine.execute('USE %s'%database)
-
+	try:
+		engine = sqlalchemy.create_engine('mysql+mysqldb://%s:%s@%s'%(username, password, host))
+		engine.execute('USE %s'%database)
+	except sqlalchemy.exc.OperationalError as e:
+		print_status('Wrong credentials, abort')
+		exit(-1)
+	print_status("Connected")
 	return engine
 

@@ -5,7 +5,7 @@ from tia.bbg import LocalTerminal
 from utilities import *
 
 tickers_json = "./test_tickers.json"
-fields_json = "./historical_fields.json"
+fields_json = "./bloomberg_fields_test.json"
 batch_size = 1000
 frequency = "DAILY"
 start_date = '12/31/1980'
