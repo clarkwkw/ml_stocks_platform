@@ -36,9 +36,9 @@
 	"indirect_fields": {
 							"income_after_tax": 				"%income_before_tax% - %income_tax_expense%",
 							"snapshot_accurual":				"%total_current_assets% - %cash_cash_equivalents% - %total_current_liabilities% + %total_debt%",
-							"accural_cash_flow":				"%net_income_before_xo_items% - %CF_CASH_FROM_OPER%",
+							"accural_cash_flow":				"%net_income_before_xo_items% - %cash_from_operating%",
 							"working_capital":					"%total_current_assets% - %total_current_liabilities%",
-							"quick_ratio":						"(%total_current_assets% - %total_inventories%)/total_current_liabilities",
+							"quick_ratio":						"(%total_current_assets% - %total_inventories%)/%total_current_liabilities%",
 							"dividend_payout_ratio":			"%dividends% / %net_income%",
 							"book_value_minus_debt":			"%book_value% - %total_debt%",
 							"receivalbes_to_sales":				"%account_receivable% / %total_revenue%",

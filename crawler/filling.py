@@ -1,11 +1,12 @@
 import numpy as np
-import re
 import pandas
+import re
+from utilities import print_status
 
 def fill_direct_prev(df, fields):
 	prev_vals = {}
 	for field in fields:
-		fill_prev = fill_prev_factory(field, prev_vals)
+		fill_prev = fill_direct_prev_factory(field, prev_vals)
 		df[field] = df[field].apply(fill_prev)
 	return df
 
@@ -30,8 +31,11 @@ def fill_direct_prev_factory(field, prev_vals):
 def fill_indirect(df, indirect_table):
 	for field in indirect_table.keys():
 		method = indirect_table[field]
-		compiled_method = re.sub(r"%[^%]%", r"df[\1]", method)
-		df[field] = eval(compiled_method)
+		try:
+			compiled_method = re.sub(r"%([^%]*)%", r"df['\1']", method)
+			df[field] = eval(compiled_method)
+		except Exception as e:
+			print_status("Erroneous instruction for indirect field '%s':\n\t%s"%(field, method))
 	return(df)
 
 def fill_complex(field):

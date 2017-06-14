@@ -1,5 +1,5 @@
-from utilities import print_status, mysql_connection
 import pandas
+from utilities import print_status, mysql_connection
 
 host = 'seis10.se.cuhk.edu.hk'
 database = 'finanai'
