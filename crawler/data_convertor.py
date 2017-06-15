@@ -5,7 +5,7 @@ import multiprocessing
 import numpy as np
 import pandas
 import traceback
-from utilities import print_status, mysql_connection
+from utilities import print_status, mysql_connection, direct_parsed_fields, get_parsed_field, indirect_parsed_fields, indirect_fields_table, tickers_table
 
 host = 'seis10.se.cuhk.edu.hk'
 database = 'finanai'
@@ -13,28 +13,17 @@ username = 'finanai'
 
 raw_table = 'bloomberg_raw'
 target_table = 'parsed_data'
-tickers_json = "./test_tickers.json"
-fields_json = "./fields.json"
 max_thread_no = 4
-
-print_status("Loading json settings...")
-with open(tickers_json) as tickers_file:
-	tickers_table = json.load(tickers_file)
-with open(fields_json) as fields_file:
-	fields_table = json.load(fields_file)
-
-id_fields = ['date', 'ticker', 'sector']
-direct_fields = fields_table['direct_fields']
-indirect_fields = fields_table['indirect_fields']
 
 def new_parsed_df(ticker, dates, sector):
 	data = {}
+	id_fields = ['date', 'ticker', 'sector']
 	data['date'] = dates
 	data['ticker'] = ticker
 	data['sector'] = sector
-	for field in list(direct_fields.values())+list(indirect_fields.keys()):
+	for field in direct_parsed_fields() + indirect_parsed_fields():
 		data[field] = np.NAN
-	df = pandas.DataFrame(data, index = dates, columns = id_fields+list(direct_fields.values())+list(indirect_fields.keys()))
+	df = pandas.DataFrame(data, index = dates, columns = id_fields + direct_parsed_fields() + indirect_parsed_fields())
 	return df
 
 def fill_by_ticker_and_save(ticker, sector, mysql_conn):
@@ -47,11 +36,11 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn):
 		parsed_df = new_parsed_df(ticker, raw_df.date.unique(), sector)
 		for index, row in raw_df.iterrows():
 			date = row['date']
-			target_field = direct_fields[row['field']]
+			target_field = get_parsed_field(row['field'])
 			val = row['value']
 			parsed_df.loc[date, target_field] = val
-		parsed_df = filling.fill_direct_prev(parsed_df, direct_fields.values())
-		parsed_df = filling.fill_indirect(parsed_df, indirect_fields)
+		parsed_df = filling.fill_direct_prev(parsed_df, direct_parsed_fields())
+		parsed_df = filling.fill_indirect(parsed_df, indirect_fields_table)
 		conn_mutex.acquire()
 		#parsed_df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False)
 		parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
