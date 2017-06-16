@@ -6,7 +6,7 @@ database = 'finanai'
 username = 'finanai'
 
 target_table = 'bloomberg_raw'
-filelist = [('./historical data/Energy.2.csv', 'Energy'), ('./historical data/Energy.3.csv', 'Energy')]
+filelist = [('Energy.csv', 'Energy')]
 
 mysql_conn = mysql_connection(host, database, username)
 for (filepath, sector) in filelist:
@@ -14,4 +14,4 @@ for (filepath, sector) in filelist:
 	df = pandas.read_csv(filepath, index_col = False, na_values = ['nan'], skipinitialspace = True)
 	df['sector'] = sector
 	print_status('Uploading...')
-	df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False)
+	df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False, chunksize = 10000)

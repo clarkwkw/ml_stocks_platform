@@ -5,7 +5,9 @@ import multiprocessing
 import numpy as np
 import pandas
 import traceback
-from utilities import print_status, mysql_connection, direct_parsed_fields, get_parsed_field, indirect_parsed_fields, indirect_fields_table, tickers_table
+import utilities
+
+print_status = utilities.print_status
 
 host = 'seis10.se.cuhk.edu.hk'
 database = 'finanai'
@@ -15,15 +17,18 @@ raw_table = 'bloomberg_raw'
 target_table = 'parsed_data'
 max_thread_no = 4
 
+direct_parsed_fields = utilities.direct_parsed_fields()
+indirect_parsed_fields = utilities.indirect_parsed_fields()
+
 def new_parsed_df(ticker, dates, sector):
 	data = {}
 	id_fields = ['date', 'ticker', 'sector']
 	data['date'] = dates
 	data['ticker'] = ticker
 	data['sector'] = sector
-	for field in direct_parsed_fields() + indirect_parsed_fields():
+	for field in direct_parsed_fields + indirect_parsed_fields:
 		data[field] = np.NAN
-	df = pandas.DataFrame(data, index = dates, columns = id_fields + direct_parsed_fields() + indirect_parsed_fields())
+	df = pandas.DataFrame(data, index = dates, columns = id_fields + direct_parsed_fields + indirect_parsed_fields)
 	return df
 
 def fill_by_ticker_and_save(ticker, sector, mysql_conn):
@@ -36,11 +41,11 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn):
 		parsed_df = new_parsed_df(ticker, raw_df.date.unique(), sector)
 		for index, row in raw_df.iterrows():
 			date = row['date']
-			target_field = get_parsed_field(row['field'])
+			field = row['field']
 			val = row['value']
-			parsed_df.loc[date, target_field] = val
-		parsed_df = filling.fill_direct_prev(parsed_df, direct_parsed_fields())
-		parsed_df = filling.fill_indirect(parsed_df, indirect_fields_table)
+			parsed_df.loc[date, field] = val
+		parsed_df = filling.fill_direct_prev(parsed_df, direct_parsed_fields)
+		parsed_df = filling.fill_indirect(parsed_df, utilities.indirect_fields_table)
 		conn_mutex.acquire()
 		#parsed_df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False)
 		parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
@@ -53,16 +58,16 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn):
 		traceback.print_exc()
 
 if __name__ == '__main__':
-	mysql_conn = mysql_connection(host, database, username)
+	mysql_conn = utilities.mysql_connection(host, database, username)
 	conn_mutex = multiprocessing.Lock()
 	tickers_count = 0
 	progress = 0
 	progress_mutex = multiprocessing.Lock()
-	for sector in tickers_table.keys():
-		tickers_count += len(tickers_table[sector])
+	for sector in utilities.tickers_table.keys():
+		tickers_count += len(utilities.tickers_table[sector])
 	print_status("Firing request for %d tickers..."%tickers_count)
 	with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
-		for sector in tickers_table.keys():
-			for ticker in tickers_table[sector]:
+		for sector in utilities.tickers_table.keys():
+			for ticker in utilities.tickers_table[sector]:
 				executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn)
 print_status("Done.")

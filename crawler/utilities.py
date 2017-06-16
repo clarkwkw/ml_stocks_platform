@@ -7,7 +7,7 @@ except ImportError:
 	print("> sqlachemy & mysqldb are required for mysql connection")
 
 tickers_json = "./test_tickers.json"
-fields_json = "./new_fields.json"
+fields_json = "./fields.json"
 
 def print_status(msg):
 	print("> "+str(msg))
@@ -26,10 +26,10 @@ def batch_data(series, batch_size):
 		arr.append((start, end))
 	return arr
 
-def write_row(f, date, ticker, field, value, override = ""):
+def write_row(f, date, ticker, field, value):
 	if pandas.isnull(value):
 		value = "nan"
-	f.write("%s, %s ,%s ,%s\n"%(str(date), str(ticker), str(field), str(value)), str(override))
+	f.write("%s, %s, %s, %s\n"%(str(date), str(ticker), str(field), str(value)))
 
 def mysql_connection(host, database, username):
 	print_status('Connecting to %s@%s'%(username, host))
@@ -41,31 +41,54 @@ def mysql_connection(host, database, username):
 		print_status('Wrong credentials, abort')
 		exit(-1)
 	print_status("Connected")
+	sqlalchemy.event.listen(engine, 'checkout', checkout_listener)
 	return engine
 
-def get_raw_fields(freq = "", limit = 25, override = False):
+def checkout_listener(dbapi_con, con_record, con_proxy):
+    try:
+        try:
+            dbapi_con.ping(False)
+        except TypeError:
+            dbapi_con.ping()
+    except dbapi_con.OperationalError as exc:
+        if exc.args[0] in (2006, 2013, 2014, 2045, 2055):
+            raise sqlalchemy.exc.DisconnectionError()
+        else:
+            raise
+
+def direct_fields(freq = "", limit = 25, override = False):
 	if limit <= 0:
 		raise Exception("'limit' must be positive")
 	raw_fields = [field for field in direct_fields_table.values() if field["enabled"]]
-	tmp_result = []
-	for field in raw_fields:
-		if freq.upper() != "" and freq.upper() != field["freq"]:
+	parsed_fields = [field for field in direct_fields_table.keys() if direct_fields_table[field]["enabled"]]
+	filtered_raw_fields = []
+	filtered_parsed_fields = []
+	for i in range(len(raw_fields)):
+		field = raw_fields[i]
+		if freq.upper() != "" and freq.upper() != field["freq"].upper():
 			continue
 		if override and "override" not in field:
 			continue
 		if not override and "override" in field:
 			continue
 		if override:
-			tmp_result.append((field["raw_field"], field["override"]))
+			filtered_raw_fields.append((field["raw_field"], field["override"], field["freq"]))
 		else:
-			tmp_result.append(field["raw_field"])
-	batches = batch_data(tmp_result, limit)
-	result = []
-	for (start, end) in batches:
-		result.append(tmp_result[start:end])
-	return result
+			filtered_raw_fields.append(field["raw_field"])
+		filtered_parsed_fields.append(parsed_fields[i])
+	if not override:
+		batches = batch_data(filtered_raw_fields, limit)
+		result = []
+		for (start, end) in batches:
+			result.append((filtered_raw_fields[start:end], filtered_parsed_fields[start:end]))
+		return result
+	else:
+		result = []
+		for i in range(len(filtered_raw_fields)):
+			result.append((filtered_raw_fields[i], filtered_parsed_fields[i]))
+		return result
 
-def get_parsed_field(raw_field, override = None):
+def parsed_field(raw_field, override = None):
 	if override is None:
 		return raw_to_parsed_table[raw_field]
 	else:
@@ -84,11 +107,5 @@ with open(fields_json) as fields_file:
 	direct_fields_table = fields_table["direct_fields"]
 	indirect_fields_table = fields_table["indirect_fields"]
 	complex_fields = fields_table["complex_fields"]
-	raw_to_parsed_table = {}
-	for parsed_field in direct_fields_table:
-		raw_field = direct_fields_table[parsed_field]["raw_field"]
-		if "override" in direct_fields_table[parsed_field]:
-			raw_to_parsed_table[(raw_field, direct_fields_table[parsed_field]["override"])] = parsed_field
-		else:
-			raw_to_parsed_table[raw_field] = parsed_field
+
 
