@@ -5,7 +5,6 @@ from tia.bbg import LocalTerminal
 import utilities
 
 batch_size = 1000
-frequency = "DAILY"
 start_date = '12/31/1980'
 end_date = '31/12/2010'
 

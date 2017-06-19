@@ -46,6 +46,7 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn):
 			parsed_df.loc[date, field] = val
 		parsed_df = filling.fill_direct_prev(parsed_df, direct_parsed_fields)
 		parsed_df = filling.fill_indirect(parsed_df, utilities.indirect_fields_table)
+		parsed_df = filling.fill_complex(parsed_df)
 		conn_mutex.acquire()
 		#parsed_df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False)
 		parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
@@ -53,7 +54,7 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn):
 		progress_mutex.acquire()
 		progress += 1
 		progress_mutex.release()
-		print_status("Processed %d/%d tickers"%(progress, tickers_count))
+		print_status("Processed %d/%d ticker(s)"%(progress, tickers_count))
 	except Exception as e:
 		traceback.print_exc()
 
@@ -65,7 +66,7 @@ if __name__ == '__main__':
 	progress_mutex = multiprocessing.Lock()
 	for sector in utilities.tickers_table.keys():
 		tickers_count += len(utilities.tickers_table[sector])
-	print_status("Firing request for %d tickers..."%tickers_count)
+	print_status("Firing request for %d ticker(s)..."%tickers_count)
 	with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
 		for sector in utilities.tickers_table.keys():
 			for ticker in utilities.tickers_table[sector]:

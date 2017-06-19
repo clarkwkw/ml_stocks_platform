@@ -1,7 +1,6 @@
 {
     "complex_fields": [
         "accural_bal_sheet",
-        "accural_cash_flow",
         "asset_turnover_12m_change",
         "earning_mom_1m_mean_fy1_fy2",
         "financial_health",
@@ -85,6 +84,11 @@
             "enabled": true,
             "freq": "quarterly",
             "raw_field": "CF_CASH_FROM_OPER"
+        },
+        "current_market_cap": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "CUR_MARKET_CAP"
         },
         "custom_tot_return_hold_per": {
         	"enabled": true,
@@ -170,6 +174,11 @@
         	"enabled": true,
         	"freq": "quarterly",
         	"raw_field": "EQY_REC_CONS"
+        },
+        "return_on_asset": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "RETURN_ON_ASSET"
         },
         "short_term_investments": {
             "enabled": true,

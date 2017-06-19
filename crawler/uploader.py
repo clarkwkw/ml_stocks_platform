@@ -6,7 +6,7 @@ database = 'finanai'
 username = 'finanai'
 
 target_table = 'bloomberg_raw'
-filelist = [('Energy.csv', 'Energy')]
+filelist = [('./historical data/Energy.csv', 'Energy')]
 
 mysql_conn = mysql_connection(host, database, username)
 for (filepath, sector) in filelist:
