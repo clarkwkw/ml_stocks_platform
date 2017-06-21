@@ -87,6 +87,10 @@ def direct_parsed_fields():
 def indirect_parsed_fields():
 	return list(indirect_fields_table.keys())
 
+def ml_fields():
+	direct_ml_fields = [field for field in direct_fields_table if direct_fields_table[field]['enabled'] and direct_fields_table[field]['ml_db_keep']]
+	return direct_ml_fields + indirect_parsed_fields() + complex_fields
+
 with open(tickers_json) as tickers_file:
 	tickers_table = json.load(tickers_file)
 with open(fields_json) as fields_file:
