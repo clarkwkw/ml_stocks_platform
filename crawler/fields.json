@@ -1,9 +1,21 @@
 {
     "complex_fields": [
         "accural_bal_sheet",
+        "target_price_6m_change",
         "asset_turnover_12m_change",
+        "earning_mom_1m_fy1",
+        "earning_mom_1m_fy2",
         "earning_mom_1m_mean_fy1_fy2",
+        "earning_mom_3m_fy1",
+        "earning_mom_3m_fy2",
+        "earning_mom_3m_mean_fy1_fy2",
+        "earning_mom_mean_1m3m",
+        "earning_mom_3m_fy1_to_fy2",
+        "earnings_yield_1yr_fwd_sector",
         "financial_health",
+        "share_out_12m_change",
+        "price_accel_3m",
+        "price_accel_6m",
         "rec_1m_change",
         "rec_3m_change"
     ],
@@ -11,263 +23,544 @@
         "account_receivable": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "BS_ACCT_NOTE_RCV"
+            "raw_field": "BS_ACCT_NOTE_RCV",
+            "ml_db_keep": true
         },
         "asset_turnover": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ASSET_TURNOVER"
+            "raw_field": "ASSET_TURNOVER",
+            "ml_db_keep": true
         },
-        "best_eps_fy1":{
-        	"enabled": true,
+        "basic_eps_5yr_avg_growth": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BASIC_EPS_5YR_AVG_GR",
+            "ml_db_keep": true
+        },
+        "best_eps_fy1": {
+            "enabled": true,
             "freq": "quarterly",
             "raw_field": "BEST_EPS",
+            "ml_db_keep": false,
             "override": {
                 "BEST_FPERIOD_OVERRIDE": "1GY"
             }
         },
-        "best_eps_fy2":{
-        	"enabled": true,
+        "best_eps_fy2": {
+            "enabled": true,
             "freq": "quarterly",
             "raw_field": "BEST_EPS",
+            "ml_db_keep": false,
             "override": {
                 "BEST_FPERIOD_OVERRIDE": "2GY"
             }
         },
-        "best_sales_fy1": {
+        "best_eps_stddev_fy1": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "BEST_SALES",
+            "raw_field": "BEST_EPS",
+            "ml_db_keep": false,
             "override": {
+                "BEST_CONSENSUS_STAT_OVERRIDE": "STDDEV",
                 "BEST_FPERIOD_OVERRIDE": "1GY"
             }
         },
-        "best_sales_fy2": {
+        "best_eps_stddev_fy2": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "BEST_SALES",
+            "raw_field": "BEST_EPS",
+            "ml_db_keep": false,
             "override": {
+                "BEST_CONSENSUS_STAT_OVERRIDE": "STDDEV",
                 "BEST_FPERIOD_OVERRIDE": "2GY"
             }
+        },
+        "best_eps_mean_fy1": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BEST_EPS",
+            "ml_db_keep": false,
+            "override": {
+                "BEST_CONSENSUS_STAT_OVERRIDE": "MEAN",
+                "BEST_FPERIOD_OVERRIDE": "1GY"
+            }
+        },
+        "best_eps_mean_fy2": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BEST_EPS",
+            "ml_db_keep": false,
+            "override": {
+                "BEST_CONSENSUS_STAT_OVERRIDE": "MEAN",
+                "BEST_FPERIOD_OVERRIDE": "2GY"
+            }
+        },
+        "best_eps_numup_4w_fy1": {
+        	"enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BEST_EPS",
+            "ml_db_keep": false,
+            "override": {
+                "BEST_CONSENSUS_STAT_OVERRIDE": "NUM_UP",
+                "BEST_FPERIOD_OVERRIDE": "1GY",
+                "BEST_REVISION_INTERVAL_OVERRIDE": "4W"
+
+            }
+        },
+        "best_eps_numup_4w_fy2": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BEST_EPS",
+            "ml_db_keep": false,
+            "override": {
+                "BEST_CONSENSUS_STAT_OVERRIDE": "NUM_UP",
+                "BEST_FPERIOD_OVERRIDE": "2GY",
+                "BEST_REVISION_INTERVAL_OVERRIDE": "4W"
+
+            }
+        },
+        "best_eps_numdn_4w_fy1": {
+        	"enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BEST_EPS",
+            "ml_db_keep": false,
+            "override": {
+                "BEST_CONSENSUS_STAT_OVERRIDE": "NUM_DN",
+                "BEST_FPERIOD_OVERRIDE": "1GY",
+                "BEST_REVISION_INTERVAL_OVERRIDE": "4W"
+            }
+        },
+        "best_eps_numdn_4w_fy2": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BEST_EPS",
+            "ml_db_keep": false,
+            "override": {
+                "BEST_CONSENSUS_STAT_OVERRIDE": "NUM_DN",
+                "BEST_FPERIOD_OVERRIDE": "2GY",
+                "BEST_REVISION_INTERVAL_OVERRIDE": "4W"
+            }
+        },
+        "best_pe_ratio": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BEST_PE_RATIO",
+            "ml_db_keep": false
+        },
+        "best_target_price": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BEST_TARGET_PRICE",
+            "ml_db_keep": true
         },
         "book_value": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "CURR_BOOK_VAL"
+            "raw_field": "CURR_BOOK_VAL",
+            "ml_db_keep": true
         },
         "capital_expenditures": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_CAPITAL_EXPENDITURES"
+            "raw_field": "ARD_CAPITAL_EXPENDITURES",
+            "ml_db_keep": true
         },
         "cash_cash_equivalents": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_CASH_CASH_EQUIV_END_OF_PER"
+            "raw_field": "ARD_CASH_CASH_EQUIV_END_OF_PER",
+            "ml_db_keep": true
         },
         "cash_flow_per_share":{
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "CASH_FLOW_PER_SH"
+            "raw_field": "CASH_FLOW_PER_SH",
+            "ml_db_keep": true
         },
         "cash_from_financing": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_TOT_CASHFLOWS_FROM_FINANCING"
+            "raw_field": "ARD_TOT_CASHFLOWS_FROM_FINANCING",
+            "ml_db_keep": true
         },
         "cash_from_investing": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_TOT_CASHFLOWS_FROM_INVESTING"
+            "raw_field": "ARD_TOT_CASHFLOWS_FROM_INVESTING",
+            "ml_db_keep": true
         },
         "cash_from_operating": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "CF_CASH_FROM_OPER"
+            "raw_field": "CF_CASH_FROM_OPER",
+            "ml_db_keep": true
+        },
+        "current_ev_to_t12m_ebitda":{
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "CURRENT_EV_TO_T12M_EBITDA",
+            "ml_db_keep": false
         },
         "current_market_cap": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "CUR_MARKET_CAP"
+            "raw_field": "CUR_MARKET_CAP",
+            "ml_db_keep": true
+        },
+        "current_ratio": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "CUR_RATIO",
+            "ml_db_keep": true
         },
         "custom_tot_return_hold_per": {
         	"enabled": true,
             "freq": "quarterly",
-            "raw_field": "CUST_TRR_RETURN_HOLDING_PER"
+            "raw_field": "CUST_TRR_RETURN_HOLDING_PER",
+            "ml_db_keep": false
         },
         "depreciation": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "CF_DEPR_AMORT"
+            "raw_field": "CF_DEPR_AMORT",
+            "ml_db_keep": true
         },
         "diluted_normalised_eps": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_DILUTED_EPS"
+            "raw_field": "ARD_DILUTED_EPS",
+            "ml_db_keep": true
         },
         "dividends": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "CF_DVD_PAID"
+            "raw_field": "CF_DVD_PAID",
+            "ml_db_keep": true
+        },
+        "dividend_payout_ratio":{
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "DVD_PAYOUT_RATIO",
+            "ml_db_keep": true
+        },
+        "dividend_yield": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "DIVIDEND_YIELD",
+            "ml_db_keep": true
+        },
+        "earnings_est_count_fy1":{
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BEST_EPS_NUMEST",
+            "ml_db_keep": true,
+            "override": {
+                "BEST_FPERIOD_OVERRIDE": "1GY"
+            }
+        },
+        "earnings_yield": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "EARN_YLD_HIST",
+            "ml_db_keep": true
+        },
+        "ev_to_trailing_12m_free_cf":{
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "CURRENT_EV_TO_T12M_FCF",
+            "ml_db_keep": false
         },
         "ev_to_trailing_12m_sales": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "CURRENT_EV_TO_12M_SALES"
+            "raw_field": "CURRENT_EV_TO_12M_SALES",
+            "ml_db_keep": false
         },
         "free_cash_flow_yield": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "FREE_CASH_FLOW_YIELD"
+            "raw_field": "FREE_CASH_FLOW_YIELD",
+            "ml_db_keep": true
         },
         "gross_profit": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "IS_ADJUSTED_GROSS_PROFIT"
+            "raw_field": "IS_ADJUSTED_GROSS_PROFIT",
+            "ml_db_keep": true
+        },
+        "high_change_52w": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "CHG_PCT_HIGH_52WEEK",
+            "ml_db_keep": true
         },
         "income_before_tax": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_INCOME_BEFORE_INCOME_TAXES"
+            "raw_field": "ARD_INCOME_BEFORE_INCOME_TAXES",
+            "ml_db_keep": true
         },
         "income_tax_expense": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "IS_INC_TAX_EXP"
+            "raw_field": "IS_INC_TAX_EXP",
+            "ml_db_keep": false
+        },
+        "interest_coverage": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "INTEREST_COVERAGE_RATIO",
+            "ml_db_keep": true
+        },
+        "interest_coverage_adj": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "EBIT_INTEREST_ADJUSTED",
+            "ml_db_keep": true
         },
         "last_price": {
             "enabled": true,
             "freq": "daily",
-            "raw_field": "PX_LAST"
+            "raw_field": "PX_LAST",
+            "ml_db_keep": true
+        },
+        "leverage": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "TOT_DEBT_TO_TOT_EQY",
+            "ml_db_keep": true
+        },
+        "lt_price_earnings_ratio": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "LONG_TERM_PRICE_EARNINGS_RATIO",
+            "ml_db_keep": false,
+            "override": {
+                "PERIOD_OVERRIDE_YEARS": 3
+            }
         },
         "net_change_in_cash": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_NET_CHANGE_IN_CASH"
+            "raw_field": "ARD_NET_CHANGE_IN_CASH",
+            "ml_db_keep": true
         },
         "net_income": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_NET_INC"
+            "raw_field": "ARD_NET_INC",
+            "ml_db_keep": true
         },
         "net_income_before_xo_items": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_INCOME_BEFORE_XO_ITEMS"
+            "raw_field": "ARD_INCOME_BEFORE_XO_ITEMS",
+            "ml_db_keep": true
         },
         "opening_price": {
             "enabled": true,
             "freq": "daily",
-            "raw_field": "PX_OPEN"
+            "raw_field": "PX_OPEN",
+            "ml_db_keep": true
         },
         "operating_income": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "IS_OPER_INC"
+            "raw_field": "IS_OPER_INC",
+            "ml_db_keep": true
         },
         "price_to_sales_ratio": {
             "enabled": true,
+            "freq": "daily",
+            "raw_field": "PX_TO_SALES_RATIO",
+            "ml_db_keep": false
+        },
+        "price_to_book_ratio": {
+            "enabled": true,
+            "freq": "daily",
+            "raw_field": "PX_TO_BOOK_RATIO",
+            "ml_db_keep": false
+        },
+        "raw_beta": {
+            "enabled": true,
             "freq": "quarterly",
-            "raw_field": "PX_TO_SALES_RATIO"
+            "raw_field": "BETA_RAW_OVERRIDABLE",
+            "ml_db_keep": false
         },
         "rec_consenus": {
         	"enabled": true,
         	"freq": "quarterly",
-        	"raw_field": "EQY_REC_CONS"
+        	"raw_field": "EQY_REC_CONS",
+            "ml_db_keep": true
         },
         "return_on_asset": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "RETURN_ON_ASSET"
+            "raw_field": "RETURN_ON_ASSET",
+            "ml_db_keep": false
+        },
+        "return_on_common_equity":{
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "RETURN_COM_EQY",
+            "ml_db_keep": true
+        },
+        "rsi_9day":{
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "RSI_9D",
+            "ml_db_keep": true
+        },
+        "rsi_30day":{
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "RSI_30D",
+            "ml_db_keep": true
+        },
+        "return_on_common_equity_adj":{
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "RETURN_ON_COMMON_EQUITY_ADJUSTED",
+            "ml_db_keep": true
+        },
+        "sales_yield_fy1": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BEST_SALES",
+            "ml_db_keep": true,
+            "override": {
+                "BEST_FPERIOD_OVERRIDE": "1GY"
+            }
+        },
+        "sales_yield_fy2": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "BEST_SALES",
+            "ml_db_keep": true,
+            "override": {
+                "BEST_FPERIOD_OVERRIDE": "2GY"
+            }
+        },
+        "short_interest": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "SHORT_INT",
+            "ml_db_keep": true
         },
         "short_term_investments": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "BS_MKT_SEC_OTHER_ST_INVEST"
+            "raw_field": "BS_MKT_SEC_OTHER_ST_INVEST",
+            "ml_db_keep": true
         },
         "short_term_liabilities": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "BS_ST_BORROW"
+            "raw_field": "BS_ST_BORROW",
+            "ml_db_keep": true
         },
         "total_assets": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_TOT_ASSETS"
+            "raw_field": "ARD_TOT_ASSETS",
+            "ml_db_keep": true
         },
         "total_current_assets": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_TOTAL_CUR_ASSETS"
+            "raw_field": "ARD_TOTAL_CUR_ASSETS",
+            "ml_db_keep": true
         },
         "total_current_liabilities": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_TOTAL_CURRENT_LIABILITIES"
+            "raw_field": "ARD_TOTAL_CURRENT_LIABILITIES",
+            "ml_db_keep": true
         },
         "total_debt": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "SHORT_AND_LONG_TERM_DEBT"
+            "raw_field": "SHORT_AND_LONG_TERM_DEBT",
+            "ml_db_keep": true
         },
         "total_equity": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_TOTAL_SHAREHOLDERS_EQUITY"
+            "raw_field": "ARD_TOTAL_SHAREHOLDERS_EQUITY",
+            "ml_db_keep": true
         },
         "total_inventories": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_INVENTORY"
+            "raw_field": "ARD_INVENTORY",
+            "ml_db_keep": true
         },
         "total_invested_capital": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "TOTAL_INVESTED_CAPITAL"
+            "raw_field": "TOTAL_INVESTED_CAPITAL",
+            "ml_db_keep": true
         },
         "total_liabilities": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_TOT_LIABILITIES"
+            "raw_field": "ARD_TOT_LIABILITIES",
+            "ml_db_keep": true
         },
         "total_long_term_debt": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_LT_DEBT"
+            "raw_field": "ARD_LT_DEBT",
+            "ml_db_keep": true
         },
         "total_revenue": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "ARD_TOTAL_REVENUES"
+            "raw_field": "ARD_TOTAL_REVENUES",
+            "ml_db_keep": true
         },
         "total_shares": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "EQY_SH_OUT"
+            "raw_field": "EQY_SH_OUT",
+            "ml_db_keep": true
         },
         "volume": {
             "enabled": true,
             "freq": "daily",
-            "raw_field": "PX_VOLUME"
+            "raw_field": "PX_VOLUME",
+            "ml_db_keep": true
         },
-        "volatility_260d":{
+        "volatility_realized_12m":{
         	"enabled": true,
             "freq": "daily",
-            "raw_field": "VOLATILITY_260D"
+            "raw_field": "VOLATILITY_260D",
+            "ml_db_keep": true
         }
     },
     "indirect_fields": {
         "accural_cash_flow": "%net_income_before_xo_items% - %cash_from_operating%",
         "book_value_minus_debt": "%book_value% - %total_debt%",
+        "book_value_yield": "1 / %price_to_book_ratio% * 100",
         "cash_flow_yield": "%cash_flow_per_share% / %last_price% * 100",
         "cash_flow_to_total_ssets": "%cash_from_operating% / %total_assets% * 100",
         "cash_to_assets": "%cash_cash_equivalents% / %total_assets%",
         "cfroic": "%cash_from_operating% / %total_invested_capital% * 100",
         "debt_to_assets": "%total_debt% / %total_assets%",
         "debt_to_equity": "%total_debt% / %total_equity%",
-        "dividend_payout_ratio": "%dividends% / %net_income%",
+        "earnings_cv_fy1": "%best_eps_stddev_fy1% / %best_eps_mean_fy1% * 100",
+        "earnings_cv_fy2": "%best_eps_stddev_fy2% / %best_eps_mean_fy2% * 100",
+        "earnings_cv_mean": " (%earnings_cv_fy1% + %earnings_cv_fy2%)/2",
+        "earnings_growth_fy1_to_fy2": "(%best_eps_fy1% - %best_eps_fy2%) / %best_eps_fy1% * 100",
+        "earnings_yield_1yr_fwd": "1 / %best_pe_ratio% * 100",
+        "earnings_yield_1yr_fwd_3_yr_hist": "%lt_price_earnings_ratio%/ %best_pe_ratio% * 100",
+        "ebitda_to_ev": "1 / %current_ev_to_t12m_ebitda% * 100",
+        "free_cf_to_ev": "1 / %ev_to_trailing_12m_free_cf% * 100",
         "income_after_tax": "%income_before_tax% - %income_tax_expense%",
         "liabilities_to_income": "%total_liabilities% / %net_income%",
+        "net_earning_rev_fy1": "(%best_eps_numup_4w_fy1% - %best_eps_numdn_4w_fy1%) / (%best_eps_numup_4w_fy1% + %best_eps_numdn_4w_fy1%)*100 ",
+        "net_earning_rev_fy2": "(%best_eps_numup_4w_fy2% - %best_eps_numdn_4w_fy2%) / (%best_eps_numup_4w_fy2% + %best_eps_numdn_4w_fy2%)*100 ",
         "price_mom_vol_adj_12m": "%custom_tot_return_hold_per% / %volatility_260d%",
         "quick_ratio": "(%total_current_assets% - %total_inventories%)/%total_current_liabilities%",
         "receivalbes_to_sales": "%account_receivable% / %total_revenue%",
@@ -275,7 +568,8 @@
         "sales_per_shares": "%total_revenue% / %total_shares%",
         "sales_to_ev": "1 / %ev_to_trailing_12m_sales% * 100",
         "sales_yield": "1 / %price_to_sales_ratio% * 100",
-        "sales_yield_mean": "(%best_sales_fy1% + %best_sales_fy2%) / 2",
+        "sales_yield_mean": "(%sales_yield_fy1% + %sales_yield_fy1%) / 2",
+        "short_int_to_sh_out": " %short_interest% / %total_shares% * 100",
         "snapshot_accurual": "%total_current_assets% - %cash_cash_equivalents% - %total_current_liabilities% + %total_debt%",
         "working_capital": "%total_current_assets% - %total_current_liabilities%"
     }
