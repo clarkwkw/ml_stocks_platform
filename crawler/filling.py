@@ -47,8 +47,6 @@ def fill_indirect(df, indirect_table):
 			print_status("Erroneous instruction for indirect field '%s':\n\t%s"%(field, method))
 	return(df)
 
-_fill_complex_funcs = [fill_complex_accural_bal_sheet, fill_complex_financial_health]
-
 def fill_complex(df):
 	for func in _fill_complex_funcs:
 		df = func(df)
@@ -124,6 +122,8 @@ def fill_complex_financial_health(df):
 	
 	df.drop(["ROA", "CFO", "gross_margin", "turn", "leverage", "current_ratio", "d_ROA", "d_margin", "d_leverage", "d_current_ratio", "d_turn"], axis = 1, inplace = True)
 	return df
+
+_fill_complex_funcs = [fill_complex_accural_bal_sheet, fill_complex_financial_health]
 
 class DateQueue:
 	def __init__(self, interval = 365):

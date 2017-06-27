@@ -31,10 +31,14 @@ def new_parsed_df(ticker, dates, sector):
 	df = pandas.DataFrame(data, index = dates, columns = id_fields + direct_parsed_fields + indirect_parsed_fields)
 	return df
 
-def fill_by_ticker_and_save(ticker, sector, mysql_conn):
+def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only = True):
 	try:
 		global progress
-		sql_query = "SELECT date, field, value FROM %s WHERE ticker = '%s' ORDER BY date asc;"%(raw_table, ticker)
+		if download_selected_only:
+			fields_str = "AND field IN ('"+"','".join(direct_parsed_fields)+"')"
+		else:
+			fields_str = ""
+		sql_query = "SELECT date, field, value FROM %s WHERE ticker = '%s' %s ORDER BY date asc;"%(raw_table, ticker, fields_str)
 		conn_mutex.acquire()
 		raw_df = pandas.read_sql(sql_query, mysql_conn, coerce_float = False, parse_dates = ["date"])
 		conn_mutex.release()
@@ -43,11 +47,12 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn):
 			date = row['date']
 			field = row['field']
 			val = row['value']
-			parsed_df.loc[date, field] = val
+			if download_selected_only or field in direct_parsed_fields:
+				parsed_df.loc[date, field] = val
 		parsed_df = filling.fill_direct_prev(parsed_df, direct_parsed_fields)
 		parsed_df = filling.fill_indirect(parsed_df, utilities.indirect_fields_table)
 		parsed_df = filling.fill_complex(parsed_df)
-		parsed_df = parsed_df[[utilities.ml_fields()]]
+		parsed_df = parsed_df[utilities.ml_fields()]
 		conn_mutex.acquire()
 		#parsed_df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False)
 		parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
