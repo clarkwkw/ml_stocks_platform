@@ -5,8 +5,10 @@ from tia.bbg import LocalTerminal
 import utilities
 
 batch_size = 1000
-start_date = '12/31/1980'
-end_date = '31/12/2010'
+
+#M/D/YYYY
+start_date = '12/31/1995'
+end_date = '12/31/2016'
 
 def write_dict(csv_file, dict, raw_fields, parsed_fields):
 	for ticker in dict.keys():

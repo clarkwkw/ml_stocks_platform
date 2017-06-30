@@ -11,7 +11,6 @@
         "earning_mom_3m_mean_fy1_fy2",
         "earning_mom_mean_1m_3m",
         "earning_mom_3m_fy1_to_fy2",
-        "earnings_yield_1yr_fwd_sector",
         "financial_health",
         "share_out_12m_change",
         "price_accel_3m",
@@ -555,7 +554,7 @@
         "liabilities_to_income": "%total_liabilities% / %net_income%",
         "net_earning_rev_fy1": "(%best_eps_numup_4w_fy1% - %best_eps_numdn_4w_fy1%) / (%best_eps_numup_4w_fy1% + %best_eps_numdn_4w_fy1%)*100 ",
         "net_earning_rev_fy2": "(%best_eps_numup_4w_fy2% - %best_eps_numdn_4w_fy2%) / (%best_eps_numup_4w_fy2% + %best_eps_numdn_4w_fy2%)*100 ",
-        "price_mom_vol_adj_12m": "%custom_tot_return_hold_per% / %volatility_260d%",
+        
         "quick_ratio": "(%total_current_assets% - %total_inventories%)/%total_current_liabilities%",
         "receivalbes_to_sales": "%account_receivable% / %total_revenue%",
         "return_on_equity": "%net_income% / %total_equity%",
