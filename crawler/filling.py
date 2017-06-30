@@ -145,7 +145,7 @@ def fill_complex_financial_health(df):
 	return df
 
 _fill_complex_funcs = [	
-						fill_complex_interval_change_factory("accural_bal_sheet", "snapshot_accurual", 365, "absolute"),
+						fill_complex_interval_change_factory("accrual_bal_sheet", "snapshot_accrual", 365, "absolute"),
 						fill_complex_interval_change_factory("target_price_6m_change", "best_target_price", 365, "percent"),
 						fill_complex_interval_change_factory("asset_turnover_12m_change", "asset_turnover", 365, "percent"),
 						fill_complex_interval_change_factory("earning_mom_1m_fy1", "best_eps_fy1", 30, "percent"),
@@ -154,13 +154,13 @@ _fill_complex_funcs = [
 						fill_complex_interval_change_factory("earning_mom_3m_fy1", "best_eps_fy1", 90, "percent"),
 						fill_complex_interval_change_factory("earning_mom_3m_fy2", "best_eps_fy2", 90, "percent"),
 						fill_complex_mean_factory("earning_mom_3m_mean_fy1_fy2", ["earning_mom_3m_fy1", "earning_mom_3m_fy2"]),
-						fill_complex_mean_factory("earning_mom_mean_1m3m", ["earning_mom_1m_mean_fy1_fy2", "earning_mom_3m_mean_fy1_fy2"]),
+						fill_complex_mean_factory("earning_mom_mean_1m_3m", ["earning_mom_1m_mean_fy1_fy2", "earning_mom_3m_mean_fy1_fy2"]),
 						fill_complex_earning_mom_3m_fy1_to_fy2,
 						fill_complex_interval_change_factory("share_out_12m_change", "total_shares", 365, "percent"),
 						fill_complex_interval_change_factory("price_accel_3m", "raw_beta", 90, "percent"),
 						fill_complex_interval_change_factory("price_accel_6m", "raw_beta", 180, "percent"),
-						fill_complex_interval_change_factory("rec_1m_change", "consenus", 30, "percent"),
-						fill_complex_interval_change_factory("rec_3m_change", "consenus", 90, "percent"),
+						fill_complex_interval_change_factory("rec_1m_change", "rec_consenus", 30, "percent"),
+						fill_complex_interval_change_factory("rec_3m_change", "rec_consenus", 90, "percent"),
 						fill_complex_financial_health
 					]
 

@@ -1,6 +1,6 @@
 {
     "complex_fields": [
-        "accural_bal_sheet",
+        "accrual_bal_sheet",
         "target_price_6m_change",
         "asset_turnover_12m_change",
         "earning_mom_1m_fy1",
@@ -9,7 +9,7 @@
         "earning_mom_3m_fy1",
         "earning_mom_3m_fy2",
         "earning_mom_3m_mean_fy1_fy2",
-        "earning_mom_mean_1m3m",
+        "earning_mom_mean_1m_3m",
         "earning_mom_3m_fy1_to_fy2",
         "earnings_yield_1yr_fwd_sector",
         "financial_health",
@@ -213,12 +213,6 @@
             "freq": "quarterly",
             "raw_field": "CUR_RATIO",
             "ml_db_keep": true
-        },
-        "custom_tot_return_hold_per": {
-        	"enabled": true,
-            "freq": "quarterly",
-            "raw_field": "CUST_TRR_RETURN_HOLDING_PER",
-            "ml_db_keep": false
         },
         "depreciation": {
             "enabled": true,
@@ -540,7 +534,7 @@
         }
     },
     "indirect_fields": {
-        "accural_cash_flow": "%net_income_before_xo_items% - %cash_from_operating%",
+        "accrual_cash_flow": "%net_income_before_xo_items% - %cash_from_operating%",
         "book_value_minus_debt": "%book_value% - %total_debt%",
         "book_value_yield": "1 / %price_to_book_ratio% * 100",
         "cash_flow_yield": "%cash_flow_per_share% / %last_price% * 100",
@@ -570,7 +564,7 @@
         "sales_yield": "1 / %price_to_sales_ratio% * 100",
         "sales_yield_mean": "(%sales_yield_fy1% + %sales_yield_fy1%) / 2",
         "short_int_to_sh_out": " %short_interest% / %total_shares% * 100",
-        "snapshot_accurual": "%total_current_assets% - %cash_cash_equivalents% - %total_current_liabilities% + %total_debt%",
+        "snapshot_accrual": "%total_current_assets% - %cash_cash_equivalents% - %total_current_liabilities% + %total_debt%",
         "working_capital": "%total_current_assets% - %total_current_liabilities%"
     }
 }
