@@ -1,9 +1,10 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import filling
 import json
 import multiprocessing
 import numpy as np
 import pandas
+from tqdm import tqdm
 import traceback
 import utilities
 
@@ -15,7 +16,7 @@ username = 'finanai'
 
 raw_table = 'bloomberg_raw'
 target_table = 'parsed_data'
-max_thread_no = 4
+max_thread_no = 16
 
 direct_parsed_fields = utilities.direct_parsed_fields()
 indirect_parsed_fields = utilities.indirect_parsed_fields()
@@ -57,10 +58,6 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only =
 		#parsed_df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False)
 		parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
 		conn_mutex.release()
-		progress_mutex.acquire()
-		progress += 1
-		progress_mutex.release()
-		print_status("Processed %d/%d ticker(s)"%(progress, tickers_count))
 	except Exception as e:
 		traceback.print_exc()
 
@@ -68,13 +65,14 @@ if __name__ == '__main__':
 	mysql_conn = utilities.mysql_connection(host, database, username)
 	conn_mutex = multiprocessing.Lock()
 	tickers_count = 0
-	progress = 0
-	progress_mutex = multiprocessing.Lock()
 	for sector in utilities.tickers_table.keys():
 		tickers_count += len(utilities.tickers_table[sector])
 	print_status("Firing request for %d ticker(s)..."%tickers_count)
+	futures = []
 	with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
 		for sector in utilities.tickers_table.keys():
 			for ticker in utilities.tickers_table[sector]:
-				executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn)
+				futures.append(executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn))
+		for _ in tqdm(as_completed(futures)):
+			pass
 print_status("Done.")
