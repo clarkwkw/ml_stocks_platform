@@ -5,6 +5,7 @@ import datetime
 import json
 import multiprocessing
 import numpy as np
+import pandas
 from tia.bbg import LocalTerminal
 from tqdm import tqdm
 import traceback
@@ -31,7 +32,7 @@ class CSV_Buffer:
 		self.content_count = 0
 		self.append("date", "ticker", "field", "value")
 
-	def append(date, ticker, name, value):
+	def append(self, date, ticker, name, value):
 		new_content = "%s, %s, %s, %s\n"%(str(date), str(ticker), str(name), str(value))
 		self.buffer_lock.acquire()
 		self.content += new_content
@@ -40,27 +41,27 @@ class CSV_Buffer:
 			self.force_flush()
 		self.buffer_lock.release()
 
-	def force_flush():
+	def force_flush(self):
 		self.file.write(self.content)
 		self.content = ""
 		self.content_count = 0
 
-	def close():
+	def close(self):
 		self.force_flush()
 		self.file.close()
 
 def price_mom(ticker, end_dates, field_name, period, buffer):
 	try:
 		global finished
-		for end_date in end_dates:
-			[year, month, day] = [int(x) for x in end_date.split('-')]
-			end_datetime = datetime.datetime(year, month, day)
+		for end_datetime in end_dates:
 			delta = relativedelta(months = period)
 			start_datetime = end_datetime - delta
+			end_date = end_datetime.isoformat()[0:10]
 			start_date = start_datetime.isoformat()[0:10]
+			print("start: %s, end: %s"%(start_date, end_date))
 			result = LocalTerminal.get_reference_data(ticker, 'CUST_TRR_RETURN_HOLDING_PER', CUST_TRR_START_DT=start_date, CUST_TRR_END_DT=end_date).as_map()
 			value = result[ticker]['CUST_TRR_RETURN_HOLDING_PER']
-			buffer.append()
+			buffer.append(end_date, ticker, field_name, value)
 		status_mutex.acquire()
 		print_status("\t  Crawled %s."%period)
 		status_mutex.release()
@@ -80,8 +81,8 @@ for sector in utilities.tickers_table.keys():
 			trading_dates = pandas.read_sql("SELECT DISTINCT date FROM %s WHERE ticker = '%s'"%(raw_table, ticker), mysql_conn, coerce_float = False, parse_dates = ["date"])
 			trading_dates = trading_dates["date"]
 			for period, field in periods:
-				executor.submit(price_mom, ticker, trading_dates, field, period, buff[period])
-
-	buff.close()
+				executor.submit(price_mom, ticker, trading_dates, field, period, buffs[period])
+	for sector in buffs:
+		buffs[sector].close()
 
 print_status("Done.")

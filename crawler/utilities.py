@@ -4,10 +4,14 @@ import getpass
 try:
 	import sqlalchemy
 except ImportError:
-	print("> sqlachemy & mysqldb are required for mysql connection")
+	print("> sqlachemy & mysql connector (2.1.4)/ mysqldb are required for mysql connection")
 
 tickers_json = "./test_tickers.json"
 fields_json = "./fields.json"
+# mysqldb/mysqlconnector/...
+# For more options, 
+# see http://docs.sqlalchemy.org/en/latest/dialects/mysql.html#module-sqlalchemy.dialects.mysql.mysqlconnector
+db_connector = "mysqlconnector"
 
 def print_status(msg):
 	print("> "+str(msg))
@@ -35,7 +39,7 @@ def mysql_connection(host, database, username):
 	print_status('Connecting to %s@%s'%(username, host))
 	password = getpass.getpass('MYSQL Password:')
 	try:
-		engine = sqlalchemy.create_engine('mysql+mysqldb://%s:%s@%s'%(username, password, host))
+		engine = sqlalchemy.create_engine('mysql+%s://%s:%s@%s'%(db_connector, username, password, host))
 		engine.execute('USE %s'%database)
 	except sqlalchemy.exc.OperationalError as e:
 		print_status('Wrong credentials, abort')
