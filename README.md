@@ -3,7 +3,7 @@
 ## Dependencies
 - blpapi
 - futures
-- mysql-connector (2.1.4)
+- mysql-connector (2.1.4)/ mysqldb
 - pandas (0.20.0+)
 - sqlalchemy
 - tia
