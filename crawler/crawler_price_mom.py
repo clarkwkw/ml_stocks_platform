@@ -65,8 +65,10 @@ def price_mom(ticker, end_dates, field_name, period, buffer):
 		status_mutex.acquire()
 		print_status("\t  Crawled %s."%period)
 		status_mutex.release()
+		return 0
 	except Exception as e:
 		traceback.print_exc()
+		return -1
 
 mysql_conn = utilities.mysql_connection(host, database, username)
 print_status("Crawling data...")
@@ -77,11 +79,16 @@ for sector in utilities.tickers_table.keys():
 	for period, _ in periods:
 		buffs[period] = CSV_Buffer(sector+"."+str(period)+".csv", 1000)
 	with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
+		futures = []
 		for ticker in utilities.tickers_table[sector]:
 			trading_dates = pandas.read_sql("SELECT DISTINCT date FROM %s WHERE ticker = '%s'"%(raw_table, ticker), mysql_conn, coerce_float = False, parse_dates = ["date"])
 			trading_dates = trading_dates["date"]
 			for period, field in periods:
-				executor.submit(price_mom, ticker, trading_dates, field, period, buffs[period])
+				futures.append(executor.submit(price_mom, ticker, trading_dates, field, period, buffs[period]))
+			for future in futures:
+				if future.result() != 0:
+					print_status("Exception occured when crawling %s, abort."%ticker)
+					exit(-1)
 	for sector in buffs:
 		buffs[sector].close()
 
