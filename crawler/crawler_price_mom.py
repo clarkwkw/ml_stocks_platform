@@ -1,7 +1,5 @@
 from __future__ import print_function
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dateutil.relativedelta import relativedelta
-import datetime
 import json
 import multiprocessing
 import numpy as np
@@ -17,8 +15,7 @@ username = 'finanai'
 raw_table = 'bloomberg_raw'
 
 #M/D/YYYY
-#periods = [(1, "price_mom_1m"), (3, "price_mom_3m"), (6, "price_mom_6m"), (12, "price_mom_12m")]
-periods = [(12, "price_mom_12m")]
+periods = [(1, "price_mom_1m"), (3, "price_mom_3m"), (6, "price_mom_6m"), (12, "price_mom_12m")]
 max_thread_no = 4
 
 print_status = utilities.print_status
@@ -54,16 +51,17 @@ def price_mom(ticker, end_dates, field_name, period, buffer):
 	try:
 		global finished
 		for end_datetime in end_dates:
-			delta = relativedelta(months = period)
+			delta = pandas.DateOffset(months = period)
 			start_datetime = end_datetime - delta
 			end_date = end_datetime.isoformat()[0:10]
 			start_date = start_datetime.isoformat()[0:10]
-			print("start: %s, end: %s"%(start_date, end_date))
+			end_date = ''.join(end_date.split('-'))
+			start_date = ''.join(start_date.split('-'))
 			result = LocalTerminal.get_reference_data(ticker, 'CUST_TRR_RETURN_HOLDING_PER', CUST_TRR_START_DT=start_date, CUST_TRR_END_DT=end_date).as_map()
 			value = result[ticker]['CUST_TRR_RETURN_HOLDING_PER']
 			buffer.append(end_date, ticker, field_name, value)
 		status_mutex.acquire()
-		print_status("\t  Crawled %s."%period)
+		print_status("\t  Crawled period %s."%period)
 		status_mutex.release()
 		return 0
 	except Exception as e:
@@ -81,6 +79,7 @@ for sector in utilities.tickers_table.keys():
 	with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
 		futures = []
 		for ticker in utilities.tickers_table[sector]:
+			print_status("\t Crawling stock %s"%ticker)
 			trading_dates = pandas.read_sql("SELECT DISTINCT date FROM %s WHERE ticker = '%s'"%(raw_table, ticker), mysql_conn, coerce_float = False, parse_dates = ["date"])
 			trading_dates = trading_dates["date"]
 			for period, field in periods:
