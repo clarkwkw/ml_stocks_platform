@@ -38,6 +38,11 @@ class CSV_Buffer:
 			self.force_flush()
 		self.buffer_lock.release()
 
+	def flush(self):
+		self.buffer_lock.acquire()
+		self.force_flush()
+		self.buffer_lock.release()
+
 	def force_flush(self):
 		self.file.write(self.content)
 		self.content = ""
@@ -63,9 +68,11 @@ def price_mom(ticker, end_dates, field_name, period, buffer):
 		status_mutex.acquire()
 		print_status("\t  Crawled period %s."%period)
 		status_mutex.release()
+		buffer.flush()
 		return 0
 	except Exception as e:
 		traceback.print_exc()
+		buffer.flush()
 		return -1
 
 mysql_conn = utilities.mysql_connection(host, database, username)
@@ -81,7 +88,7 @@ for sector in utilities.tickers_table.keys():
 		futures = []
 		for ticker in utilities.tickers_table[sector]:
 			print_status("\t Crawling stock %s"%ticker)
-			trading_dates = pandas.read_sql("SELECT DISTINCT date FROM %s WHERE ticker = '%s'"%(raw_table, ticker), mysql_conn, coerce_float = False, parse_dates = ["date"])
+			trading_dates = pandas.read_sql("SELECT DISTINCT date FROM %s WHERE ticker = '%s' ORDER BY date asc"%(raw_table, ticker), mysql_conn, coerce_float = False, parse_dates = ["date"])
 			trading_dates = trading_dates["date"]
 			for period, field in periods:
 				futures.append(executor.submit(price_mom, ticker, trading_dates, field, period, buffs[period]))

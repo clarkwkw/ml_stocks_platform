@@ -39,8 +39,7 @@ def mysql_connection(host, database, username):
 	print_status('Connecting to %s@%s'%(username, host))
 	password = getpass.getpass('MYSQL Password:')
 	try:
-		engine = sqlalchemy.create_engine('mysql+%s://%s:%s@%s'%(db_connector, username, password, host))
-		engine.execute('USE %s'%database)
+		engine = sqlalchemy.create_engine('mysql+%s://%s:%s@%s/%s'%(db_connector, username, password, host, database))
 	except sqlalchemy.exc.OperationalError as e:
 		print_status('Wrong credentials, abort')
 		exit(-1)
