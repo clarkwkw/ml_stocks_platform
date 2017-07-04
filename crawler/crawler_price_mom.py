@@ -69,6 +69,7 @@ def price_mom(ticker, end_dates, field_name, period, buffer):
 		return -1
 
 mysql_conn = utilities.mysql_connection(host, database, username)
+status_mutex = multiprocessing.Lock()
 print_status("Crawling data...")
 
 for sector in utilities.tickers_table.keys():
