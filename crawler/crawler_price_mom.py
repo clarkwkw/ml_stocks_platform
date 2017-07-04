@@ -19,6 +19,7 @@ periods = [(1, "price_mom_1m"), (3, "price_mom_3m"), (6, "price_mom_6m"), (12, "
 max_thread_no = 4
 
 print_status = utilities.print_status
+exit_flag = False
 
 class CSV_Buffer:
 	def __init__(self, csv_path, limit):
@@ -95,8 +96,14 @@ for sector in utilities.tickers_table.keys():
 			for future in futures:
 				if future.result() != 0:
 					print_status("Exception occured when crawling %s, abort."%ticker)
-					exit(-1)
+					exit_flag = True
+			if exit_flag:
+				break
+					
 	for sector in buffs:
 		buffs[sector].close()
+		
+	if exit_flag:
+		exit(-1)
 
 print_status("Done.")
