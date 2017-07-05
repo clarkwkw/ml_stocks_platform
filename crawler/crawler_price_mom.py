@@ -88,7 +88,7 @@ def send_status_management():
 		subject = "Crawler Status Update"
 		body = "Now crawling stock [%s] of %s sector.."%(cur_stock, cur_sector)
 		utilities.send_gmail(email_status_dest, subject, body)
-	schedule.every(email_status_freq).do(send_status).run()
+	schedule.every(email_status_freq).minutes.do(send_status).run()
 	while not exit_flag:
 		schedule.run_pending()
 		time.sleep(1)
@@ -97,7 +97,7 @@ mysql_conn = utilities.mysql_connection(host, database, username)
 status_mutex = multiprocessing.Lock()
 print_status("Crawling data...")
 
-email_thread = Thread(send_status_management)
+email_thread = Thread(target = send_status_management)
 email_thread.start()
 for sector in utilities.tickers_table.keys():
 	cur_sector = sector
