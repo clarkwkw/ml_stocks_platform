@@ -1,5 +1,8 @@
 import json
 import pandas
+import platform
+import smtplib
+from email.mime.text import MIMEText
 import getpass
 try:
 	import sqlalchemy
@@ -8,6 +11,8 @@ except ImportError:
 
 tickers_json = "./test_tickers.json"
 fields_json = "./fields.json"
+email_json = "./email.json"
+
 # mysqldb/mysqlconnector/...
 # For more options, 
 # see http://docs.sqlalchemy.org/en/latest/dialects/mysql.html#module-sqlalchemy.dialects.mysql.mysqlconnector
@@ -45,6 +50,17 @@ def mysql_connection(host, database, username):
 		exit(-1)
 	print_status("Connected")
 	return engine
+
+def send_gmail(recepient, subject, body):
+	msg = MIMEText(body)
+	msg['Subject'] = subject+" (%s)"%(platform.node())
+	msg['From'] = gmail_address
+	msg['To'] = recepient
+	mailserver = smtplib.SMTP_SSL(host = "smtp.gmail.com", port = 465)
+	mailserver.ehlo()
+	mailserver.login(gmail_address, gmail_password)
+	mailserver.sendmail(gmail_address, recepient, msg.as_string())
+	mailserver.quit()
 
 def direct_fields(freq = "", limit = 25, override = False):
 	if limit <= 0:
@@ -101,5 +117,9 @@ with open(fields_json) as fields_file:
 	direct_fields_table = fields_table["direct_fields"]
 	indirect_fields_table = fields_table["indirect_fields"]
 	complex_fields = fields_table["complex_fields"]
+with open(email_json) as email_file:
+	email_table = json.load(email_file)
+	gmail_address = email_table["gmail_address"]
+	gmail_password = email_table["gmail_password"]
 
 

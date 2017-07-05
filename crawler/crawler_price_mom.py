@@ -4,8 +4,8 @@ import json
 import multiprocessing
 import numpy as np
 import pandas
+import schedule
 from tia.bbg import LocalTerminal
-from tqdm import tqdm
 import traceback
 import utilities
 
@@ -14,11 +14,16 @@ database = 'finanai'
 username = 'finanai'
 raw_table = 'bloomberg_raw'
 
+email_status_dest = "clarkwkw@yahoo.com.hk"
+email_status_freq = 60
+
 #M/D/YYYY
 periods = [(1, "price_mom_1m"), (3, "price_mom_3m"), (6, "price_mom_6m"), (12, "price_mom_12m")]
 max_thread_no = 4
 
 print_status = utilities.print_status
+cur_sector = "INIT"
+cur_stock = "INIT"
 exit_flag = False
 
 class CSV_Buffer:
@@ -76,11 +81,18 @@ def price_mom(ticker, end_dates, field_name, period, buffer):
 		buffer.flush()
 		return -1
 
+def send_status():
+	subject = "Crawler Status Update"
+	body = "Now crawling stock [%s] of %s sector.."%(cur_stock, cur_sector)
+	utilities.send_gmail(email_status_dest, subject, body)
+
 mysql_conn = utilities.mysql_connection(host, database, username)
 status_mutex = multiprocessing.Lock()
 print_status("Crawling data...")
 
+schedule.every(email_status_freq).minutes.do(send_status)
 for sector in utilities.tickers_table.keys():
+	cur_sector = sector
 	print_status("\tCrawling %s sector..."%(sector))
 	buffs = {}
 	for period, _ in periods:
@@ -88,6 +100,7 @@ for sector in utilities.tickers_table.keys():
 	with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
 		futures = []
 		for ticker in utilities.tickers_table[sector]:
+			cur_stock = ticker
 			print_status("\t Crawling stock %s"%ticker)
 			trading_dates = pandas.read_sql("SELECT DISTINCT date FROM %s WHERE ticker = '%s' ORDER BY date asc"%(raw_table, ticker), mysql_conn, coerce_float = False, parse_dates = ["date"])
 			trading_dates = trading_dates["date"]
