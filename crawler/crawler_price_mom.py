@@ -5,8 +5,10 @@ import multiprocessing
 import numpy as np
 import pandas
 import schedule
+import time
 from tia.bbg import LocalTerminal
 import traceback
+from threading import Thread
 import utilities
 
 host = 'seis10.se.cuhk.edu.hk'
@@ -81,16 +83,22 @@ def price_mom(ticker, end_dates, field_name, period, buffer):
 		buffer.flush()
 		return -1
 
-def send_status():
-	subject = "Crawler Status Update"
-	body = "Now crawling stock [%s] of %s sector.."%(cur_stock, cur_sector)
-	utilities.send_gmail(email_status_dest, subject, body)
+def send_status_management():
+	def send_status():
+		subject = "Crawler Status Update"
+		body = "Now crawling stock [%s] of %s sector.."%(cur_stock, cur_sector)
+		utilities.send_gmail(email_status_dest, subject, body)
+	schedule.every(email_status_freq).do(send_status).run()
+	while not exit_flag:
+		schedule.run_pending()
+		time.sleep(1)
 
 mysql_conn = utilities.mysql_connection(host, database, username)
 status_mutex = multiprocessing.Lock()
 print_status("Crawling data...")
 
-schedule.every(email_status_freq).minutes.do(send_status)
+email_thread = Thread(send_status_management)
+email_thread.start()
 for sector in utilities.tickers_table.keys():
 	cur_sector = sector
 	print_status("\tCrawling %s sector..."%(sector))
