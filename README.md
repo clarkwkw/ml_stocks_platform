@@ -1,10 +1,11 @@
 # Trading Portfolio Construction
 
-## Dependencies
+## Dependencies (crawler module)
 - blpapi
 - futures
 - mysql-connector (2.1.4)/ mysqldb
 - pandas (0.20.0+)
+- schedule
 - sqlalchemy
 - tia
 - tqdm
