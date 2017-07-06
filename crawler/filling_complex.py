@@ -45,16 +45,16 @@ def fill_complex_mean_factory(complex_name, src_names, weights = None):
 	return fill
 
 def fill_complex_earning_mom_3m_fy1_to_fy2(df):
-	df["earning_mom_3m_fy1_to_fy2"] = df["earning_mom_3m_mean_fy1_fy2"]/df["earnings_cv_mean"]
+	df["earning_mom_3m_fy1_to_fy2"] = 1.0*df["earning_mom_3m_mean_fy1_fy2"]/df["earnings_cv_mean"]
 	return df
 
 def fill_complex_financial_health(df):
 	df['ROA'] = np.NAN
 	df['CFO'] = np.NAN
-	df['gross_margin'] = df['gross_profit'] / df['total_revenue']
+	df['gross_margin'] = 1.0*df['gross_profit'] / df['total_revenue']
 	df['turn'] = np.NAN
 	df['leverage'] = np.NAN
-	df['current_ratio'] = df['total_current_assets'] / df['total_current_liabilities']
+	df['current_ratio'] = 1.0*df['total_current_assets'] / df['total_current_liabilities']
 
 	df['d_ROA'] = np.NAN
 	df['d_margin'] = np.NAN
@@ -72,10 +72,10 @@ def fill_complex_financial_health(df):
 		try:
 			yr_begin_index = df.index.get_loc(yr_begin_date, method = 'backfill')
 			yr_begin_row = df.iloc[yr_begin_index]
-			ROA = row['net_income_before_xo_items'] / yr_begin_row['total_assets']
-			CFO = row['cash_from_operating'] / yr_begin_row['total_assets']
-			turn = row['total_revenue'] / yr_begin_row['total_assets']
-			leverage = row['total_long_term_debt'] / yr_begin_row['total_assets']
+			ROA = 1.0*row['net_income_before_xo_items'] / yr_begin_row['total_assets']
+			CFO = 1.0*row['cash_from_operating'] / yr_begin_row['total_assets']
+			turn = 1.0*row['total_revenue'] / yr_begin_row['total_assets']
+			leverage = 1.0*row['total_long_term_debt'] / yr_begin_row['total_assets']
 			df.loc[index,'ROA'] = ROA
 			df.loc[index,'turn'] = turn
 			df.loc[index,'CFO'] = CFO
