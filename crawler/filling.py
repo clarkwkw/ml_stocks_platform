@@ -5,28 +5,38 @@ from utilities import print_status
 from filling_complex import *
 
 _fill_complex_funcs = [	
-						fill_complex_interval_change_factory("accrual_bal_sheet", "snapshot_accrual", 365, "absolute"),
-						fill_complex_interval_change_factory("target_price_6m_change", "best_target_price", 365, "percent"),
-						fill_complex_interval_change_factory("asset_turnover_12m_change", "asset_turnover", 365, "percent"),
-						fill_complex_interval_change_factory("earning_mom_1m_fy1", "best_eps_fy1", 30, "percent"),
-						fill_complex_interval_change_factory("earning_mom_1m_fy2", "best_eps_fy2", 30, "percent"),
 						fill_complex_mean_factory("earning_mom_1m_mean_fy1_fy2", ["earning_mom_1m_fy1", "earning_mom_1m_fy2"]),
-						fill_complex_interval_change_factory("earning_mom_3m_fy1", "best_eps_fy1", 90, "percent"),
-						fill_complex_interval_change_factory("earning_mom_3m_fy2", "best_eps_fy2", 90, "percent"),
 						fill_complex_mean_factory("earning_mom_3m_mean_fy1_fy2", ["earning_mom_3m_fy1", "earning_mom_3m_fy2"]),
 						fill_complex_mean_factory("earning_mom_mean_1m_3m", ["earning_mom_1m_mean_fy1_fy2", "earning_mom_3m_mean_fy1_fy2"]),
 						fill_complex_earning_mom_3m_fy1_to_fy2,
-						fill_complex_interval_change_factory("share_out_12m_change", "total_shares", 365, "percent"),
-						fill_complex_interval_change_factory("price_accel_3m", "raw_beta", 90, "percent"),
-						fill_complex_interval_change_factory("price_accel_6m", "raw_beta", 180, "percent"),
-						fill_complex_interval_change_factory("rec_1m_change", "rec_consenus", 30, "percent"),
-						fill_complex_interval_change_factory("rec_3m_change", "rec_consenus", 90, "percent"),
 						fill_complex_financial_health
 					]
+
+_fill_complex_vect_funcs = [
+	("accrual_bal_sheet", fill_complex_interval_change_factory("accrual_bal_sheet", "snapshot_accrual", 365, "absolute")),
+	("target_price_6m_change", fill_complex_interval_change_factory("target_price_6m_change", "best_target_price", 365, "percent")),
+	("asset_turnover_12m_change", fill_complex_interval_change_factory("asset_turnover_12m_change", "asset_turnover", 365, "percent")),
+	("earning_mom_1m_fy1", fill_complex_interval_change_factory("earning_mom_1m_fy1", "best_eps_fy1", 30, "percent")),
+	("earning_mom_1m_fy2", fill_complex_interval_change_factory("earning_mom_1m_fy2", "best_eps_fy2", 30, "percent")),
+	("earning_mom_3m_fy1", fill_complex_interval_change_factory("earning_mom_3m_fy1", "best_eps_fy1", 90, "percent")),
+	("earning_mom_3m_fy2", fill_complex_interval_change_factory("earning_mom_3m_fy2", "best_eps_fy2", 90, "percent")),
+	("share_out_12m_change", fill_complex_interval_change_factory("share_out_12m_change", "total_shares", 365, "percent")),
+	("mom_3m", fill_complex_interval_change_factory("mom_3m", "last_price", 90, "absolute")),
+	("mom_1m", fill_complex_interval_change_factory("mom_1m", "last_price", 30, "absolute")),
+	("vol_change_3m", fill_complex_interval_change_factory("vol_change_3m", "volume", 90, "absolute")),
+	("vol_change_1m", fill_complex_interval_change_factory("vol_change_1m", "volume", 30, "absolute")),
+	("price_accel_3m", fill_complex_interval_change_factory("price_accel_3m", "raw_beta", 90, "percent")),
+	("price_accel_6m", fill_complex_interval_change_factory("price_accel_6m", "raw_beta", 180, "percent")),
+	("rec_1m_change", fill_complex_interval_change_factory("rec_1m_change", "rec_consenus", 30, "percent")),
+	("rec_3m_change", fill_complex_interval_change_factory("rec_3m_change", "rec_consenus", 90, "percent"))
+]
 
 def fill_complex(df):
 	for func in _fill_complex_funcs:
 		df = func(df)
+	for colname, func in _fill_complex_vect_funcs:
+		df[colname] = np.NAN
+		df = df.apply(func)
 	return df
 
 def fill_direct_prev(df, fields):

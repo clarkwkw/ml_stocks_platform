@@ -19,7 +19,6 @@ raw_table = 'bloomberg_raw'
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
 
-#M/D/YYYY
 periods = [(1, "price_mom_1m"), (3, "price_mom_3m"), (6, "price_mom_6m"), (12, "price_mom_12m")]
 max_thread_no = 4
 

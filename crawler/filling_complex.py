@@ -8,35 +8,31 @@ class DateQueue:
 		self.interval = interval
 	def pop(self, cur_date):
 		queue = self.queue
-		while len(queue) > 1 and (cur_date - queue[1]).days >= self.interval and (cur_date - queue[0]).days >= self.interval:
+		while len(queue) > 1 and (cur_date - queue[1][0]).days >= self.interval and (cur_date - queue[0][0]).days >= self.interval:
 			queue.pop(0)
-		if len(queue) == 0 or (cur_date - queue[0]).days < self.interval:
+		if len(queue) == 0 or (cur_date - queue[0][0]).days < self.interval:
 			return None
 		return queue[0]
-	def push(self, date):
-		self.queue.append(date)
+	def push(self, date, val):
+		self.queue.append((date, val))
 
 def fill_complex_interval_change_factory(complex_name, src_name, interval, change_method):
-	def fill(df):
-		queue = DateQueue(interval)
-		df[complex_name] = np.NAN
-		for itertuple in df.iterrows():
-			index = itertuple[0]
-			row = itertuple[1]
-			cur_date = row['date']
-			prev_date = queue.pop(cur_date)
-			queue.push(cur_date)
-			if prev_date is not None:
-				prev_row = df.loc[prev_date]
-				if change_method == 'absolute':
-					df.loc[index, complex_name] = row[src_name] - prev_row[src_name]
-				elif change_method == 'percent':
-					df.loc[index, complex_name] = (row[src_name]/prev_row[src_name] - 1)*100
-				elif change_method == 'relative':
-					df.loc[index, complex_name] = row[src_name]/prev_row[src_name] - 1
-				else:
-					raise Exception("Invalid change_method '%s'"%change_method)
-		return df
+	queue = DateQueue(interval)
+	def fill(row):
+		cur_date = row["date"]
+		prev_tup = queue.pop(cur_date)
+		if prev_tup is not None:
+			prev_val = prev_tup[1]
+			if change_method == 'absolute':
+				row[complex_name] = row[src_name] - prev_val
+			elif change_method == 'percent':
+				row[complex_name] = (1.0*row[src_name]/prev_val - 1)*100
+			elif change_method == 'relative':
+				row[complex_name] = 1.0*row[src_name]/prev_val - 1
+			else:
+				raise Exception("Invalid change_method '%s'"%change_method)
+		queue.push(cur_date, row[src_name])
+		return row
 	return fill
 
 def fill_complex_mean_factory(complex_name, src_names, weights = None):
@@ -107,6 +103,21 @@ def fill_complex_financial_health(df):
 	df['financial_health'] = F_accrual + F_ROA + F_CFO + F_dROA + F_dmargin + F_dturn + F_dlever + F_dcurrent
 	
 	return df
+
+def fill_complex_resist_levels_factory():
+	prev_val = {'init':False}
+	def fill(row):
+		if prev_val['init']:
+			pivot = (prev_val['high'] + prev['low'] + prev['last_price'])/3.0
+			row['resist_level1'] = 2*pivot - prev_val['low']
+			row['resist_level2'] = pivot + prev_val['high'] - prev_val['low']
+			row['resist_level3'] = prev_val['high'] + 2*(pivot - prev_val['low'])
+		prev_val['init'] = row['init']
+		prev_val['high'] = row['high']
+		prev_val['low'] = row['low']
+		prev_val['last_price'] = row['last_price']
+		return row
+	return fill
 
 def lambda_with_nan(fun):
 	def new_fun(val):

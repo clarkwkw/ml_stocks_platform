@@ -54,7 +54,7 @@ def mysql_connection(host, database, username):
 def send_gmail(recepient, subject, body):
 	msg = MIMEText(body)
 	msg['Subject'] = subject+" (%s)"%(platform.node())
-	msg['From'] = gmail_address
+	msg['From'] = "ML Stocks Platform <%s>"%gmail_address
 	msg['To'] = recepient
 	mailserver = smtplib.SMTP_SSL(host = "smtp.gmail.com", port = 465)
 	mailserver.ehlo()
@@ -121,5 +121,3 @@ with open(email_json) as email_file:
 	email_table = json.load(email_file)
 	gmail_address = email_table["gmail_address"]
 	gmail_password = email_table["gmail_password"]
-
-
