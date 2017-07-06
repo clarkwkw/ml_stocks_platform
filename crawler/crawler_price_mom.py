@@ -14,6 +14,7 @@ database = 'finanai'
 username = 'finanai'
 raw_table = 'bloomberg_raw'
 out_folder = "./historical data"
+first_date = "1996-12-31"
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -71,7 +72,7 @@ def send_err_status():
 	body += "Error Message:\n"
 	for errmsg in errs:
 		body += "--------------------\n"
-		body += '> ' + '\n> '.join(errmsg.rstrip("\n").split("\n"))
+		body += '> ' + '\n> '.join(errmsg.rstrip("\n").split("\n")) + '\n'
 	utilities.send_gmail(email_status_dest, subject, body)
 
 def send_finish_msg():
@@ -80,7 +81,7 @@ def send_finish_msg():
 	utilities.send_gmail(email_status_dest, subject, body)
 
 mysql_conn = utilities.mysql_connection(host, database, username)
-end_dates = pandas.read_sql("SELECT DISTINCT date FROM %s ORDER BY date asc"%raw_table, mysql_conn, coerce_float = False, parse_dates = ["date"])["date"]
+end_dates = pandas.read_sql("SELECT DISTINCT date FROM %s WHERE date >= '%s' ORDER BY date asc"%(raw_table, first_date), mysql_conn, coerce_float = False, parse_dates = ["date"])["date"]
 
 email_thread = Thread(target = send_status_management)
 email_thread.start()
