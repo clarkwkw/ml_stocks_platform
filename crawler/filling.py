@@ -5,12 +5,12 @@ from utilities import print_status
 from filling_complex import *
 
 _fill_complex_funcs = [	
-						fill_complex_mean_factory("earning_mom_1m_mean_fy1_fy2", ["earning_mom_1m_fy1", "earning_mom_1m_fy2"]),
-						fill_complex_mean_factory("earning_mom_3m_mean_fy1_fy2", ["earning_mom_3m_fy1", "earning_mom_3m_fy2"]),
-						fill_complex_mean_factory("earning_mom_mean_1m_3m", ["earning_mom_1m_mean_fy1_fy2", "earning_mom_3m_mean_fy1_fy2"]),
-						fill_complex_earning_mom_3m_fy1_to_fy2,
-						fill_complex_financial_health
-					]
+	fill_complex_mean_factory("earning_mom_1m_mean_fy1_fy2", ["earning_mom_1m_fy1", "earning_mom_1m_fy2"]),
+	fill_complex_mean_factory("earning_mom_3m_mean_fy1_fy2", ["earning_mom_3m_fy1", "earning_mom_3m_fy2"]),
+	fill_complex_mean_factory("earning_mom_mean_1m_3m", ["earning_mom_1m_mean_fy1_fy2", "earning_mom_3m_mean_fy1_fy2"]),
+	fill_complex_earning_mom_3m_fy1_to_fy2,
+	fill_complex_financial_health
+]
 
 _fill_complex_vect_funcs = [
 	("accrual_bal_sheet", fill_complex_interval_change_factory("accrual_bal_sheet", "snapshot_accrual", 365, "absolute")),
@@ -35,8 +35,7 @@ def fill_complex(df):
 	for func in _fill_complex_funcs:
 		df = func(df)
 	for colname, func in _fill_complex_vect_funcs:
-		df[colname] = np.NAN
-		df = df.apply(func)
+		df = df.apply(func, axis = 1)
 	return df
 
 def fill_direct_prev(df, fields):

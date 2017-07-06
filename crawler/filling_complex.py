@@ -82,8 +82,11 @@ def fill_complex_financial_health(df):
 			df.loc[index,'leverage'] = leverage
 		except KeyError:
 			pass
-		yr_prev_date = queue.pop(cur_date)
-		queue.push(cur_date)
+		yr_prev_tup = queue.pop(cur_date)
+		yr_prev_date = None
+		if yr_prev_tup is not None:
+			yr_prev_date = yr_prev_tup[0]
+		queue.push(cur_date, None)
 		if yr_prev_date is not None:
 			yr_prev_row = df.loc[yr_prev_date]
 			df.loc[index, 'd_ROA'] = ROA - yr_prev_row['ROA']
