@@ -20,6 +20,7 @@ max_thread_no = 16
 
 direct_parsed_fields = utilities.direct_parsed_fields()
 indirect_parsed_fields = utilities.indirect_parsed_fields()
+complex_fields = utilities.complex_fields
 
 def new_parsed_df(ticker, dates, sector):
 	data = {}
@@ -27,9 +28,9 @@ def new_parsed_df(ticker, dates, sector):
 	data['date'] = dates
 	data['ticker'] = ticker
 	data['sector'] = sector
-	for field in direct_parsed_fields + indirect_parsed_fields:
+	for field in direct_parsed_fields + indirect_parsed_fields + complex_fields:
 		data[field] = np.NAN
-	df = pandas.DataFrame(data, index = dates, columns = id_fields + direct_parsed_fields + indirect_parsed_fields)
+	df = pandas.DataFrame(data, index = dates, columns = id_fields + direct_parsed_fields + indirect_parsed_fields + complex_fields)
 	return df
 
 def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only = True):

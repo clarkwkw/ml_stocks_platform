@@ -16,7 +16,14 @@
         "price_accel_3m",
         "price_accel_6m",
         "rec_1m_change",
-        "rec_3m_change"
+        "rec_3m_change",
+        "mom_3m",
+        "mom_1m",
+        "vol_change_3m",
+        "vol_change_1m",
+        "resist_level1",
+        "resist_level2",
+        "resist_level3"
     ],
     "direct_fields": {
         "account_receivable": {
