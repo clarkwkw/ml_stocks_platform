@@ -14,7 +14,7 @@ database = 'finanai'
 username = 'finanai'
 raw_table = 'bloomberg_raw'
 out_folder = "./historical data"
-first_date = "1996-03-20"
+first_date = "1996-03-28"
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -55,28 +55,31 @@ def price_mom(end_datetime, period, field_name, sector):
 		return -1
 
 def send_status_management():
-	def send_status():
-		global errs, sleep
-		subject = "Crawler Status Update"
-		if sleep:
-			body = "Status: Pending\n"
-		else:
-			body = "Status: Crawling\n"
-		body += "Sector: %s\nProgress: %d/%d\n"%(cur_sector, finished_date, total_date)
-		err_mutex.acquire()
-		if len(errs) > 0:
-			body += "Error Message:\n"
-			for errmsg in errs:
-				body += "--------------------\n"
-				body += '> ' + '\n> '.join(errmsg.rstrip("\n").split("\n")) + '\n'
-		errs = []
-		err_mutex.release()
-		utilities.send_gmail(email_status_dest, subject, body)
-	time.sleep(10)
-	schedule.every(email_status_freq).minutes.do(send_status).run()
-	while not True:
-		schedule.run_pending()
-		time.sleep(1)
+	try:
+		def send_status():
+			global errs, sleep
+			subject = "Crawler Status Update"
+			if sleep:
+				body = "Status: Pending\n"
+			else:
+				body = "Status: Crawling\n"
+			body += "Sector: %s\nProgress: %d/%d\n"%(cur_sector, finished_date, total_date)
+			err_mutex.acquire()
+			if len(errs) > 0:
+				body += "Error Message:\n"
+				for errmsg in errs:
+					body += "--------------------\n"
+					body += '> ' + '\n> '.join(errmsg.rstrip("\n").split("\n")) + '\n'
+			errs = []
+			err_mutex.release()
+			utilities.send_gmail(email_status_dest, subject, body)
+		time.sleep(10)
+		schedule.every(email_status_freq).minutes.do(send_status).run()
+		while not True:
+			schedule.run_pending()
+			time.sleep(1)
+	except Exception as e:
+		traceback.print_exc()
 
 def send_finish_msg():
 	subject = "Crawler Status Update"
