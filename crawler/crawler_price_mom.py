@@ -110,7 +110,7 @@ for sector in sectors:
 						sleep = True
 						print_status("Exception occured when crawling date %s, retry after 3 hrs."%end_date)
 			# In case of daily limit exceeded, retry after 3 hours
-			threading.Timer(3*60*60, retry_crawler)
+			threading.Timer(3*60*60, retry_crawler).start()
 			while sleep:
 				time.sleep(1)
 		print_status("Finished crawling %s on %s"%(sector, end_date))
