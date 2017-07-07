@@ -111,13 +111,13 @@ def fill_complex_resist_levels_factory():
 	prev_val = {'init':False}
 	def fill(row):
 		if prev_val['init']:
-			pivot = (prev_val['high'] + prev['low'] + prev['last_price'])/3.0
-			row['resist_level1'] = 2*pivot - prev_val['low']
-			row['resist_level2'] = pivot + prev_val['high'] - prev_val['low']
-			row['resist_level3'] = prev_val['high'] + 2*(pivot - prev_val['low'])
-		prev_val['init'] = row['init']
-		prev_val['high'] = row['high']
-		prev_val['low'] = row['low']
+			pivot = (prev_val['high_price'] + prev_val['low_price'] + prev_val['last_price'])/3.0
+			row['resist_level1'] = 2*pivot - prev_val['low_price']
+			row['resist_level2'] = pivot + prev_val['high_price'] - prev_val['low_price']
+			row['resist_level3'] = prev_val['high_price'] + 2*(pivot - prev_val['low_price'])
+		prev_val['init'] = True
+		prev_val['high_price'] = row['high_price']
+		prev_val['low_price'] = row['low_price']
 		prev_val['last_price'] = row['last_price']
 		return row
 	return fill
