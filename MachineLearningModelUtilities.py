@@ -7,7 +7,7 @@ from sklearn.externals import joblib
 @six.add_metaclass(abc.ABCMeta)
 class GenericMLModel(object):
 	@abc.abstractmethod
-	def __init__(self):
+	def __init__(self, **kwargs):
 		self._model = None
 		self._trained = False
 		self._colnames = None
@@ -50,13 +50,13 @@ class SimpleSVMModel(GenericMLModel):
 		if self._trained:
 			raise Exception("Model already trained.")
 		X, _, self._colnames = GenericMLModel.parse_raw_df(machine_learning_factors)
-		self._model.fit(X, labels)
+		self._model.fit(X, labels, **kwargs)
 		self._trained = True
 	def predict(self, machine_learning_factors, **kwargs):
 		if not self._trained:
 			raise Exception("Model not trained.")
 		X, dates, self._colnames = GenericMLModel.parse_raw_df(machine_learning_factors, self._colnames)
-		predictions = self._model.predict(X)
+		predictions = self._model.predict(X, **kwargs)
 		return prediction_to_df(dates, predictions)
 	def save(self, savefile):
 		if not self._trained:
