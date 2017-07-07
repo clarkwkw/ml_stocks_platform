@@ -289,6 +289,12 @@
             "raw_field": "IS_ADJUSTED_GROSS_PROFIT",
             "ml_db_keep": true
         },
+        "high_price": {
+            "enabled": true,
+            "freq": "daily",
+            "raw_field": "PX_HIGH",
+            "ml_db_keep": true
+        },
         "high_change_52w": {
             "enabled": true,
             "freq": "quarterly",
@@ -329,6 +335,12 @@
             "enabled": true,
             "freq": "quarterly",
             "raw_field": "TOT_DEBT_TO_TOT_EQY",
+            "ml_db_keep": true
+        },
+        "low_price": {
+            "enabled": true,
+            "freq": "daily",
+            "raw_field": "PX_LOW",
             "ml_db_keep": true
         },
         "lt_price_earnings_ratio": {
