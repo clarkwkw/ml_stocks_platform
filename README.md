@@ -1,7 +1,8 @@
 # Trading Portfolio Construction
 
 ## Dependencies (crawler module)
-- blpapi
+- blpapi (3.9.0)
+(can be installed by `conda install -c macinv blpapi` (64 bits only on python 2.7))
 - futures
 - mysql-connector (2.1.4)/ mysqldb
 - pandas (0.20.0+)
