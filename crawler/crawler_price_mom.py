@@ -6,7 +6,7 @@ import schedule
 import time
 from tia.bbg import LocalTerminal
 import traceback
-from threading import Thread
+import threading
 import utilities
 
 host = 'seis10.se.cuhk.edu.hk'
@@ -25,9 +25,9 @@ sectors = list(utilities.tickers_table.keys())
 
 print_status = utilities.print_status
 cur_sector = "INIT"
-exit_flag = False
 total_date = 0
 finished_date = 0
+sleep = False
 errs = []
 err_mutex = multiprocessing.Lock()
 
@@ -56,54 +56,63 @@ def price_mom(end_datetime, period, field_name, sector):
 
 def send_status_management():
 	def send_status():
+		global errs, sleep
 		subject = "Crawler Status Update"
-		body = "Crawling %s sector, progress: %d/%d."%(cur_sector, finished_date, total_date)
+		if sleep:
+			body = "Status: Pending\n"
+		else:
+			body = "Status: Crawling\n"
+		body += "Sector: %s\nProgress: %d/%d\n"%(cur_sector, finished_date, total_date)
+		err_mutex.acquire()
+		if len(errs) > 0:
+			body += "Error Message:\n"
+			for errmsg in errs:
+				body += "--------------------\n"
+				body += '> ' + '\n> '.join(errmsg.rstrip("\n").split("\n")) + '\n'
+		errs = []
+		err_mutex.release()
 		utilities.send_gmail(email_status_dest, subject, body)
 	time.sleep(10)
 	schedule.every(email_status_freq).minutes.do(send_status).run()
-	while not exit_flag:
+	while not True:
 		schedule.run_pending()
 		time.sleep(1)
-
-def send_err_status():
-	subject = "Crawler Status Update"
-	body = "Crawler is going to terminate, error(s) occured.\n"
-	body += "BTW, was crawling %s sector, progress: %d/%d.\n"%(cur_sector, finished_date, total_date)
-	body += "Error Message:\n"
-	for errmsg in errs:
-		body += "--------------------\n"
-		body += '> ' + '\n> '.join(errmsg.rstrip("\n").split("\n")) + '\n'
-	utilities.send_gmail(email_status_dest, subject, body)
 
 def send_finish_msg():
 	subject = "Crawler Status Update"
 	body = "Finished crawling, crawler is going to terminate."
 	utilities.send_gmail(email_status_dest, subject, body)
 
+def retry_crawler():
+	global sleep
+	sleep = False
+
 mysql_conn = utilities.mysql_connection(host, database, username)
 end_dates = pandas.read_sql("SELECT DISTINCT date FROM %s WHERE date >= '%s' ORDER BY date asc"%(raw_table, first_date), mysql_conn, coerce_float = False, parse_dates = ["date"])["date"]
 
-email_thread = Thread(target = send_status_management)
+email_thread = threading.Thread(target = send_status_management)
 email_thread.start()
 print_status("Crawling data...")
 for sector in sectors:
 	cur_sector = sector
 	total_date = len(end_dates)
 	for end_date in end_dates:
-		with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
-			futures = []
-			for period, field_name in periods:
-				futures.append(executor.submit(price_mom, end_date, period, field_name, sector))
-			for future in futures:
-				if future.result() != 0:
-					print_status("Exception occured when crawling date %s, abort."%end_date)
-					exit_flag = True
-			if exit_flag:
-				break
+		retry = True
+		while retry:
+			with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
+				futures = []
+				for period, field_name in periods:
+					futures.append(executor.submit(price_mom, end_date, period, field_name, sector))
+				retry = False
+				for future in futures:
+					if future.result() != 0:
+						retry = True
+						sleep = True
+						print_status("Exception occured when crawling date %s, retry after 3 hrs."%end_date)
+			# In case of daily limit exceeded, retry after 3 hours
+			threading.Timer(3*60*60, retry_crawler)
+			while sleep:
+				time.sleep(1)
 		print_status("Finished crawling %s on %s"%(sector, end_date))
 		finished_date += 1
-	if exit_flag:
-		send_err_status()
-		break
-if not exit_flag:
-	send_finish_msg()
+send_finish_msg()
