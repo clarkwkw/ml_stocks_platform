@@ -14,7 +14,7 @@ database = 'finanai'
 username = 'finanai'
 raw_table = 'bloomberg_raw'
 out_folder = "./historical data"
-first_date = "1996-03-28"
+first_date = "1996-06-11"
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -75,7 +75,7 @@ def send_status_management():
 			utilities.send_gmail(email_status_dest, subject, body)
 		time.sleep(10)
 		schedule.every(email_status_freq).minutes.do(send_status).run()
-		while not True:
+		while True:
 			schedule.run_pending()
 			time.sleep(1)
 	except Exception as e:
