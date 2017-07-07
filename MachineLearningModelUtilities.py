@@ -1,25 +1,31 @@
-from abc import ABCMeta, abstractmethod
+import abc, six
 import pandas
 import pickle
 from sklearn.svm import SVC
 from sklearn.externals import joblib
 
-class GenericMLModel(metaclass = ABCMeta):
-	@abstractmethod
-	def __init__(self, **kwargs):
-		pass
-	@abstractmethod
+@six.add_metaclass(abc.ABCMeta)
+class GenericMLModel(object):
+	@abc.abstractmethod
+	def __init__(self):
+		self._model = None
+		self._trained = False
+		self._colnames = None
+	@abc.abstractmethod
 	def train(self, machine_learning_factors, labels, **kwargs):
 		pass
-	@abstractmethod
+	@abc.abstractmethod
 	def predict(self, machine_learning_factors, **kwargs):
 		pass
-	@abstractmethod
+	@abc.abstractmethod
 	def save(self, savefile):
 		pass
-	@abstractmethod
+	@abc.abstractmethod
 	def load(self, savefile):
 		pass
+	@property
+	def trained(self):
+		return self._trained
 	def parse_raw_df(raw_df, colnames = None):
 		df = raw_df.drop(["date", "sector", "ticker", "record_id"], 1)
 		raw_colnames = list(df)
@@ -38,27 +44,26 @@ class GenericMLModel(metaclass = ABCMeta):
 
 class SimpleSVMModel(GenericMLModel):
 	def __init__(self, **kwargs):
-		self.model = SVC(kwargs)
-		self.trained = False
-		self.colnames = None
+		super(self.__class__, self).__init__()
+		self._model = SVC(kwargs)
 	def train(self, machine_learning_factors, labels, **kwargs):
-		if self.trained:
+		if self._trained:
 			raise Exception("Model already trained.")
-		X, _, self.colnames = GenericMLModel.parse_raw_df(machine_learning_factors)
-		self.model.fit(X, labels)
-		self.trained = True
+		X, _, self._colnames = GenericMLModel.parse_raw_df(machine_learning_factors)
+		self._model.fit(X, labels)
+		self._trained = True
 	def predict(self, machine_learning_factors, **kwargs):
-		if not self.trained:
+		if not self._trained:
 			raise Exception("Model not trained.")
-		X, dates, self.colnames = GenericMLModel.parse_raw_df(machine_learning_factors, self.colnames)
-		predictions = self.model.predict(X)
+		X, dates, self._colnames = GenericMLModel.parse_raw_df(machine_learning_factors, self._colnames)
+		predictions = self._model.predict(X)
 		return prediction_to_df(dates, predictions)
 	def save(self, savefile):
-		if not self.trained:
+		if not self._trained:
 			raise Exception("Model not trained.")
-		joblib.dump(self.model, savefile)
+		joblib.dump(self._model, savefile)
 	def load(self, savefile):
-		if self.trained:
+		if self._trained:
 			raise Exception("Model already trained.")
-		self.model = joblib.load(savefile)
-		self.trained = True
+		self._model = joblib.load(savefile)
+		self._trained = True
