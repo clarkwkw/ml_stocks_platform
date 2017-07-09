@@ -1,6 +1,8 @@
-import MachineLearningModelUtilities as MLUtil
+import sys, os
 import numpy as np
 import pandas
+sys.path.insert(1, os.path.join(sys.path[0], '..'))
+import MachineLearningModelUtilities as MLUtil
 
 data = {
 	'date': ['2016-12-01', '2016-12-02', '2016-12-03', '2016-12-04'], 

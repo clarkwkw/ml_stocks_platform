@@ -93,4 +93,4 @@ class SimpleNNModel(GenericMLModel):
 		if self._trained:
 			raise Exception("Model already trained.")
 		# todo: add loading code
-		se;f._trained = True
+		self._trained = True
