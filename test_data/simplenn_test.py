@@ -1,6 +1,7 @@
 import sys, os
 import numpy as np
 import pandas
+import random
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 import MachineLearningModelUtilities as MLUtil
 
@@ -50,12 +51,8 @@ def generate_data(n = 500):
 train_data, train_label = generate_data(n = 500)
 test_data, test_label = generate_data(n = 100)
 
-m1 = MLUtil.SimpleSVMModel()
-m1.train(train_data, train_label)
+model = MLUtil.SimpleNNModel(factors = ['x1', 'x2', 'x3'], hidden_nodes = [5, 3])
+model.train(train_data, train_label, adaptive = False, max_iter = 4000)
 
-m1.save('m1.save')
-
-m2 = MLUtil.SimpleSVMModel()
-m2.load('m1.save')
-prediction = m2.predict(test_data)
+prediction = model.predict(test_data)
 print("Accuracy: %.4f"%(np.mean(test_label == prediction['label'])))
