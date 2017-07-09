@@ -69,3 +69,28 @@ class SimpleSVMModel(GenericMLModel):
 			raise Exception("Model already trained.")
 		self._model = joblib.load(savefile)
 		self._trained = True
+
+class SimpleNNModel(GenericMLModel):
+	def __init__(self, **kwargs):
+		super(self.__class__, self).__init__()
+	def train(self, machine_learning_factors, labels, **kwargs):
+		if self._trained:
+			raise Exception("Model already trained.")
+		X, _, self._colnames = GenericMLModel.parse_raw_df(machine_learning_factors)
+		# todo: add training code
+		self._trained = True
+	def predict(self, machine_learning_factors, **kwargs):
+		if not self._trained:
+			raise Exception("Model not trained.")
+		X, dates, self._colnames = GenericMLModel.parse_raw_df(machine_learning_factors, self._colnames)
+		# todo: add prediction code
+		return GenericMLModel.prediction_to_df(dates, predictions)
+	def save(self, savefile):
+		if not self._trained:
+			raise Exception("Model not trained.")
+		# todo: add saving code
+	def load(self, savefile):
+		if self._trained:
+			raise Exception("Model already trained.")
+		# todo: add loading code
+		se;f._trained = True
