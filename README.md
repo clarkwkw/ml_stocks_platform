@@ -1,5 +1,11 @@
 # Trading Portfolio Construction
 
+## Dependencies (main module)
+- numpy
+- pandas (0.20.0+)
+- sklearn
+- tensorflow (1.0.1)
+
 ## Dependencies (crawler module)
 - blpapi (3.9.0)
 (can be installed by `conda install -c macinv blpapi` (64 bits only on python 2.7))
