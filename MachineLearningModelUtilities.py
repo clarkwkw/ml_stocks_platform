@@ -26,6 +26,7 @@ class GenericMLModel(object):
 	@property
 	def trained(self):
 		return self._trained
+	@staticmethod
 	def parse_raw_df(raw_df, colnames = None):
 		df = raw_df.drop(["date", "sector", "ticker", "record_id"], 1)
 		raw_colnames = list(df)
@@ -35,8 +36,9 @@ class GenericMLModel(object):
 		else:
 			colnames = raw_colnames
 		X = df.as_matrix(colnames)
-		dates = raw_df[['date']]
+		dates = raw_df['date'].as_matrix()
 		return (X, dates, colnames)
+	@staticmethod
 	def prediction_to_df(dates, predictions):
 		data = {'date': dates, 'label': predictions}
 		result = pandas.DataFrame(data, index = dates, columns = ['date', 'label'])
@@ -45,19 +47,19 @@ class GenericMLModel(object):
 class SimpleSVMModel(GenericMLModel):
 	def __init__(self, **kwargs):
 		super(self.__class__, self).__init__()
-		self._model = SVC(kwargs)
+		self._model = SVC(**kwargs)
 	def train(self, machine_learning_factors, labels, **kwargs):
 		if self._trained:
 			raise Exception("Model already trained.")
 		X, _, self._colnames = GenericMLModel.parse_raw_df(machine_learning_factors)
-		self._model.fit(X, labels, kwargs)
+		self._model.fit(X, labels, **kwargs)
 		self._trained = True
 	def predict(self, machine_learning_factors, **kwargs):
 		if not self._trained:
 			raise Exception("Model not trained.")
 		X, dates, self._colnames = GenericMLModel.parse_raw_df(machine_learning_factors, self._colnames)
-		predictions = self._model.predict(X, kwargs)
-		return prediction_to_df(dates, predictions)
+		predictions = self._model.predict(X, **kwargs)
+		return GenericMLModel.prediction_to_df(dates, predictions)
 	def save(self, savefile):
 		if not self._trained:
 			raise Exception("Model not trained.")
