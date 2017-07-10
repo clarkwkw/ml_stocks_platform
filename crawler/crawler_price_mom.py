@@ -14,7 +14,7 @@ database = 'finanai'
 username = 'finanai'
 raw_table = 'bloomberg_raw'
 out_folder = "./historical data"
-first_date = "1996-06-11"
+first_date = "1995-12-31"
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -30,16 +30,28 @@ finished_date = 0
 sleep = False
 errs = []
 err_mutex = multiprocessing.Lock()
+mysql_mutex = multiprocessing.Lock()
+exit_flag = False
 
-def price_mom(end_datetime, period, field_name, sector):
+def select_tickers(df_tickers, required_tickers):
+	result = []
+	for ticker in df_tickers['ticker']:
+		if ticker in required_tickers:
+			result.append(ticker)
+	return result
+
+def price_mom(end_datetime, period, field_name, sector, tickers_map):
 	try:
-		tickers = utilities.tickers_table[sector]
-
+		
 		delta = pandas.DateOffset(months = period)
 		start_datetime = end_datetime - delta
-		end_date = end_datetime.isoformat()[0:10]
-		start_date = start_datetime.isoformat()[0:10]
-		tmp_result = LocalTerminal.get_reference_data(tickers, 'CUST_TRR_RETURN_HOLDING_PER', CUST_TRR_START_DT=start_date, CUST_TRR_END_DT=end_date).as_map()
+		end_date = ''.join(end_datetime.isoformat()[0:10].split('-'))
+		start_date = ''.join(start_datetime.isoformat()[0:10].split('-'))
+		mysql_mutex.acquire()
+		valid_tickers = pandas.read_sql("SELECT DISTINCT ticker FROM %s WHERE sector = '%s' AND date = '%s';"%(raw_table, sector, end_datetime.isoformat()[0:10]),  mysql_conn, coerce_float = False)
+		mysql_mutex.release()
+		selected_tickers = select_tickers(valid_tickers, tickers_map)
+		tmp_result = LocalTerminal.get_reference_data(selected_tickers, 'CUST_TRR_RETURN_HOLDING_PER', CUST_TRR_START_DT=start_date, CUST_TRR_END_DT=end_date).as_map()
 		outfile = open(out_folder+"/%s-mom-%s.%s.csv"%(sector, end_date, period), "w")
 		utilities.write_row(outfile, "date", "ticker", "field", "value")
 		for ticker in tmp_result:
@@ -75,7 +87,7 @@ def send_status_management():
 			utilities.send_gmail(email_status_dest, subject, body)
 		time.sleep(10)
 		schedule.every(email_status_freq).minutes.do(send_status).run()
-		while True:
+		while not exit_flag:
 			schedule.run_pending()
 			time.sleep(1)
 	except Exception as e:
@@ -99,13 +111,16 @@ print_status("Crawling data...")
 for sector in sectors:
 	cur_sector = sector
 	total_date = len(end_dates)
+	tickers_map = {}
+	for ticker in utilities.tickers_table[sector]:
+		tickers_map[ticker] = True
 	for end_date in end_dates:
 		retry = True
 		while retry:
 			with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
 				futures = []
 				for period, field_name in periods:
-					futures.append(executor.submit(price_mom, end_date, period, field_name, sector))
+					futures.append(executor.submit(price_mom, end_date, period, field_name, sector, tickers_map))
 				retry = False
 				for future in futures:
 					if future.result() != 0:
@@ -120,3 +135,4 @@ for sector in sectors:
 		print_status("Finished crawling %s on %s"%(sector, end_date))
 		finished_date += 1
 send_finish_msg()
+exit_flag = True
