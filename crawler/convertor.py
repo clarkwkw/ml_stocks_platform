@@ -19,7 +19,7 @@ username = 'finanai'
 
 raw_table = 'US_bloomberg_factor'
 target_table = 'US_machine_learning_factor'
-max_thread_no = 16
+max_thread_no = 4
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -35,10 +35,10 @@ exit_flag = False
 direct_parsed_fields = utilities.direct_parsed_fields()
 indirect_parsed_fields = utilities.indirect_parsed_fields()
 complex_fields = utilities.complex_fields
+id_fields = ['date', 'ticker', 'sector']
 
 def new_parsed_df(ticker, dates, sector):
 	data = {}
-	id_fields = ['date', 'ticker', 'sector']
 	data['date'] = dates
 	data['ticker'] = ticker
 	data['sector'] = sector
@@ -68,7 +68,7 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only =
 		parsed_df = filling.fill_direct_prev(parsed_df, direct_parsed_fields)
 		parsed_df = filling.fill_indirect(parsed_df, utilities.indirect_fields_table)
 		parsed_df = filling.fill_complex(parsed_df)
-		parsed_df = parsed_df[utilities.ml_fields()]
+		parsed_df = parsed_df[id_fields+utilities.ml_fields()]
 		conn_mutex.acquire()
 		parsed_df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False, chunksize = 1000)
 		#parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
