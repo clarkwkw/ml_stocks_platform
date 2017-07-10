@@ -5,8 +5,8 @@ host = 'seis10.se.cuhk.edu.hk'
 database = 'finanai'
 username = 'finanai'
 
-target_table = 'bloomberg_raw'
-filelist = [('./historical data/Materials-Basic.csv', 'Materials')]
+target_table = 'US_bloomberg_factor'
+filelist = [('./historical data/Materials.csv', 'Materials'), ('./historical data/Energy.csv', 'Energy')]
 
 mysql_conn = mysql_connection(host, database, username)
 for (filepath, sector) in filelist:

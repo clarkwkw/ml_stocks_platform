@@ -12,7 +12,7 @@ import utilities
 host = 'seis10.se.cuhk.edu.hk'
 database = 'finanai'
 username = 'finanai'
-raw_table = 'bloomberg_raw'
+raw_table = 'US_bloomberg_factor'
 out_folder = "./historical data"
 first_date = "1996-06-11"
 

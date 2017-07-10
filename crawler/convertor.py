@@ -17,7 +17,7 @@ host = 'seis10.se.cuhk.edu.hk'
 database = 'finanai'
 username = 'finanai'
 
-raw_table = 'bloomberg_raw'
+raw_table = 'US_bloomberg_factor'
 target_table = 'US_machine_learning_factor'
 max_thread_no = 16
 
