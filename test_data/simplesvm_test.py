@@ -1,6 +1,7 @@
 import sys, os
 import numpy as np
 import pandas
+import random
 sys.path.insert(1, os.path.join(sys.path[0], '..'))
 import MachineLearningModelUtilities as MLUtil
 
@@ -55,7 +56,6 @@ m1.train(train_data, train_label)
 
 m1.save('m1.save')
 
-m2 = MLUtil.SimpleSVMModel()
-m2.load('m1.save')
+m2 = MLUtil.SimpleSVMModel.load('m1.save')
 prediction = m2.predict(test_data)
 print("Accuracy: %.4f"%(np.mean(test_label == prediction['label'])))

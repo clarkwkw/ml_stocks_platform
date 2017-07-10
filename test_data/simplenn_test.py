@@ -51,8 +51,20 @@ def generate_data(n = 500):
 train_data, train_label = generate_data(n = 500)
 test_data, test_label = generate_data(n = 100)
 
-model = MLUtil.SimpleNNModel(factors = ['x1', 'x2', 'x3'], hidden_nodes = [5, 3])
-model.train(train_data, train_label, adaptive = False, max_iter = 4000)
+m1 = MLUtil.SimpleNNModel(_factors = ['x1', 'x2', 'x3'])
+m1.train(train_data, train_label)
+prediction = m1.predict(test_data)
+print("M1(%s) Accuracy: %.4f"%(m1._scope_name, np.mean(test_label == prediction['label'])))
 
-prediction = model.predict(test_data)
-print("Accuracy: %.4f"%(np.mean(test_label == prediction['label'])))
+m2 = MLUtil.SimpleNNModel(_factors = ['x1', 'x2', 'x3'])
+m2.train(train_data, train_label, adapative = False, max_iter = 100)
+prediction = m2.predict(test_data)
+print("M2(%s) Accuracy: %.4f"%(m2._scope_name, np.mean(test_label == prediction['label'])))
+
+prediction = m1.predict(test_data)
+print("M1(%s) Accuracy: %.4f"%(m1._scope_name, np.mean(test_label == prediction['label'])))
+
+m1.save('./test_output')
+m3 = MLUtil.SimpleNNModel.load('./test_output')
+#prediction = m3.predict(test_data)
+#print("M3 Accuracy: %.4f"%(np.mean(test_label == prediction['label'])))
