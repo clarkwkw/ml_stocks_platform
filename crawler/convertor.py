@@ -82,6 +82,7 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only =
 		parsed_df = filling.fill_indirect(parsed_df, utilities.indirect_fields_table)
 		parsed_df = filling.fill_complex(parsed_df)
 		parsed_df = parsed_df[id_fields+utilities.ml_fields()]
+		parsed_df.replace([np.inf, -np.inf], np.nan, inplace = True)
 		conn_mutex.acquire()
 		parsed_df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False, chunksize = 100)
 		#parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
