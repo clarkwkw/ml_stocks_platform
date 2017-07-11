@@ -14,7 +14,7 @@ database = 'finanai'
 username = 'finanai'
 raw_table = 'US_bloomberg_factor'
 out_folder = "./historical data"
-first_date = "1998-04-30"
+first_date = "1996-03-02"
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -51,13 +51,16 @@ def price_mom(end_datetime, period, field_name, sector, tickers_map):
 		valid_tickers = pandas.read_sql("SELECT DISTINCT ticker FROM %s WHERE sector = '%s' AND date = '%s';"%(raw_table, sector, end_datetime.isoformat()[0:10]),  mysql_conn, coerce_float = False)
 		mysql_mutex.release()
 		selected_tickers = select_tickers(valid_tickers, tickers_map)
-		tmp_result = LocalTerminal.get_reference_data(selected_tickers, 'CUST_TRR_RETURN_HOLDING_PER', CUST_TRR_START_DT=start_date, CUST_TRR_END_DT=end_date).as_map()
-		outfile = open(out_folder+"/%s-mom-%s.%s.csv"%(sector, end_date, period), "w")
-		utilities.write_row(outfile, "date", "ticker", "field", "value")
-		for ticker in tmp_result:
-			if not pandas.isnull(tmp_result[ticker]['CUST_TRR_RETURN_HOLDING_PER']):
-				utilities.write_row(outfile, end_date, ticker, field_name, tmp_result[ticker]['CUST_TRR_RETURN_HOLDING_PER'])
-		outfile.close()
+		if len(selected_tickers) > 0:
+			tmp_result = LocalTerminal.get_reference_data(selected_tickers, 'CUST_TRR_RETURN_HOLDING_PER', CUST_TRR_START_DT=start_date, CUST_TRR_END_DT=end_date).as_map()
+			outfile = open(out_folder+"/%s-mom-%s.%s.csv"%(sector, end_date, period), "w")
+			utilities.write_row(outfile, "date", "ticker", "field", "value")
+			for ticker in tmp_result:
+				if not pandas.isnull(tmp_result[ticker]['CUST_TRR_RETURN_HOLDING_PER']):
+					utilities.write_row(outfile, end_date, ticker, field_name, tmp_result[ticker]['CUST_TRR_RETURN_HOLDING_PER'])
+			outfile.close()
+		else:
+			print_status("No ticker found on %s."%end_date)
 		return 0
 	except Exception as e:
 		traceback.print_exc()
