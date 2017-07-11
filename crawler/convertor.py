@@ -87,7 +87,7 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only =
 		#parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
 		conn_mutex.release()
 	except Exception as e:
-		traceback.print_exc()
+		print(traceback.format_exc())
 		err_mutex.acquire()
 		errs.append(traceback.format_exc())
 		err_tickers.append(ticker)
