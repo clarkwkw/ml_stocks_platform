@@ -23,14 +23,17 @@ def fill_complex_interval_change_factory(complex_name, src_name, interval, chang
 		prev_tup = queue.pop(cur_date)
 		if prev_tup is not None:
 			prev_val = prev_tup[1]
-			if change_method == 'absolute':
-				row[complex_name] = row[src_name] - prev_val
-			elif change_method == 'percent':
-				row[complex_name] = (1.0*row[src_name]/prev_val - 1)*100
-			elif change_method == 'relative':
-				row[complex_name] = 1.0*row[src_name]/prev_val - 1
-			else:
-				raise Exception("Invalid change_method '%s'"%change_method)
+			try:
+				if change_method == 'absolute':
+					row[complex_name] = row[src_name] - prev_val
+				elif change_method == 'percent':
+					row[complex_name] = (1.0*row[src_name]/prev_val - 1)*100
+				elif change_method == 'relative':
+					row[complex_name] = 1.0*row[src_name]/prev_val - 1
+				else:
+					raise Exception("Invalid change_method '%s'"%change_method)
+			except ZeroDivisionError:
+				row[complex_name] = np.NAN
 		queue.push(cur_date, row[src_name])
 		return row
 	return fill

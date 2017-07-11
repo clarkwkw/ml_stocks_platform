@@ -31,6 +31,7 @@ err_mutex = multiprocessing.Lock()
 tickers_count = 0
 finished_count = 0
 exit_flag = False
+status = "running"
 
 direct_parsed_fields = utilities.direct_parsed_fields()
 indirect_parsed_fields = utilities.indirect_parsed_fields()
@@ -94,30 +95,31 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only =
 		err_mutex.release()
 
 def send_status():
-	global errs
-	subject = "Uploader Status Update"
-	body = "Progress: %d/%d\n"%(finished_count, tickers_count)
-	if len(err_tickers):
-		body += "Error occured on these tickers:\n%s"%str(err_tickers)+"\n"
-	if len(errs) > 0:
-		err_mutex.acquire()
-		body += "Error Message of Last %d mins:\n"%email_status_freq
-		for errmsg in errs:
-			body += '> ' + '\n> '.join(errmsg.rstrip("\n").split("\n")) + '\n'
-			body += "--------------------\n"
-		errs = []
-		err_mutex.release()
-	utilities.send_gmail(email_status_dest, subject, body)
-
-def send_status_management():
 	try:
-		time.sleep(10)
-		schedule.every(email_status_freq).minutes.do(send_status).run()
-		while not exit_flag:
-			schedule.run_pending()
-			time.sleep(1)
+		global errs
+		subject = "Uploader Status Update"
+		body = "Status: %s\n"%status
+		body += "Progress: %d/%d\n"%(finished_count, tickers_count)
+		if len(err_tickers):
+			body += "Error occured on these tickers:\n%s"%str(err_tickers)+"\n"
+		if len(errs) > 0:
+			err_mutex.acquire()
+			body += "Error Message of Last %d mins:\n"%email_status_freq
+			for errmsg in errs:
+				body += '> ' + '\n> '.join(errmsg.rstrip("\n").split("\n")) + '\n'
+				body += "--------------------\n"
+			errs = []
+			err_mutex.release()
+		utilities.send_gmail(email_status_dest, subject, body)
 	except Exception as e:
 		traceback.print_exc()
+
+def send_status_management():
+	time.sleep(10)
+	schedule.every(email_status_freq).minutes.do(send_status).run()
+	while not exit_flag:
+		schedule.run_pending()
+		time.sleep(1)
 
 def send_finish_msg():
 	subject = "Uploader Status Update"
@@ -143,6 +145,19 @@ if __name__ == '__main__':
 			futures.append(executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn))
 		for _ in tqdm(as_completed(futures)):
 			finished_count += 1
+	
+	while len(err_tickers) > 0:
+		futures = []
+		err_tickers_cpy = err_tickers
+		err_tickers = []
+		status = "retrying"
+		tickers_count = len(err_tickers_cpy)
+		finished_count = 0
+		with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
+			for ticker in err_tickers_cpy:
+				futures.append(executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn))
+			for _ in tqdm(as_completed(futures)):
+				finished_count += 1
 print_status("Done.")
 exit_flag = True
 send_finish_msg()

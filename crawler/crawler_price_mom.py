@@ -14,7 +14,7 @@ database = 'finanai'
 username = 'finanai'
 raw_table = 'US_bloomberg_factor'
 out_folder = "./historical data"
-first_date = "1995-12-31"
+first_date = "1998-04-30"
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -67,9 +67,9 @@ def price_mom(end_datetime, period, field_name, sector, tickers_map):
 		return -1
 
 def send_status_management():
-	try:
-		def send_status():
-			global errs, sleep
+	def send_status():
+		global errs, sleep
+		try:
 			subject = "Crawler Status Update"
 			if sleep:
 				body = "Status: Pending\n"
@@ -85,14 +85,15 @@ def send_status_management():
 			errs = []
 			err_mutex.release()
 			utilities.send_gmail(email_status_dest, subject, body)
-		time.sleep(10)
-		schedule.every(email_status_freq).minutes.do(send_status).run()
-		while not exit_flag:
-			schedule.run_pending()
-			time.sleep(1)
-	except Exception as e:
-		traceback.print_exc()
+		except Exception as e:
+			traceback.print_exc()
 
+	time.sleep(10)
+	schedule.every(email_status_freq).minutes.do(send_status).run()
+	while not exit_flag:
+		schedule.run_pending()
+		time.sleep(1)
+	
 def send_finish_msg():
 	subject = "Crawler Status Update"
 	body = "Finished crawling, crawler is going to terminate."
