@@ -110,20 +110,20 @@ class SimpleSVMModel(GenericMLModel):
 		predictions = self._model.predict(parsed_matrix, **kwargs)
 		return prediction_to_df(dates, predictions)
 
-	def save(self, savepath):
+	def save(self, savedir):
 		if not self._trained:
 			raise Exception("Model not trained.")
-		joblib.dump(self._model, savepath+'/simplesvm.model')
+		joblib.dump(self._model, savedir+'/simplesvm.model')
 		json_dict = {'_factors': self._factors}
-		with open(savepath+'/simplesvm.conf', "w") as f:
+		with open(savedir+'/simplesvm.conf', "w") as f:
 			json.dump(json_dict, f)
 
 	@staticmethod
-	def load(savepath):
-		with open(savepath+"/simplesvm.conf", "r") as f:
+	def load(savedir):
+		with open(savedir+"/simplesvm.conf", "r") as f:
 			json_dict = json.load(f)
 		model = SimpleSVMModel(**json_dict)
-		model._model = joblib.load(savepath+"/simplesvm.model")
+		model._model = joblib.load(savedir+"/simplesvm.model")
 		model._trained = True
 		return model
 
@@ -208,22 +208,22 @@ class SimpleNNModel(GenericMLModel):
 				tmp_result = tf.nn.sigmoid(tmp_result)
 		return tmp_result
 
-	def save(self, savepath):
+	def save(self, savedir):
 		if not self._trained:
 			raise Exception("Model not trained.")
 		with self._graph.as_default() as g:
 			saver = tf.train.Saver()
-			save_path = saver.save(self._sess, save_path = savepath+'/simplenn.ckpt')
+			save_path = saver.save(self._sess, save_path = savedir+'/simplenn.ckpt')
 		tf.reset_default_graph()
 		json_dict = {'_factors': self._factors, '_hidden_nodes': self._hidden_nodes}
-		with open(savepath+'/simplenn.conf', "w") as f:
+		with open(savedir+'/simplenn.conf', "w") as f:
 			json.dump(json_dict, f)
 		
 	@staticmethod
-	def load(savepath):
-		with open(savepath+"/simplenn.conf", "r") as f:
+	def load(savedir):
+		with open(savedir+"/simplenn.conf", "r") as f:
 			json_dict = json.load(f)
-		model = SimpleNNModel(from_save = savepath, **json_dict)
+		model = SimpleNNModel(from_save = savedir, **json_dict)
 		model._trained = True
 		return model
 
