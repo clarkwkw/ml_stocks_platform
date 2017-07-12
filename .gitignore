@@ -1,4 +1,4 @@
 crawler/historical data
-crawler/tickers
 *.pyc
 *.csv
+.DS_Store
