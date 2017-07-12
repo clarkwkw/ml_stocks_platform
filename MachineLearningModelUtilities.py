@@ -128,78 +128,93 @@ class SimpleSVMModel(GenericMLModel):
 		return model
 
 class SimpleNNModel(GenericMLModel):
-	def __init__(self, _factors = None, _hidden_nodes = [], _learning_rate = 0.001, **kwargs):
+	def __init__(self, _factors = None, _hidden_nodes = [], _learning_rate = 0.001, from_save = None, **kwargs):
 		super(self.__class__, self).__init__(_factors)
 		self._hidden_nodes = _hidden_nodes
 		self._weights = []
-		self._biases = []
-		self._sess = None
+		self._biases = []		
 		self._learning_rate = 0.001
-		self._scope_name = tf_scope_manager.register()
-		with tf.variable_scope(self._scope_name) as scope:
-			n_last_layer = len(self._factors)
-			n_next_layer = 0
-			for i in range(0, len(_hidden_nodes) + 1):
-				if i >= len(_hidden_nodes):
-					n_next_layer = 2
-				else:
-					n_next_layer = _hidden_nodes[i]
-				self._weights.append(tf.get_variable("w_"+str(i), initializer = tf.random_normal([n_last_layer, n_next_layer])))
-				self._biases.append(tf.get_variable("b_"+str(i), initializer = tf.random_normal([n_next_layer])))
-				if i < len(_hidden_nodes):
-					n_last_layer = _hidden_nodes[i]
-			self._X = tf.placeholder(tf.float32, [None, len(self._factors)])
-			self._y = tf.placeholder(tf.float32, [None, 2])
-			self._pred = self.__network(self._X)
-			self._cost = cal_cross_entropy(self._pred, self._y)
-			self._optimizer = tf.train.AdamOptimizer(self._learning_rate).minimize(self._cost)
-			init = tf.global_variables_initializer()
-			self._sess = tf.Session(config=tf.ConfigProto(intra_op_parallelism_threads = _multi_thread))
-			self._sess.run(init)	
-		
+		self._graph = tf.Graph()
+		self._sess = tf.Session(graph = self._graph, config=tf.ConfigProto(intra_op_parallelism_threads = _multi_thread))
+		with self._graph.as_default() as g:
+			if from_save is None:
+				n_last_layer = len(self._factors)
+				n_next_layer = 0
+				for i in range(0, len(_hidden_nodes) + 1):
+					if i >= len(_hidden_nodes):
+						n_next_layer = 2
+					else:
+						n_next_layer = _hidden_nodes[i]
+					self._weights.append(tf.get_variable("w_"+str(i), initializer = tf.random_normal([n_last_layer, n_next_layer])))
+					self._biases.append(tf.get_variable("b_"+str(i), initializer = tf.random_normal([n_next_layer])))
+					if i < len(_hidden_nodes):
+						n_last_layer = _hidden_nodes[i]
+				self._X = tf.placeholder(tf.float32, [None, len(self._factors)], name = "X")
+				self._y = tf.placeholder(tf.float32, [None, 2], name = "y")
+				self._pred = self.__network(self._X)
+				tf.add_to_collection("pred", self._pred)
+				self._cost = cal_cross_entropy(self._pred, self._y)
+				self._optimizer = tf.train.AdamOptimizer(self._learning_rate).minimize(self._cost)
+				init = tf.global_variables_initializer()
+				self._sess.run(init)	
+			else:
+				saver = tf.train.import_meta_graph(from_save+'/simplenn.ckpt.meta')
+				saver.restore(self._sess, from_save+'/simplenn.ckpt')
+				self._X = g.get_tensor_by_name("X:0")
+				self._y = g.get_tensor_by_name("y:0")
+				self._pred =  tf.get_collection("pred")[0]
+		tf.reset_default_graph()
+
 	def train(self, machine_learning_factors, labels, learning_rate = 0.001, adaptive = True, step = 300, max_iter = 10000, **kwargs):
 		if self._trained:
 			raise Exception("Model already trained.")
 		parsed_matrix, _ = self._parse_raw_df(machine_learning_factors)
-		
-		if adaptive:
-			train_X, train_y, valid_X, valid_y = split_dataset(parsed_matrix, labels)
-			valid_y = label_to_dist(valid_y)
-			valid_y = tf.constant(valid_y)
-			decider = Train_decider()
-		else:
-			train_X, train_y = parsed_matrix, labels
-		train_y = label_to_dist(train_y)
-		for i in range(max_iter):
-			_, train_cost = self._sess.run([self._optimizer, self._cost], feed_dict = {self._X: train_X, self._y: train_y})
-			if adaptive and (i+1)%step == 0:
-				valid_predict = self._pred.eval(feed_dict = {self._X: valid_X}, session = self._sess)
-				valid_cost = cal_cross_entropy(valid_predict, valid_y).eval(session = self._sess)
-				#print("Epoch %5d: %.4f"%(i+1, valid_cost))
-				if decider.update(valid_cost) == False:
-					break
+		with self._graph.as_default() as g:
+			if adaptive:
+				train_X, train_y, valid_X, valid_y = split_dataset(parsed_matrix, labels)
+				valid_y = label_to_dist(valid_y)
+				valid_y = tf.constant(valid_y)
+				decider = Train_decider()
+			else:
+				train_X, train_y = parsed_matrix, labels
+			train_y = label_to_dist(train_y)
+			for i in range(max_iter):
+				_, train_cost = self._sess.run([self._optimizer, self._cost], feed_dict = {self._X: train_X, self._y: train_y})
+				if adaptive and (i+1)%step == 0:
+					valid_predict = self._pred.eval(feed_dict = {self._X: valid_X}, session = self._sess)
+					valid_cost = cal_cross_entropy(valid_predict, valid_y).eval(session = self._sess)
+					#print("Epoch %5d: %.4f"%(i+1, valid_cost))
+					if decider.update(valid_cost) == False:
+						break
+		tf.reset_default_graph()
 		self._trained = True
 
 	def predict(self, machine_learning_factors, **kwargs):
 		if not self._trained:
 			raise Exception("Model not trained.")
 		parsed_matrix, dates = self._parse_raw_df(machine_learning_factors)
-		tmp_result = self._pred.eval(feed_dict = {self._X: parsed_matrix}, session = self._sess)
-		tmp_result = dist_to_label(tmp_result)
+		with self._graph.as_default() as g:
+			tmp_result = self._sess.run(self._pred, feed_dict = {self._X: parsed_matrix})
+			#tmp_result = self._pred.eval(feed_dict = {self._X: parsed_matrix}, session = self._sess)
+			tmp_result = dist_to_label(tmp_result)
+		tf.reset_default_graph()
 		return prediction_to_df(dates, tmp_result)
 
 	def __network(self, X):
-			tmp_result = X
-			for i in range(len(self._hidden_nodes) + 1):
-				tmp_result = tf.add(tf.matmul(tmp_result, self._weights[i]), self._biases[i])
-				if i < len(self._hidden_nodes):
-					tmp_result = tf.nn.sigmoid(tmp_result)
-			return tmp_result
+		tmp_result = X
+		for i in range(len(self._hidden_nodes) + 1):
+			tmp_result = tf.add(tf.matmul(tmp_result, self._weights[i]), self._biases[i])
+			if i < len(self._hidden_nodes):
+				tmp_result = tf.nn.sigmoid(tmp_result)
+		return tmp_result
 
 	def save(self, savepath):
 		if not self._trained:
 			raise Exception("Model not trained.")
-		tf.train.export_meta_graph(savepath+"/simplenn.model", export_scope = self._scope_name)
+		with self._graph.as_default() as g:
+			saver = tf.train.Saver()
+			save_path = saver.save(self._sess, save_path = savepath+'/simplenn.ckpt')
+		tf.reset_default_graph()
 		json_dict = {'_factors': self._factors, '_hidden_nodes': self._hidden_nodes}
 		with open(savepath+'/simplenn.conf', "w") as f:
 			json.dump(json_dict, f)
@@ -208,8 +223,7 @@ class SimpleNNModel(GenericMLModel):
 	def load(savepath):
 		with open(savepath+"/simplenn.conf", "r") as f:
 			json_dict = json.load(f)
-		model = SimpleNNModel(**json_dict)
-		tf.train.import_meta_graph(savepath+"/simplenn.model", import_scope = model._scope_name)
+		model = SimpleNNModel(from_save = savepath, **json_dict)
 		model._trained = True
 		return model
 
@@ -240,19 +254,3 @@ class Train_decider:
 
 	def cont(self):
 		return self.cont
-
-class TFScopeManager:
-	def __init__(self):
-		self.scopes = {}
-
-	def register(self):
-		name = self.__random_name()
-		while name in self.scopes:
-			name = self.__random_name()
-		self.scopes[name] = True
-		return name
-
-	def __random_name(self, name_length = 6, chars = string.ascii_uppercase + string.digits):
-		return ''.join(random.choice(chars) for _ in range(name_length))
-
-tf_scope_manager = TFScopeManager()

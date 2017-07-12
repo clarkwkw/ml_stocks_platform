@@ -45,7 +45,7 @@ def generate_data(n = 500):
 	labels = np.asarray(labels)
 	data = pandas.DataFrame(data)
 	zeros = np.sum(labels == 0)
-	print('0: %d, 1: %d'%(zeros, n - zeros))
+	print('Distribution: 0: %d, 1: %d'%(zeros, n - zeros))
 	return data, labels
 
 train_data, train_label = generate_data(n = 500)
@@ -54,8 +54,8 @@ test_data, test_label = generate_data(n = 100)
 m1 = MLUtil.SimpleSVMModel()
 m1.train(train_data, train_label)
 
-m1.save('m1.save')
+m1.save('test_output')
 
-m2 = MLUtil.SimpleSVMModel.load('m1.save')
+m2 = MLUtil.SimpleSVMModel.load('test_output')
 prediction = m2.predict(test_data)
 print("Accuracy: %.4f"%(np.mean(test_label == prediction['label'])))
