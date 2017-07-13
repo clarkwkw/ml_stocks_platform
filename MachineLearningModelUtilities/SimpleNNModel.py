@@ -46,7 +46,7 @@ class SimpleNNModel(GenericMLModel):
 				self._pred =  tf.get_collection("pred")[0]
 		tf.reset_default_graph()
 
-	def train(self, machine_learning_factors, labels, learning_rate = 0.001, adaptive = True, step = 300, max_iter = 10000, **kwargs):
+	def train(self, machine_learning_factors, labels, adaptive = True, step = 300, max_iter = 10000, **kwargs):
 		if self._trained:
 			raise Exception("Model already trained.")
 		parsed_matrix, _ = self._parse_raw_df(machine_learning_factors)
@@ -76,7 +76,6 @@ class SimpleNNModel(GenericMLModel):
 		parsed_matrix, dates = self._parse_raw_df(machine_learning_factors)
 		with self._graph.as_default() as g:
 			tmp_result = self._sess.run(self._pred, feed_dict = {self._X: parsed_matrix})
-			#tmp_result = self._pred.eval(feed_dict = {self._X: parsed_matrix}, session = self._sess)
 			tmp_result = dist_to_label(tmp_result)
 		tf.reset_default_graph()
 		return prediction_to_df(dates, tmp_result)
