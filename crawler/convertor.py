@@ -20,7 +20,7 @@ username = 'finanai'
 raw_table = 'US_bloomberg_factor'
 target_table = 'US_machine_learning_factor'
 last_date = "2016-12-31"
-max_thread_no = 4
+max_thread_no = 2
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -69,7 +69,7 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only =
 			fields_str = ""
 		sql_query = "SELECT date, field, value FROM %s WHERE ticker = '%s' %s ORDER BY date asc;"%(raw_table, ticker, fields_str)
 		conn_mutex.acquire()
-		raw_df = pandas.read_sql(sql_query, mysql_conn, coerce_float = False, parse_dates = ["date"])
+		raw_df = pandas.read_sql(sql_query, mysql_conn, coerce_float = False, parse_dates = ["date"], chunksize = 500)
 		conn_mutex.release()
 		parsed_df = new_parsed_df(ticker, raw_df.date.unique(), sector)
 		for index, row in raw_df.iterrows():
@@ -97,7 +97,7 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only =
 def send_status():
 	try:
 		global errs
-		subject = "Uploader Status Update"
+		subject = "Convertor Status Update"
 		body = "Status: %s\n"%status
 		body += "Progress: %d/%d\n"%(finished_count, tickers_count)
 		if len(err_tickers):
@@ -134,7 +134,7 @@ if __name__ == '__main__':
 	tickers_to_crawl = []
 	for sector in utilities.tickers_table:
 		tickers_to_crawl.extend(utilities.tickers_table[sector])
-	old_tickers = pandas.read_sql("SELECT ticker from %s WHERE date = '%s';"%(target_table, last_date), mysql_conn, coerce_float = False)['ticker']
+	old_tickers = pandas.read_sql("SELECT DISTINCT ticker from %s;"%(target_table), mysql_conn, coerce_float = False)['ticker']
 	tickers_to_crawl = select_tickers(old_tickers, tickers_to_crawl)
 	tickers_count = len(tickers_to_crawl)
 
