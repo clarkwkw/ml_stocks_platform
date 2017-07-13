@@ -34,3 +34,14 @@ def dist_to_label(dists):
 		else:
 			labels.append(1)
 	return np.asarray(labels)
+
+def import_custom_module(customized_module_name, customized_module_dir):
+	file, filename, desc = imp.find_module(customized_module_name, path = customized_module_dir)
+	custom_module = imp.load_module(customized_module_name, file, filename, desc)
+	return custom_module
+
+def get_factors_from_df(df):
+	factors = list(df)
+	for id_field in id_fields:
+		if id_field in factors:
+			factors.remove(id_field)
