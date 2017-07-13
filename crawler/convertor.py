@@ -142,7 +142,11 @@ if __name__ == '__main__':
 	futures = []
 	with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
 		for ticker in tickers_to_crawl:
-			futures.append(executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn))
+			corr_sector = None
+			for sector in utilities.tickers_table:
+				if sector in utilities.tickers_table[sector]:
+					corr_sector = sector
+			futures.append(executor.submit(fill_by_ticker_and_save, ticker, corr_sector, mysql_conn))
 		for _ in tqdm(as_completed(futures)):
 			finished_count += 1
 	
@@ -155,7 +159,11 @@ if __name__ == '__main__':
 		finished_count = 0
 		with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
 			for ticker in err_tickers_cpy:
-				futures.append(executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn))
+				corr_sector = None
+				for sector in utilities.tickers_table:
+					if sector in utilities.tickers_table[sector]:
+						corr_sector = sector
+				futures.append(executor.submit(fill_by_ticker_and_save, ticker, corr_sector, mysql_conn))
 			for _ in tqdm(as_completed(futures)):
 				finished_count += 1
 print_status("Done.")
