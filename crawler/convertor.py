@@ -134,7 +134,7 @@ if __name__ == '__main__':
 	tickers_to_crawl = []
 	for sector in utilities.tickers_table:
 		tickers_to_crawl.extend(utilities.tickers_table[sector])
-	old_tickers = pandas.read_sql("SELECT ticker from %s WHERE date = '%s';"%(target_table, last_date), mysql_conn, coerce_float = False)['ticker']
+	old_tickers = pandas.read_sql("SELECT DISTINCT ticker from %s;"%(target_table), mysql_conn, coerce_float = False)['ticker']
 	tickers_to_crawl = select_tickers(old_tickers, tickers_to_crawl)
 	tickers_count = len(tickers_to_crawl)
 
