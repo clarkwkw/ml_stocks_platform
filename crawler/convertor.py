@@ -69,9 +69,9 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only =
 			fields_str = ""
 		sql_query = "SELECT date, field, value FROM %s WHERE ticker = '%s' %s ORDER BY date asc;"%(raw_table, ticker, fields_str)
 		conn_mutex.acquire()
-		raw_df = pandas.read_sql(sql_query, mysql_conn, coerce_float = False, parse_dates = ["date"], chunksize = 500)
+		raw_df = pandas.read_sql(sql_query, mysql_conn, coerce_float = False, parse_dates = ["date"])
 		conn_mutex.release()
-		parsed_df = new_parsed_df(ticker, raw_df.date.unique(), sector)
+		parsed_df = new_parsed_df(ticker, raw_df['date'].unique(), sector)
 		for index, row in raw_df.iterrows():
 			date = row['date']
 			field = row['field']
