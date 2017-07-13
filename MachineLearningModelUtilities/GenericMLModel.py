@@ -1,4 +1,5 @@
 import abc, six
+from MLUtils import id_fields
 
 @six.add_metaclass(abc.ABCMeta)
 class GenericMLModel(object):
@@ -30,7 +31,7 @@ class GenericMLModel(object):
 		return self._trained
 
 	def _parse_raw_df(self, raw_df):
-		df = raw_df.drop(["date", "sector", "ticker", "record_id"], 1)
+		df = raw_df.drop(id_fields, 1)
 		raw_factors = list(df)
 		if self._factors is not None:
 			if len(raw_factors) != len(self._factors):

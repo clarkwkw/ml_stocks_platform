@@ -3,6 +3,7 @@ import numpy as np
 import pandas
 import random
 
+id_fields = ["date", "sector", "ticker", "record_id"]
 def split_dataset(X, y, valid_portion = 0.2):
 	if valid_portion > 1 or valid_portion < 0:
 		raise Exception("portion for the validation set should be between 0 and 1.")
