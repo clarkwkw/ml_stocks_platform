@@ -13,9 +13,8 @@ def split_dataset(X, y, valid_portion = 0.2):
 	valid_indices = indices[0:int(valid_portion*n_sample)]
 	return X[train_indices, ], y[train_indices], X[valid_indices, ], y[valid_indices]
 
-def prediction_to_df(dates, predictions):
-	data = {'date': dates, 'label': predictions}
-	result = pandas.DataFrame(data, index = dates, columns = ['date', 'label'])
+def prediction_to_df(id_frame, predictions):
+	result = pandas.concat([id_frame, pandas.DataFrame({"target": predictions})], axis = 1)
 	return result
 
 def label_to_dist(labels):
@@ -45,3 +44,8 @@ def get_factors_from_df(df):
 	for id_field in id_fields:
 		if id_field in factors:
 			factors.remove(id_field)
+
+def seperate_factors_target(df):
+	target = df['target'].as_matrix()
+	factors = df.drop(['target', 'return'], 1)
+	return factors, target

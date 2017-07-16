@@ -58,4 +58,4 @@ def test():
 
 	m2 = MLUtil.SimpleSVMModel.load('test_output')
 	prediction = m2.predict(test_data)
-	print("Accuracy: %.4f"%(np.mean(test_label == prediction['label'])))
+	print("Accuracy: %.4f"%(np.mean(test_label == prediction['target'])))

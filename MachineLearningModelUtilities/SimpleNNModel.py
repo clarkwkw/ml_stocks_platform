@@ -73,12 +73,12 @@ class SimpleNNModel(GenericMLModel):
 	def predict(self, machine_learning_factors, **kwargs):
 		if not self._trained:
 			raise Exception("Model not trained.")
-		parsed_matrix, dates = self._parse_raw_df(machine_learning_factors)
+		parsed_matrix, id_frame = self._parse_raw_df(machine_learning_factors)
 		with self._graph.as_default() as g:
 			tmp_result = self._sess.run(self._pred, feed_dict = {self._X: parsed_matrix})
 			tmp_result = dist_to_label(tmp_result)
 		tf.reset_default_graph()
-		return prediction_to_df(dates, tmp_result)
+		return prediction_to_df(id_frame, tmp_result)
 
 	def __network(self, X):
 		tmp_result = X

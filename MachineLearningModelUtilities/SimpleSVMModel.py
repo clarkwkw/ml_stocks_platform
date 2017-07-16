@@ -19,9 +19,9 @@ class SimpleSVMModel(GenericMLModel):
 	def predict(self, machine_learning_factors, **kwargs):
 		if not self._trained:
 			raise Exception("Model not trained.")
-		parsed_matrix, dates = self._parse_raw_df(machine_learning_factors)
+		parsed_matrix, id_frame = self._parse_raw_df(machine_learning_factors)
 		predictions = self._model.predict(parsed_matrix, **kwargs)
-		return prediction_to_df(dates, predictions)
+		return prediction_to_df(id_frame, predictions)
 
 	def save(self, savedir):
 		if not self._trained:
