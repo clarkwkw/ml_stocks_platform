@@ -65,5 +65,40 @@ def evaluateModel(trained_model, valid_data, trading_stock_quantity, para_tune_h
 
 	return calculateQuality(valid_data, pred_target, trading_stock_quantity, para_tune_holding_flag)
 
-def calculateQuality(valid_data, pred_target, trading_stock_quantity, para_tune_holding_flag):
-	
+def calculateQuality(valid_data, pred_target, trading_stock_quantity, para_tune_holding_flag, alpha = 0.5):
+	df_analysis = pandas.concat([pred_target, valid_data['return']], axis = 1)
+	intra_day_quality = df_analysis.group_by('date').apply(__intraday_quality, para_tune_holding_flag, trading_stock_quantity)
+	overall_quality = intra_day_quality[0]
+	for i in range(1, len(intra_day_quality)):
+		overall_quality = alpha*overall_quality + (1-alpha) * intra_day_quality[i]
+	return quality
+
+def __intraday_quality(df, para_tune_holding_flag, n):
+	tickers_list = []
+	avg_return = 0
+	for ticker in df['ticker'].unique():
+		tickers_list.append((df[df[ticker] == ticker, 'return'], df[df[ticker] == ticker, 'target'] ))
+	t = len(tickers_list)
+	if para_tune_holding_flag == 'long':
+		t -= n
+	elif para_tune_holding_flag == 'short':
+		t -= n
+	elif para_tune_holding_flag == 'long_short':
+		t -= 2*n
+	else:
+		raise Exception("Unexpected para_tune_holding_flag '%s'"%str(para_tune_holding_flag))
+	if t < 0:
+		raise Exception("Insufficient no. of stock to evaluate on %s"%(df['date'].unique()[0]))
+
+	# sort by target
+	tickers_list = sorted(tickers_list, key = lambda x: x[1], reverse = True)
+	for i in range(n):
+		# short stock with high target
+		if para_tune_holding_flag == 'long' or para_tune_holding_flag == 'long_short':
+			avg_return += 1.0/(2*n)*tickers_list[i][0]
+		# long stock with low target
+		if para_tune_holding_flag == 'short' or para_tune_holding_flag == 'long_short':
+			avg_return -= 1.0/(2*n)*tickers_list[n-i-1][0]
+
+	return avg_return
+
