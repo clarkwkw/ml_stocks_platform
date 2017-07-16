@@ -93,12 +93,11 @@ def __intraday_quality(df, para_tune_holding_flag, n):
 	# sort by target
 	tickers_list = sorted(tickers_list, key = lambda x: x[1], reverse = True)
 	for i in range(n):
-		# short stock with high target
+		# long stock with high target
 		if para_tune_holding_flag == 'long' or para_tune_holding_flag == 'long_short':
 			avg_return += 1.0/(2*n)*tickers_list[i][0]
-		# long stock with low target
+		# short stock with low target
 		if para_tune_holding_flag == 'short' or para_tune_holding_flag == 'long_short':
 			avg_return -= 1.0/(2*n)*tickers_list[n-i-1][0]
 
 	return avg_return
-
