@@ -1,7 +1,9 @@
 import json
 import pandas
 import platform
+import random
 import smtplib
+import string
 from email.mime.text import MIMEText
 import getpass
 try:
@@ -110,6 +112,9 @@ def ml_fields():
 	direct_ml_fields = [field for field in direct_fields_table if direct_fields_table[field]['enabled'] and direct_fields_table[field]['ml_db_keep']]
 	return direct_ml_fields + indirect_parsed_fields() + complex_fields
 
+def rand_str(length):
+	return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
+	
 with open(tickers_json) as tickers_file:
 	tickers_table = json.load(tickers_file)
 with open(fields_json) as fields_file:
