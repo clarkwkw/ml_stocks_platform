@@ -31,6 +31,7 @@ class GenericMLModel(object):
 		return self._trained
 
 	def _parse_raw_df(self, raw_df):
+		id_frame = raw_df[id_fields]
 		df = raw_df.drop(id_fields, 1)
 		raw_factors = list(df)
 		if self._factors is not None:
@@ -39,5 +40,4 @@ class GenericMLModel(object):
 		else:
 			self._factors = raw_factors
 		parsed_matrix = df.as_matrix(self._factors)
-		dates = raw_df['date'].as_matrix()
-		return (parsed_matrix, dates)
+		return (parsed_matrix, id_frame)

@@ -4,6 +4,8 @@ import json
 import multiprocessing
 import numpy as np
 import pandas
+from pandas.tseries.holiday import USFederalHolidayCalendar
+from pandas.tseries.offsets import CustomBusinessDay
 import schedule
 import threading
 import time
@@ -50,7 +52,11 @@ def select_tickers(db_ticker, all_tickers):
 	print_status("Excluded %d tickers"%exclude_count)
 	return list(ticker_dict)
 
-def new_parsed_df(ticker, dates, sector):
+def new_parsed_df(ticker, raw_dates, sector):
+	us_bd = CustomBusinessDay(calendar=USFederalHolidayCalendar())
+	raw_dates_index = pandas.DatetimeIndex(data = raw_dates)
+	dates = pandas.DatetimeIndex(start=raw_dates.iloc[0], end=raw_dates.iloc[-1], freq=us_bd)
+	dates = dates.append(raw_dates_index).unique().sort_values()
 	data = {}
 	data['date'] = dates
 	data['ticker'] = ticker
@@ -71,7 +77,7 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only =
 		conn_mutex.acquire()
 		raw_df = pandas.read_sql(sql_query, mysql_conn, coerce_float = False, parse_dates = ["date"])
 		conn_mutex.release()
-		parsed_df = new_parsed_df(ticker, raw_df['date'].unique(), sector)
+		parsed_df = new_parsed_df(ticker, raw_df['date'], sector)
 		for index, row in raw_df.iterrows():
 			date = row['date']
 			field = row['field']
@@ -142,7 +148,11 @@ if __name__ == '__main__':
 	futures = []
 	with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
 		for ticker in tickers_to_crawl:
-			futures.append(executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn))
+			corr_sector = None
+			for sector in utilities.tickers_table:
+				if sector in utilities.tickers_table[sector]:
+					corr_sector = sector
+			futures.append(executor.submit(fill_by_ticker_and_save, ticker, corr_sector, mysql_conn))
 		for _ in tqdm(as_completed(futures)):
 			finished_count += 1
 	
@@ -155,7 +165,11 @@ if __name__ == '__main__':
 		finished_count = 0
 		with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
 			for ticker in err_tickers_cpy:
-				futures.append(executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn))
+				corr_sector = None
+				for sector in utilities.tickers_table:
+					if sector in utilities.tickers_table[sector]:
+						corr_sector = sector
+				futures.append(executor.submit(fill_by_ticker_and_save, ticker, corr_sector, mysql_conn))
 			for _ in tqdm(as_completed(futures)):
 				finished_count += 1
 print_status("Done.")
