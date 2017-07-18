@@ -11,9 +11,11 @@ import multiprocessing
 host = "seis10.se.cuhk.edu.hk"
 database = "finanai"
 username = "finanai"
-raw_table = 'test_raw'
-target_table = 'test_ml'
+raw_table = 'US_bloomberg_factor'
+target_table = 'US_machine_learning_factor_filled'
 max_thread_no = 2
+
+id_fields = ['record_id', 'date', 'ticker', 'sector']
 
 def parse_arg():
 	parser = argparse.ArgumentParser()
@@ -106,10 +108,13 @@ def rebuild_by_ticker(ticker, factors, mysql_conn, mysql_mutex):
 
 def fillmean(sectors, factors):
 	mysql_conn = utilities.mysql_connection(host, database, username)
+	if len(factors) == 1 and factors[0] == 'all':
+		factors = pandas.read_sql("SELECT COLUMN_NAME as factors FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s';"%(database, target_table), mysql_conn, coerce_float = False)
+		factors = factors.loc[~(factors['factors'].isin(id_fields)), 'factors']	
 	for sector in sectors:
 		for factor in factors:
 			utilities.print_status("Filling %s - %s"%(sector, factor))
-			sql = "UPDATE %s ml JOIN (SELECT sector, avg(%s) AS avg FROM %s GROUP BY sector, date) val ON ml.sector = val.sector AND ml.date = val.date SET ml.%s = val.avg WHERE ml.%s IS NULL;"%(target_table, factor, target_table, factor, factor)
+			sql = "UPDATE %s ml JOIN (SELECT sector, date, avg(%s) AS avg FROM %s WHERE sector = '%s' GROUP BY sector, date) val ON ml.sector = val.sector AND ml.date = val.date SET ml.%s = val.avg WHERE ml.%s IS NULL;"%(target_table, factor, target_table, sector, factor, factor)
 			with mysql_conn.begin() as conn:
 				conn.execute(sql)
 
