@@ -4,6 +4,8 @@ import json
 import multiprocessing
 import numpy as np
 import pandas
+from pandas.tseries.holiday import USFederalHolidayCalendar
+from pandas.tseries.offsets import CustomBusinessDay
 import schedule
 import threading
 import time
@@ -50,7 +52,11 @@ def select_tickers(db_ticker, all_tickers):
 	print_status("Excluded %d tickers"%exclude_count)
 	return list(ticker_dict)
 
-def new_parsed_df(ticker, dates, sector):
+def new_parsed_df(ticker, raw_dates, sector):
+	us_bd = CustomBusinessDay(calendar=USFederalHolidayCalendar())
+	raw_dates_index = pandas.DatetimeIndex(data = raw_dates)
+	dates = pandas.DatetimeIndex(start=raw_dates.iloc[0], end=raw_dates.iloc[-1], freq=us_bd)
+	dates = dates.append(raw_dates_index).unique().sort_values()
 	data = {}
 	data['date'] = dates
 	data['ticker'] = ticker
@@ -71,7 +77,7 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only =
 		conn_mutex.acquire()
 		raw_df = pandas.read_sql(sql_query, mysql_conn, coerce_float = False, parse_dates = ["date"])
 		conn_mutex.release()
-		parsed_df = new_parsed_df(ticker, raw_df['date'].unique(), sector)
+		parsed_df = new_parsed_df(ticker, raw_df['date'], sector)
 		for index, row in raw_df.iterrows():
 			date = row['date']
 			field = row['field']
