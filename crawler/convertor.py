@@ -21,7 +21,6 @@ username = 'finanai'
 
 raw_table = 'US_bloomberg_factor'
 target_table = 'US_machine_learning_factor'
-last_date = "2016-12-31"
 max_thread_no = 2
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
@@ -40,17 +39,17 @@ indirect_parsed_fields = utilities.indirect_parsed_fields()
 complex_fields = utilities.complex_fields
 id_fields = ['date', 'ticker', 'sector']
 
-def select_tickers(db_ticker, all_tickers):
+def select_tickers(db_ticker, ticker_sector_tup):
 	ticker_dict = {}
 	exclude_count = 0
-	for ticker in all_tickers:
-		ticker_dict[ticker] = True
+	for ticker, sector in ticker_sector_tup:
+		ticker_dict[ticker] = sector
 	for ticker in db_ticker:
 		if ticker in ticker_dict:
 			del ticker_dict[ticker]
 			exclude_count += 1
 	print_status("Excluded %d tickers"%exclude_count)
-	return list(ticker_dict)
+	return [(ticker, ticker_dict[ticker]) for ticker in ticker_dict]
 
 def new_parsed_df(ticker, raw_dates, sector):
 	us_bd = CustomBusinessDay(calendar=USFederalHolidayCalendar())
@@ -66,17 +65,21 @@ def new_parsed_df(ticker, raw_dates, sector):
 	df = pandas.DataFrame(data, index = dates, columns = id_fields + direct_parsed_fields + indirect_parsed_fields + complex_fields)
 	return df
 
-def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only = True):
+def fill_by_ticker_and_save(ticker, sector, mysql_conn, conn_mutex, download_selected_only = True):
+	locked_by_me = False
 	try:
-		global progress
 		if download_selected_only:
 			fields_str = "AND field IN ('"+"','".join(direct_parsed_fields)+"')"
 		else:
 			fields_str = ""
 		sql_query = "SELECT date, field, value FROM %s WHERE ticker = '%s' %s ORDER BY date asc;"%(raw_table, ticker, fields_str)
 		conn_mutex.acquire()
+		locked_by_me = True
 		raw_df = pandas.read_sql(sql_query, mysql_conn, coerce_float = False, parse_dates = ["date"])
 		conn_mutex.release()
+		locked_by_me = False
+		if raw_df.shape[0] == 0:
+			return
 		parsed_df = new_parsed_df(ticker, raw_df['date'], sector)
 		for index, row in raw_df.iterrows():
 			date = row['date']
@@ -90,14 +93,18 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, download_selected_only =
 		parsed_df = parsed_df[id_fields+utilities.ml_fields()]
 		parsed_df.replace([np.inf, -np.inf], np.nan, inplace = True)
 		conn_mutex.acquire()
+		locked_by_me = True
 		parsed_df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False, chunksize = 100)
 		#parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
 		conn_mutex.release()
+		locked_by_me = False
 	except Exception as e:
-		print(traceback.format_exc())
+		if locked_by_me:
+			conn_mutex.release()
+		traceback.print_exc()
 		err_mutex.acquire()
 		errs.append(traceback.format_exc())
-		err_tickers.append(ticker)
+		err_tickers.append((ticker, sector))
 		err_mutex.release()
 
 def send_status():
@@ -128,8 +135,8 @@ def send_status_management():
 		time.sleep(1)
 
 def send_finish_msg():
-	subject = "Uploader Status Update"
-	body = "Finished uploading, uploader is going to terminate."
+	subject = "Convertor Status Update"
+	body = "Finished converting, convertor is going to terminate."
 	utilities.send_gmail(email_status_dest, subject, body)
 
 if __name__ == '__main__':
@@ -139,7 +146,8 @@ if __name__ == '__main__':
 	email_thread.start()
 	tickers_to_crawl = []
 	for sector in utilities.tickers_table:
-		tickers_to_crawl.extend(utilities.tickers_table[sector])
+		for ticker in utilities.tickers_table[sector]:
+			tickers_to_crawl.append((ticker, sector))
 	old_tickers = pandas.read_sql("SELECT DISTINCT ticker from %s;"%(target_table), mysql_conn, coerce_float = False)['ticker']
 	tickers_to_crawl = select_tickers(old_tickers, tickers_to_crawl)
 	tickers_count = len(tickers_to_crawl)
@@ -147,12 +155,8 @@ if __name__ == '__main__':
 	print_status("Firing request for %d ticker(s)..."%tickers_count)
 	futures = []
 	with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
-		for ticker in tickers_to_crawl:
-			corr_sector = None
-			for sector in utilities.tickers_table:
-				if sector in utilities.tickers_table[sector]:
-					corr_sector = sector
-			futures.append(executor.submit(fill_by_ticker_and_save, ticker, corr_sector, mysql_conn))
+		for ticker, sector in tickers_to_crawl:
+			futures.append(executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn, conn_mutex))
 		for _ in tqdm(as_completed(futures)):
 			finished_count += 1
 	
@@ -164,12 +168,8 @@ if __name__ == '__main__':
 		tickers_count = len(err_tickers_cpy)
 		finished_count = 0
 		with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
-			for ticker in err_tickers_cpy:
-				corr_sector = None
-				for sector in utilities.tickers_table:
-					if sector in utilities.tickers_table[sector]:
-						corr_sector = sector
-				futures.append(executor.submit(fill_by_ticker_and_save, ticker, corr_sector, mysql_conn))
+			for ticker, sector in err_tickers_cpy:
+				futures.append(executor.submit(fill_by_ticker_and_save, ticker, sector, mysql_conn, conn_mutex))
 			for _ in tqdm(as_completed(futures)):
 				finished_count += 1
 print_status("Done.")
