@@ -15,14 +15,14 @@ import utilities
 
 print_status = utilities.print_status
 
-host = 'seis10.se.cuhk.edu.hk'
+host = 'localhost'
 database = 'finanai'
 username = 'finanai'
 
 raw_table = 'US_bloomberg_factor'
 target_table = 'US_machine_learning_factor'
 last_date = "2016-12-31"
-max_thread_no = 2
+max_thread_no = 4
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60

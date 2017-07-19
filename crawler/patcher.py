@@ -8,7 +8,7 @@ import utilities
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import multiprocessing
 
-host = "seis10.se.cuhk.edu.hk"
+host = "localhost"
 database = "finanai"
 username = "finanai"
 raw_table = 'US_bloomberg_factor'
