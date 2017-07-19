@@ -21,13 +21,13 @@ def buildModel(model_flag, preprocessing_file, stock_filter_flag, B, target_labe
 	model.train(train_factors, target)
 	return model
 
-def selectMetaparameters(model_flag, paras_set = [], stock_filter_flag, B, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, customized_module_name = "", customized_module_dir = ""):
+def selectMetaparameters(model_flag, paras_set = [], stock_filter_flag, B, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, customized_module_dir = ""):
 	if model_flag == "SVM":
 		Model_class = SimpleSVMModel
 	elif model_flag == "NN":
 		Model_class = SimpleNNModel
 	elif model_flag == "Customized":
-		custom_module = import_custom_module(customized_module_name, customized_module_dir)
+		custom_module = import_custom_module("CustomizedModel", customized_module_dir)
 		Model_class = custom_module.Model
 		paras_set = custom_module.metaparas_set
 	else:
@@ -72,6 +72,20 @@ def calculateQuality(valid_data, pred_target, trading_stock_quantity, para_tune_
 	for i in range(1, len(intra_day_quality)):
 		overall_quality = alpha*overall_quality + (1-alpha) * intra_day_quality[i]
 	return quality
+
+def loadTrainedModel(savedir):
+	with open(savedir+'/model.conf') as f:
+		conf_file = json.load(f)
+		model_type = conf_file["model_type"]
+	model = None
+	if model_type == "NN":
+		model = SimpleNNModel.load(savedir)
+	elif model_type == "SVM":
+		model = SimpleSVMModel.load(savedir)
+	elif model_type == "custom":
+		custom_module = import_custom_module("CustomizedModel", conf_file["modeldir"])
+		model = custom_module.Model.load(savedir)
+	return model
 
 def __intraday_quality(df, para_tune_holding_flag, n):
 	tickers_list = []

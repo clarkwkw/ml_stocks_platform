@@ -95,15 +95,20 @@ class SimpleNNModel(GenericMLModel):
 			saver = tf.train.Saver()
 			save_path = saver.save(self._sess, save_path = savedir+'/simplenn.ckpt')
 		tf.reset_default_graph()
-		json_dict = {'_factors': self._factors, '_hidden_nodes': self._hidden_nodes}
-		with open(savedir+'/simplenn.conf', "w") as f:
+		json_dict = {	'model_type': 'NN', 
+						'init_paras': 
+									{	'_factors': self._factors, 
+										'_hidden_nodes': self._hidden_nodes
+									}
+					}
+		with open(savedir+'/model.conf', "w") as f:
 			json.dump(json_dict, f)
 		
 	@staticmethod
 	def load(savedir):
-		with open(savedir+"/simplenn.conf", "r") as f:
+		with open(savedir+"/model.conf", "r") as f:
 			json_dict = json.load(f)
-		model = SimpleNNModel(from_save = savedir, **json_dict)
+		model = SimpleNNModel(from_save = savedir, **json_dict["init_paras"])
 		model._trained = True
 		return model
 

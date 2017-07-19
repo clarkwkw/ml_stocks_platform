@@ -26,16 +26,18 @@ class SimpleSVMModel(GenericMLModel):
 	def save(self, savedir):
 		if not self._trained:
 			raise Exception("Model not trained.")
-		joblib.dump(self._model, savedir+'/simplesvm.model')
-		json_dict = {'_factors': self._factors}
-		with open(savedir+'/simplesvm.conf', "w") as f:
+		joblib.dump(self._model, savedir+'/svmmodel.pkl')
+		json_dict = {	'model_type': 'SVM', 
+						'init_paras': {	'_factors': self._factors}
+					}
+		with open(savedir+'/model.conf', "w") as f:
 			json.dump(json_dict, f)
 
 	@staticmethod
 	def load(savedir):
-		with open(savedir+"/simplesvm.conf", "r") as f:
+		with open(savedir+"/model.conf", "r") as f:
 			json_dict = json.load(f)
-		model = SimpleSVMModel(**json_dict)
-		model._model = joblib.load(savedir+"/simplesvm.model")
+		model = SimpleSVMModel(**json_dict["init_paras"])
+		model._model = joblib.load(savedir+"/svmmodel.pkl")
 		model._trained = True
 		return model
