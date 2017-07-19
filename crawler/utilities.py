@@ -18,7 +18,7 @@ email_json = "./email.json"
 # mysqldb/mysqlconnector/...
 # For more options, 
 # see http://docs.sqlalchemy.org/en/latest/dialects/mysql.html#module-sqlalchemy.dialects.mysql.mysqlconnector
-db_connector = "mysqlconnector"
+db_connector = "mysqldb"
 
 def print_status(msg):
 	print("> "+str(msg))

@@ -1,7 +1,7 @@
 import pandas
 from utilities import print_status, mysql_connection
 
-host = 'seis10.se.cuhk.edu.hk'
+host = 'localhost'
 database = 'finanai'
 username = 'finanai'
 
