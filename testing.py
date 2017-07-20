@@ -8,6 +8,8 @@ if __name__ == '__main__':
 
     stock_data.dropna(subset=['last_price'],inplace=True)
 
-    stock_data = ValidationDataPreparation(stock_data, True, 10,15,1, period = 3)
+    stock_data = ValidationDataPreparation(stock_data, stock_filter_flag = False, B_top = 10, B_buttom = 15, target_label_holding_period = 1, period = 3)
 
-    normalized_train, normalized_valid = DataPreprocessing(flag = "validate", stock_data = stock_data[0][0], validate_data = stock_data[0][1])
+    print("# Folds: %d"%len(stock_data))
+
+    normalized_train, normalized_valid = DataPreprocessing(flag = "validate", stock_data = stock_data[6][0], validate_data = stock_data[6][1])
