@@ -55,6 +55,8 @@ def TargetLabelGeneration(stock_data, B_top, B_buttom, target_label_holding_peri
         t['return'] = r_t
         t['vol(t)'] = vol_t
         t['volatility-adjusted return'] = t['return']/t['vol(t)']
+        t['volatility-adjusted return'] = t['volatility-adjusted return'].shift(-1)
+        t.drop(t.index[len(t)-1], inplace=True)
 
     #Join the ticker data and split the stock data by date, than sort the tickers based on return
     stock_data = pd.concat([ticker_data[i] for i in ticker_data])
