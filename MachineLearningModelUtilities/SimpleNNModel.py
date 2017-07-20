@@ -1,6 +1,6 @@
 import json
 from GenericMLModel import GenericMLModel
-from MLUtils import *
+from utils import *
 import tensorflow as tf
 
 _multi_thread = 8
@@ -39,6 +39,7 @@ class SimpleNNModel(GenericMLModel):
 				init = tf.global_variables_initializer()
 				self._sess.run(init)	
 			else:
+				from_save = from_save.rstrip('/')
 				saver = tf.train.import_meta_graph(from_save+'/simplenn.ckpt.meta')
 				saver.restore(self._sess, from_save+'/simplenn.ckpt')
 				self._X = g.get_tensor_by_name("X:0")

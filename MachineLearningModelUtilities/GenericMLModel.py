@@ -1,5 +1,5 @@
 import abc, six
-from MLUtils import id_fields
+from utils import id_fields
 
 @six.add_metaclass(abc.ABCMeta)
 class GenericMLModel(object):

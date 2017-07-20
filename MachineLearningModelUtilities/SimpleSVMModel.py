@@ -1,6 +1,6 @@
 import json
 from GenericMLModel import GenericMLModel
-from MLUtils import *
+from utils import *
 from sklearn.svm import SVC
 from sklearn.externals import joblib
 

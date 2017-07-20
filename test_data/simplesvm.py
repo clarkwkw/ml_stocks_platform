@@ -15,7 +15,6 @@ def __classify(y):
 
 def __new_point(data, labels):
 	data['date'].append('2016-01-01')
-	data['sector'].append('Energy')
 	data['ticker'].append('ABC US Equity')
 	data['record_id'].append(1)
 	x1 = random.uniform(-1000, 1000)
@@ -34,7 +33,6 @@ def __generate_data(n = 500):
 		'x1': [], 
 		'x2': [], 
 		'x3': [],
-		'sector': [],
 		'ticker': [],
 		'record_id': []
 		}
@@ -47,6 +45,9 @@ def __generate_data(n = 500):
 	print('Distribution: 0: %d, 1: %d'%(zeros, n - zeros))
 	return data, labels
 
+def accuracy(predict_df, labels):
+	return np.mean((predict_df["pred"] > 0.5) == labels)
+
 def test():
 	train_data, train_label = __generate_data(n = 500)
 	test_data, test_label = __generate_data(n = 100)
@@ -58,4 +59,4 @@ def test():
 
 	m2 = MLUtil.SimpleSVMModel.load('test_output')
 	prediction = m2.predict(test_data)
-	print("Accuracy: %.4f"%(np.mean(test_label == prediction['target'])))
+	print("Accuracy: %.4f"%accuracy(prediction, test_label))

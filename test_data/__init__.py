@@ -1,2 +1,0 @@
-import simplenn
-import simplesvm

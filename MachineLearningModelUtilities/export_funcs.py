@@ -1,16 +1,24 @@
-from DataPreparation import TrainingDataPreparation, ValidationDataPrepatation, DataNormalization
-from MLUtils import get_factors_from_df, import_custom_module, seperate_factors_target
+from DataPreparation import TrainingDataPreparation, ValidationDataPreparation, DataPreprocessing
+import json
+import pandas
+from utils import get_factors_from_df, import_custom_module, seperate_factors_target, raise_warning
 from SimpleNNModel import SimpleNNModel
 from SimpleSVMModel import SimpleSVMModel
 import imp
 
-def buildModel(model_flag, preprocessing_file, stock_filter_flag, B, target_label_holding_period, customized_module_name = "", customized_module_dir = "", **kwargs):
-	train_data = TrainingDataPreparation(stock_filter_flag = stock_filter_flag, B = B, preprocessing_file = preprocessing_file, target_label_holding_period = target_label_holding_period)
-	train_factors, target = seperate_factors_target(train_data)
+# Setting __test_flag as True will:
+# 1. Fill NA values with zero in stock_data
+__test_flag = True
 
+def buildModel(model_flag, preprocessing_file, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, customized_module_name = "", customized_module_dir = "", **kwargs):
+	train_data = TrainingDataPreparation(stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, preprocessing_file)
+	if __test_flag:
+		train_data.fillna(value = 0, inplace = True)
+
+	train_factors, target = seperate_factors_target(train_data)
 	factors = get_factors_from_df(train_factors)
 	if model_flag == "SVM":
-		model  = SimpleNNModel(_factors = factors, **kwargs)
+		model  = SimpleSVMModel(_factors = factors, **kwargs)
 	elif model_flag == "NN":
 		model = SimpleNNModel(_factors = factors, **kwargs)
 	elif model_flag == "Customized":
@@ -21,7 +29,7 @@ def buildModel(model_flag, preprocessing_file, stock_filter_flag, B, target_labe
 	model.train(train_factors, target)
 	return model
 
-def selectMetaparameters(model_flag, paras_set = [], stock_filter_flag, B, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, customized_module_dir = ""):
+def selectMetaparameters(model_flag, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, period = None, date = None, customized_module_dir = "", paras_set = []):
 	if model_flag == "SVM":
 		Model_class = SimpleSVMModel
 	elif model_flag == "NN":
@@ -33,10 +41,10 @@ def selectMetaparameters(model_flag, paras_set = [], stock_filter_flag, B, targe
 	else:
 		raise Exception("Unexpected model_flag '%s'"%str(model_flag))
 
-	dataset = ValidationDataPrepatation(stock_filter_flag, B, target_label_holding_period)
+	dataset = ValidationDataPrepatation(stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, period, date)
 
 	for i in range(len(dataset)):
-		dataset[i][0], dataset[i][1] = DataPreprocessing(dataset[i][0], dataset[i][1], flag = 'validate')
+		dataset[i] = DataPreprocessing(flag = "validate", stock_data = dataset[i][0], validate_data = dataset[i][1])
 
 	best_meta_para = None
 	best_quality = float('-inf')
@@ -59,6 +67,9 @@ def selectMetaparameters(model_flag, paras_set = [], stock_filter_flag, B, targe
 	return meta_para
 
 def evaluateModel(trained_model, valid_data, trading_stock_quantity, para_tune_holding_flag):
+	if __test_flag:
+		valid_data.fillna(value = 0, inplace = True)
+
 	valid_factors, _ = seperate_factors_target(valid_data)
 
 	pred_target = trained_model.predict(valid_factors)
@@ -67,11 +78,11 @@ def evaluateModel(trained_model, valid_data, trading_stock_quantity, para_tune_h
 
 def calculateQuality(valid_data, pred_target, trading_stock_quantity, para_tune_holding_flag, alpha = 0.5):
 	df_analysis = pandas.concat([pred_target, valid_data['return']], axis = 1)
-	intra_day_quality = df_analysis.group_by('date').apply(__intraday_quality, para_tune_holding_flag, trading_stock_quantity)
+	intra_day_quality = df_analysis.groupby('date').apply(__intraday_quality, para_tune_holding_flag, trading_stock_quantity)
 	overall_quality = intra_day_quality[0]
 	for i in range(1, len(intra_day_quality)):
 		overall_quality = alpha*overall_quality + (1-alpha) * intra_day_quality[i]
-	return quality
+	return overall_quality
 
 def loadTrainedModel(savedir):
 	with open(savedir+'/model.conf') as f:
@@ -88,11 +99,10 @@ def loadTrainedModel(savedir):
 	return model
 
 def __intraday_quality(df, para_tune_holding_flag, n):
-	tickers_list = []
 	avg_return = 0
-	for ticker in df['ticker'].unique():
-		tickers_list.append((df[df[ticker] == ticker, 'return'], df[df[ticker] == ticker, 'target'] ))
-	t = len(tickers_list)
+	n_stocks = df.shape[0]
+	t = n_stocks
+	
 	if para_tune_holding_flag == 'long':
 		t -= n
 	elif para_tune_holding_flag == 'short':
@@ -102,16 +112,26 @@ def __intraday_quality(df, para_tune_holding_flag, n):
 	else:
 		raise Exception("Unexpected para_tune_holding_flag '%s'"%str(para_tune_holding_flag))
 	if t < 0:
-		raise Exception("Insufficient no. of stock to evaluate on %s"%(df['date'].unique()[0]))
+		raise_warning("Insufficient no. of stock (%d) to evaluate on %s\nAll stocks will be considered and long position will be prioritized"%(df.shape[0], df['date'].unique()[0]))
 
-	# sort by target
-	tickers_list = sorted(tickers_list, key = lambda x: x[1], reverse = True)
-	for i in range(n):
-		# long stock with high target
-		if para_tune_holding_flag == 'long' or para_tune_holding_flag == 'long_short':
-			avg_return += 1.0/(2*n)*tickers_list[i][0]
-		# short stock with low target
-		if para_tune_holding_flag == 'short' or para_tune_holding_flag == 'long_short':
-			avg_return -= 1.0/(2*n)*tickers_list[n-i-1][0]
+	long_index, short_index = None, None
+	if para_tune_holding_flag == 'long' or para_tune_holding_flag == 'long_short':
+		long_index = (0, min(n_stocks - 1, n - 1))
+	if para_tune_holding_flag == 'short' or para_tune_holding_flag == 'long_short':
+		short_index = (max(0, n_stocks - n), n_stocks - 1)
+
+	if para_tune_holding_flag == 'long_short' and long_index[1] >= short_index[0]:
+		short_index = (long_index[1] + 1, short_index[1])
+		if short_index[0] > short_index[1]:
+			short_index = None
+
+	df = df.sort(columns = ['pred'], ascending = False)
+
+	if long_index is not None:
+		for i in range(long_index[0], long_index[1] + 1):
+			avg_return += 1.0/(2*n)*df.iloc[i]['return']
+	if short_index is not None:
+		for i in range(short_index[0], short_index[1] + 1):
+			avg_return -= 1.0/(2*n)*df.iloc[i]['return']
 
 	return avg_return
