@@ -8,8 +8,9 @@ import pandas
 def StockPerformancePrediction(stock_filter_flag, preprocessing_file, model_savedir, predict_value_file):
 	test_dataset = DataPreparation.TestingDataPreparation(stock_filter_flag = stock_filter_flag, preprocessing_file = preprocessing_file)
 	predict_df = LearnedModelExecution(test_dataset, model_savedir)
-	with open(predict_value_file, "w") as f:
-		pass
+	predict_df['Buying Price'] = test_dataset['last_price']
+	predict_df = predict_df.rename(columns = {'target':'Predicted Value', 'date': 'Date', 'ticker': 'Ticker'})
+	predict_df.to_csv(predict_value_file, index = False)
 
 def LearnedModelExecution(test_dataset, model_savedir):
 	model = MLUtils.loadTrainedModel(model_savedir)
@@ -29,7 +30,7 @@ def StockSelection(ranked_stock_file, n, portfolio_file, weight_method = "equal"
 		Utils.raise_warning("Not enough stocks to select, n = %d, found %d"%(n, n_stocks))
 
 	short_index, long_index = None, None
-	# If 2n > n_stocks >= n,  long_index may overlap with short_index
+	# If 2n > n_stocks >= n, long_index may overlap with short_index
 	# In this case, long position would be in higher priority
 	# If n > n_stocks, all stock will be in long position
 	if n_stocks >= n:
@@ -50,3 +51,10 @@ def StockSelection(ranked_stock_file, n, portfolio_file, weight_method = "equal"
 	selected_stocks.to_csv(portfolio_file, index = False)
 	
 	return selected_stocks
+
+def SimulateTradingProcess(WorkingLocation, StockDataCode, simulate_config_file):
+	os.cwd("./%s/%s"%(WorkingLocation, StockDataCode))
+	config = util.read_simulation_config(simulate_config_file)
+	util.create_dir(run_code)
+
+	pass
