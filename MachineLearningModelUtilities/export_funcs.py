@@ -6,15 +6,8 @@ from SimpleNNModel import SimpleNNModel
 from SimpleSVMModel import SimpleSVMModel
 import imp
 
-# Setting __test_flag as True will:
-# 1. Fill NA values with zero in stock_data
-__test_flag = True
-
 def buildModel(model_flag, preprocessing_file, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, customized_module_name = "", customized_module_dir = "", **kwargs):
-	train_data = TrainingDataPreparation(stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, preprocessing_file)
-	if __test_flag:
-		train_data.fillna(value = 0, inplace = True)
-
+	train_data = TrainingDataPreparation(stock_data, stock_filter_flag = stock_filter_flag, B_top = B_top, B_bottom = B_bottom, target_label_holding_period = target_label_holding_period, preprocessing_file = preprocessing_file)
 	train_factors, target = seperate_factors_target(train_data)
 	factors = get_factors_from_df(train_factors)
 	if model_flag == "SVM":
@@ -41,7 +34,7 @@ def selectMetaparameters(model_flag, stock_data, stock_filter_flag, B_top, B_bot
 	else:
 		raise Exception("Unexpected model_flag '%s'"%str(model_flag))
 
-	dataset = ValidationDataPrepatation(stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, period, date)
+	dataset = ValidationDataPreparation(stock_data, stock_filter_flag = stock_filter_flag, B_top = B_top, B_bottom = B_bottom, target_label_holding_period = target_label_holding_period, period = period, date = date)
 
 	for i in range(len(dataset)):
 		dataset[i] = DataPreprocessing(flag = "validate", stock_data = dataset[i][0], validate_data = dataset[i][1])
@@ -67,8 +60,6 @@ def selectMetaparameters(model_flag, stock_data, stock_filter_flag, B_top, B_bot
 	return meta_para
 
 def evaluateModel(trained_model, valid_data, trading_stock_quantity, para_tune_holding_flag):
-	if __test_flag:
-		valid_data.fillna(value = 0, inplace = True)
 
 	valid_factors, _ = seperate_factors_target(valid_data)
 
