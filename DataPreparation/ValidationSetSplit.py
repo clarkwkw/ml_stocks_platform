@@ -15,6 +15,10 @@ def ValidationSetSplit(stock_data, percentage = None, period = None, date = None
     if period is not None:
         index = []
         no_partition = int(len(year)/period)
+
+        if len(year) % period == 0:
+            no_partition = no_partition - 1
+
         for i in range(1, no_partition+1):
             index.append((year[:i*period],year[i*period:(i+1)*period]))
     elif date is not None:

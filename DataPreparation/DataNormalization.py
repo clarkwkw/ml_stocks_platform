@@ -76,12 +76,12 @@ def DataNormalization(stock_data, validate_data = None, normalization_info = Non
             ticker_data[key] = validate_data[:][validate_data.ticker == key] 
             ticker_data[key].sort_values(by=['date'],inplace=True)   
 
+        import warnings
         #Normalize the validate data
         for ticker in ticker_data:
             t = ticker_data[ticker]
-            for factor in factors:
-                t[factor] = normalization_method[factors_method[factor]['method']](t[factor].as_matrix(),info[ticker][factor])
-
+            t[factor] = normalization_method[factors_method[factor]['method']](t[factor].as_matrix(),info[ticker][factor])
+                
         #Join the ticker data
         validate_data = pd.concat([ticker_data[i] for i in ticker_data])   
         validate_data.sort_values(by=['date'],inplace=True)

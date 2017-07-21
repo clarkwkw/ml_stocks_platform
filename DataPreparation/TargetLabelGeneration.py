@@ -4,13 +4,13 @@ import math as m
 from functools import partial
 from multiprocessing import Pool as ThreadPool 
 
-def sort_return_and_calculate_target(B_top,B_buttom,d):
+def sort_return_and_calculate_target(B_top,B_bottom,d):
     data = d[1]
 
     data.sort_values(by=['volatility-adjusted return'],inplace=True)
 
     l_top = int(m.ceil(data.shape[0]*(B_top/100.)))
-    l_buttom = int(m.ceil(data.shape[0]*(B_buttom/100.)))
+    l_buttom = int(m.ceil(data.shape[0]*(B_bottom/100.)))
     if data.shape[0] == 1:
         l_buttom = 0
     d_top = data.head(l_top).copy()
@@ -22,7 +22,7 @@ def sort_return_and_calculate_target(B_top,B_buttom,d):
 
     return d[0],data
 
-def TargetLabelGeneration(stock_data, B_top, B_buttom, target_label_holding_period):
+def TargetLabelGeneration(stock_data, B_top, B_bottom, target_label_holding_period):
     if not isinstance(target_label_holding_period, int):
         raise Exception('target_label_holding_period must be a integer.')
 
@@ -72,7 +72,7 @@ def TargetLabelGeneration(stock_data, B_top, B_buttom, target_label_holding_peri
     d = [(key,date_data[key]) for key in date_data.keys()]
 
     pool = ThreadPool() 
-    func = partial(sort_return_and_calculate_target, B_top, B_buttom)
+    func = partial(sort_return_and_calculate_target, B_top, B_bottom)
 
     pool_outputs = pool.map(func, d)
     pool.close()
