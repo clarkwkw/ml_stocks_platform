@@ -33,7 +33,7 @@ def fill_complex_interval_change_factory(complex_name, src_name, interval, chang
 				else:
 					raise Exception("Invalid change_method '%s'"%change_method)
 			except ZeroDivisionError:
-				row[complex_name] = np.NAN
+				row[complex_name] = 0
 		queue.push(cur_date, row[src_name])
 		return row
 	return fill

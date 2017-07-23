@@ -42,9 +42,13 @@ def write_row(f, date, ticker, field, value):
 		value = "nan"
 	f.write("%s, %s, %s, %s\n"%(str(date), str(ticker), str(field), str(value)))
 
-def mysql_connection(host, database, username):
+def get_password(msg = 'MYSQL Password: '):
+	return getpass.getpass(msg)
+
+def mysql_connection(host, database, username, password = None):
 	print_status('Connecting to %s@%s'%(username, host))
-	password = getpass.getpass('MYSQL Password:')
+	if password is None:
+		password = get_password()
 	try:
 		engine = sqlalchemy.create_engine('mysql+%s://%s:%s@%s/%s'%(db_connector, username, password, host, database))
 	except sqlalchemy.exc.OperationalError as e:

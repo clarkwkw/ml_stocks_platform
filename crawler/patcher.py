@@ -12,7 +12,7 @@ host = "seis10.se.cuhk.edu.hk"
 database = "finanai"
 username = "finanai"
 raw_table = 'US_bloomberg_factor'
-target_table = 'US_machine_learning_factor_filled'
+target_table = 'US_machine_learning_factor'
 max_thread_no = 2
 
 id_fields = ['record_id', 'date', 'ticker', 'sector']
@@ -28,15 +28,22 @@ def parse_arg():
 	# Fillmean section
 	group1.add_argument("-m", "--fillmean", help = "fill the sector mean for missing values in the machine learning factor table", action = 'store_true')
 
+	# Getdata section
+	group1.add_argument("-g", "--getdata", help = "get data from machine learning table", action = "store_true")
+	parser.add_argument("-t", "--tickers", nargs = "+", help = "[getdata] tickers to crawl, no. of tickers to crawl if only 1 integer is provided")
+
 	# Common argument
 	parser.add_argument("-s", "--sectors", nargs = "+", help = "[mandatory] sector names")
-	parser.add_argument("-f", "--factors", nargs = "+", help = "[mandatory] direct fields to rebuild [-r]/ fields to fill with sector mean [-f]")
+	parser.add_argument("-f", "--factors", nargs = "+", help = "[mandatory] direct fields to rebuild [-r]/ fields to fill with sector mean [-f]/ factors to download [-g]")
 	args =  parser.parse_args()
 
 	if type(args.sectors) is not list:
 		raise argparse.ArgumentTypeError("argument -s/--sectors: expected at least one string")
 	if type(args.factors) is not list:
 		raise argparse.ArgumentTypeError("argument -f/--factors: expected at least one string")
+	if args.getdata and type(args.tickers) is not list:
+		raise argparse.ArgumentTypeError("argument -t/--tickers: expected at least one string")
+
 	return args
 
 def get_ML_factors(ticker, factors = [], mysql_conn = None, mysql_mutex = None):
@@ -118,11 +125,37 @@ def fillmean(sectors, factors):
 			with mysql_conn.begin() as conn:
 				conn.execute(sql)
 
+def getdata(sectors, factors, tickers):
+	mysql_conn = utilities.mysql_connection(host, database, username)
+	if len(factors) == 1 and factors[0] == 'all':
+		factors_sql = "*"
+	else:
+		factors = id_fields + factors
+		factors_sql = ", ".join(factors)
+
+	rand_tickers = False
+	n_tickers = len(tickers)
+
+	if n_tickers == 1 and tickers[0].isdigit():
+		rand_tickers = True
+		n_tickers = int(tickers[0])
+	for sector in sectors:
+		print("Crawling sector - %s"%sector)
+		if rand_tickers:
+			tickers = pandas.read_sql("SELECT DISTINCT ticker FROM %s WHERE sector = '%s' ORDER BY rand() LIMIT %d;"%(target_table, sector, n_tickers), mysql_conn, coerce_float = False)['ticker']
+		tickers_sql = "'%s'"%tickers[0]
+		for i in range(1, len(tickers)):
+			tickers_sql += ", '%s'"%tickers[i]
+		df = pandas.read_sql("SELECT %s FROM %s WHERE ticker in (%s);"%(factors_sql, target_table, tickers_sql), mysql_conn,  coerce_float = False, parse_dates = ["date"])
+		df.to_csv("%s-%d.csv"%(sector, n_tickers), index = False, na_rep = "nan")
+
 if __name__ == "__main__":
 	args = parse_arg()
 	if args.rebuild:
 		rebuild(args.sectors, args.factors)
 	elif args.fillmean:
 		fillmean(args.sectors, args.factors)
+	elif args.getdata:
+		getdata(args.sectors, args.factors, args.tickers)
 	else:
 		raise Exception("Please select a valid action")

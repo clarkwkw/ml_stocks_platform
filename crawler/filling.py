@@ -33,10 +33,10 @@ _fill_complex_vect_funcs = [
 ]
 
 def fill_complex(df):
-	for func in _fill_complex_funcs:
-		df = func(df)
 	for func in _fill_complex_vect_funcs:
 		df = df.apply(func, axis = 1)
+	for func in _fill_complex_funcs:
+		df = func(df)
 	return df
 
 def fill_direct_prev(df, fields):

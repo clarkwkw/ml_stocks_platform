@@ -92,10 +92,10 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, conn_mutex, download_sel
 		parsed_df = filling.fill_complex(parsed_df)
 		parsed_df = parsed_df[id_fields+utilities.ml_fields()]
 		parsed_df.replace([np.inf, -np.inf], np.nan, inplace = True)
+		parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
 		conn_mutex.acquire()
 		locked_by_me = True
 		parsed_df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False, chunksize = 100)
-		#parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
 		conn_mutex.release()
 		locked_by_me = False
 	except Exception as e:
@@ -149,6 +149,7 @@ if __name__ == '__main__':
 		for ticker in utilities.tickers_table[sector]:
 			tickers_to_crawl.append((ticker, sector))
 	old_tickers = pandas.read_sql("SELECT DISTINCT ticker from %s;"%(target_table), mysql_conn, coerce_float = False)['ticker']
+	#old_tickers = []
 	tickers_to_crawl = select_tickers(old_tickers, tickers_to_crawl)
 	tickers_count = len(tickers_to_crawl)
 
