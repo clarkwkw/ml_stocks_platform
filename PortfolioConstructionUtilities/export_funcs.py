@@ -4,7 +4,6 @@ import DataPreparation
 import numpy as np
 import pandas
 
-
 def StockPerformancePrediction(stock_filter_flag, preprocessing_file, model_savedir, predict_value_file):
 	test_dataset = DataPreparation.TestingDataPreparation(stock_filter_flag = stock_filter_flag, preprocessing_file = preprocessing_file)
 	predict_df = LearnedModelExecution(test_dataset, model_savedir)
@@ -55,6 +54,8 @@ def StockSelection(ranked_stock_file, n, portfolio_file, weight_method = "equal"
 def SimulateTradingProcess(WorkingLocation, StockDataCode, simulate_config_file):
 	os.cwd("./%s/%s"%(WorkingLocation, StockDataCode))
 	config = util.read_simulation_config(simulate_config_file)
-	util.create_dir(run_code)
-
+	utils.create_dir(config['run_code'])
+	os.cwd("./%s"%config['run_code'])
+	with open("run_config.json", "w") as f:
+		f.write(json.dump(config), indent = 4)
 	pass
