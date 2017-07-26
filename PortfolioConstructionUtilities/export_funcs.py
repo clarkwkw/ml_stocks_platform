@@ -4,8 +4,8 @@ import DataPreparation
 import numpy as np
 import pandas
 
-def StockPerformancePrediction(stock_filter_flag, preprocessing_file, model_savedir, predict_value_file):
-	test_dataset = DataPreparation.TestingDataPreparation(stock_filter_flag = stock_filter_flag, preprocessing_file = preprocessing_file)
+def StockPerformancePrediction(stock_data, stock_filter_flag, preprocessing_file, model_savedir, predict_value_file):
+	test_dataset = DataPreparation.TestingDataPreparation(stock_data, stock_filter_flag = stock_filter_flag, preprocessing_file = preprocessing_file)
 	predict_df = LearnedModelExecution(test_dataset, model_savedir)
 	predict_df['Buying Price'] = test_dataset['last_price']
 	predict_df = predict_df.rename(columns = {'target':'Predicted Value', 'date': 'Date', 'ticker': 'Ticker'})
@@ -59,3 +59,47 @@ def SimulateTradingProcess(WorkingLocation, StockDataCode, simulate_config_file)
 	with open("run_config.json", "w") as f:
 		f.write(json.dump(config), indent = 4)
 	pass
+
+# ML_sector_factors: a dictionary of sector and corresponding list of factors
+def MachineLearningModelDevelopment(ML_sector_factors, ML_model_flag, paras_set, stock_filter_flag, B_top, B_bottom, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, period = None, date = None, customized_module_dir = ""):
+	models_map = {}
+	for sector in ML_sector_factors:
+		stock_data = ML_sector_factors[sector]
+		preprocessing_file_path = "./model/preprocessing/%s_preprocessing_info.json"%sector
+		best_para = MLUtils.selectMetaparameters(ML_model_flag, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, period = period, date = date, customized_module_dir = customized_module_dir, paras_set = paras_set)
+		model = MLUtils.buildModel(ML_model_flag, preprocessing_file_path, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, customized_module_dir = customized_module_dir, **best_para)
+		models_map[sector] = model
+	return models_map
+
+def PortfolioConstruction(ML_sector_factors, stock_filter_flag, n, trading_stock_quantity, stock_filter_flag, date_prefix, inter_sector_weight = "equal"):
+	full_portfolio = None
+	n_sectors = len(ML_sector_factors)
+	full_portfolio_path = "./portfolio/full_portfolio/%s_full_portfolio.csv"%date_prefix
+	for sector in ML_sector_factors:
+		stock_data = ML_sector_factors[sector]
+		preprocessing_file_path = "./model/preprocessing/%s_preprocessing_info.json"%sector
+		model_path = "./model/%s/"%sector
+		predicted_value_path = "./portfolio/predicted_value/%s_%s_predicted_value.csv"%(date_prefix, sector)
+		ranked_stocks_path = "./portfolio/ranked_stock/%s_%s_ranked_stock.csv"%(date_prefix, sector)
+		sector_portfolio_path = "./portfolio/sector_portfolio/%s_%s_portfolio.csv"%(date_prefix, sector)
+
+		StockPerformancePrediction(stock_data, stock_filter_flag, preprocessing_file_path, model_path, predicted_value_path)
+		StockRanking(predicted_value_path, ranked_stocks_path)
+		sector_portfolio = StockSelection(ranked_stocks_path, n, sector_portfolio_path)
+		sector_portfolio["sector"] = sector
+		if inter_sector_weight == "equal":
+			sector_portfolio["Weight"] = sector_portfolio["Weight"]/n_sectors
+		elif type(inter_sector_weight) == dict:
+			sector_portfolio["Weight"] = sector_portfolio["Weight"] * inter_sector_weight[sector]
+		else:
+			raise Exception("Unexprected type of inter_sector_weight")
+
+		if full_portfolio is None:
+			full_portfolio = sector_portfolio
+		else:
+			full_portfolio = full_portfolio.append(sector_portfolio)
+
+	full_portfolio.to_csv(full_portfolio_path, index = False)
+	return full_portfolio
+
+
