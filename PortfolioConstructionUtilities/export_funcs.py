@@ -7,8 +7,8 @@ import pandas
 def StockPerformancePrediction(stock_data, stock_filter_flag, preprocessing_file, model_savedir, predict_value_file):
 	test_dataset = DataPreparation.TestingDataPreparation(stock_data, stock_filter_flag = stock_filter_flag, preprocessing_file = preprocessing_file)
 	predict_df = LearnedModelExecution(test_dataset, model_savedir)
-	predict_df['Buying Price'] = test_dataset['last_price']
-	predict_df = predict_df.rename(columns = {'target':'Predicted Value', 'date': 'Date', 'ticker': 'Ticker'})
+	predict_df['buying price'] = test_dataset['last_price']
+	predict_df = predict_df.rename(columns = {'target':'predicted value'})
 	predict_df.to_csv(predict_value_file, index = False)
 
 def LearnedModelExecution(test_dataset, model_savedir):
@@ -17,7 +17,7 @@ def LearnedModelExecution(test_dataset, model_savedir):
 
 def StockRanking(stock_file, ranked_stock_file):
 	df = pandas.read_csv(stock_file)
-	df.sort(columns = ['Predicted Value'], inplace = True)
+	df.sort(columns = ['predicted value'], inplace = True)
 	df.to_csv(ranked_stock_file, index = False)
 
 def StockSelection(ranked_stock_file, n, portfolio_file, weight_method = "equal"):
@@ -102,4 +102,11 @@ def PortfolioConstruction(ML_sector_factors, stock_filter_flag, n, trading_stock
 	full_portfolio.to_csv(full_portfolio_path, index = False)
 	return full_portfolio
 
+# selling_price: a dataframe containing Ticker and Selling Price columns
+def PortfolioReportGeneration(full_portfolio, selling_price):
+	full_portfolio = utils.fill_df(full_portfolio, selling_price, "ticker", "selling_price")
+	full_portfolio['return'] = 1.0*full_portfolio["selling_price"]/full_portfolio["buying price"] - 1
+	full_portfolio.groupby(["sector", "position"]).
+	return portfolio_return
 
+def StrategyPerformanceEvaluation()
