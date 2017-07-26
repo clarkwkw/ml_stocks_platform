@@ -6,7 +6,7 @@ from SimpleNNModel import SimpleNNModel
 from SimpleSVMModel import SimpleSVMModel
 import imp
 
-def buildModel(model_flag, preprocessing_file, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, customized_module_name = "", customized_module_dir = "", **kwargs):
+def buildModel(model_flag, preprocessing_file, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, customized_module_dir = "", **kwargs):
 	train_data = TrainingDataPreparation(stock_data, stock_filter_flag = stock_filter_flag, B_top = B_top, B_bottom = B_bottom, target_label_holding_period = target_label_holding_period, preprocessing_file = preprocessing_file)
 	train_factors, target = seperate_factors_target(train_data)
 	factors = get_factors_from_df(train_factors)
@@ -15,7 +15,7 @@ def buildModel(model_flag, preprocessing_file, stock_data, stock_filter_flag, B_
 	elif model_flag == "NN":
 		model = SimpleNNModel(_factors = factors, **kwargs)
 	elif model_flag == "Customized":
-		custom_module = import_custom_module(customized_module_name, customized_module_dir)
+		custom_module = import_custom_module("CustomizedModel", customized_module_dir)
 		model = custom_module.Model(_factors = factors, **kwargs)
 	else:
 		raise Exception("Unexpected model_flag '%s'"%str(model_flag))
