@@ -3,6 +3,7 @@ import utils
 import DataPreparation
 import numpy as np
 import pandas
+import json
 
 def StockPerformancePrediction(stock_data, stock_filter_flag, preprocessing_file, model_savedir, predict_value_file):
 	test_dataset = DataPreparation.TestingDataPreparation(stock_data, stock_filter_flag = stock_filter_flag, preprocessing_file = preprocessing_file)
@@ -109,4 +110,44 @@ def PortfolioReportGeneration(full_portfolio, selling_price):
 	full_portfolio.groupby(["sector", "position"]).
 	return portfolio_return
 
-def StrategyPerformanceEvaluation()
+def StrategyPerformanceEvaluation():
+	pass
+
+# factors: list of field names, or "all" -> all fields will be downloaded
+def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap = None, start_date = None, end_date = None, output_path = None):
+	ml_factor_table = "%s_machine_learning_factor"%market_id
+	factors_sql,condition_sql = None, ""
+	condition_sqls = []
+	if type(factors) is list:
+		factors.extend(utils._id_fields)
+		factors_sql = "(%s)"%(",".join(factors))
+	elif factors == 'all':
+		factors_sql = "*"
+	else:
+		raise Exception("Unexpected value for factors '%s'"%str(factors))
+
+	if type(sectors) is list:
+		condition_sqls.append("sector IN ('%s')"%("', '".join(sectors)))
+	else:
+		raise Exception("Unexpected value for sectors '%s'"%str(sectors))
+
+	if type(start_date) == str:
+		condition_sqls.append("date >= '%s'"%start_date)
+
+	if type(end_date) == str:
+		condition_sqls.append("date <= '%s'"%end_date)
+
+	if type(market_cap) is not None:
+		condition_sqls.append("market_cap >= %s"%str(market_cap))
+
+	if len(condition_sqls) > 0:
+		condition_sql = "WHERE %s"%(" AND ".join(condition_sqls))
+
+	sql = "SELECT %s FROM %s %s ORDER BY date asc;"%(factors_sql, ml_factor_table, condition_sql)
+	mysql_engine = utils.get_mysql_engine()
+	ml_factors = pandas.read_sql(sql, mysql_engine, parse_dates = ['date'])
+
+	if type(output_path) is str:
+		ml_factors.to_csv(output_path, na_rep = "nan", index = False)
+
+	return ml_factors
