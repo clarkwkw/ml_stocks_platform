@@ -1,4 +1,5 @@
 import argparse
+import os
 import importlib
 
 _test_scripts_dir = "test_data"
@@ -13,6 +14,11 @@ try:
 except ImportError:
 	print(">> Testing script '%s' not found, abort."%args.testscript)
 	exit(-1)
+
+try:
+	os.makedirs("./test_output")
+except OSError:
+	pass
 
 print(">> Testing Script: %s"%args.testscript)
 
