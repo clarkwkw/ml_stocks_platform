@@ -1,5 +1,3 @@
-crawler/historical data
 *.pyc
-*.csv
 .DS_Store
 mysql.json
