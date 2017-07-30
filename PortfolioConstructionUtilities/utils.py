@@ -12,7 +12,7 @@ def raise_warning(msg):
 
 def set_equal_weights(stocks_df):
 	n_stocks = stocks_df.shape[0]
-	stocks_df['Weight'] = 1/n_stocks
+	stocks_df['weight'] = 1/n_stocks
 	return stocks_df
 
 def cwd(directory):

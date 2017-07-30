@@ -8,7 +8,7 @@ import json
 def StockPerformancePrediction(stock_data, stock_filter_flag, preprocessing_file, model_savedir, predict_value_file):
 	test_dataset = DataPreparation.TestingDataPreparation(stock_data, stock_filter_flag = stock_filter_flag, preprocessing_file = preprocessing_file)
 	predict_df = LearnedModelExecution(test_dataset, model_savedir)
-	predict_df['buying price'] = test_dataset['last_price']
+	predict_df['buying_price'] = test_dataset['last_price']
 	predict_df = predict_df.rename(columns = {'target':'predicted value'})
 	predict_df.to_csv(predict_value_file, index = False)
 
@@ -89,9 +89,9 @@ def PortfolioConstruction(ML_sector_factors, stock_filter_flag, n, trading_stock
 		sector_portfolio = StockSelection(ranked_stocks_path, n, sector_portfolio_path)
 		sector_portfolio["sector"] = sector
 		if inter_sector_weight == "equal":
-			sector_portfolio["Weight"] = sector_portfolio["Weight"]/n_sectors
+			sector_portfolio["weight"] = sector_portfolio["weight"]/n_sectors
 		elif type(inter_sector_weight) == dict:
-			sector_portfolio["Weight"] = sector_portfolio["Weight"] * inter_sector_weight[sector]
+			sector_portfolio["weight"] = sector_portfolio["weight"] * inter_sector_weight[sector]
 		else:
 			raise Exception("Unexprected type of inter_sector_weight")
 
@@ -104,13 +104,44 @@ def PortfolioConstruction(ML_sector_factors, stock_filter_flag, n, trading_stock
 	return full_portfolio
 
 # selling_price: a dataframe containing Ticker and Selling Price columns
-def PortfolioReportGeneration(full_portfolio, selling_price):
+def PortfolioReportGeneration(full_portfolio, selling_price, date_prefix):
 	full_portfolio = utils.fill_df(full_portfolio, selling_price, "ticker", "selling_price")
-	full_portfolio['return'] = 1.0*full_portfolio["selling_price"]/full_portfolio["buying price"] - 1
-	full_portfolio.groupby(["sector", "position"]).
+	full_portfolio['return'] = divided_portfolio['selling_price'] / divided_portfolio['buying_price'] - 1
+	full_portfolio[full_portfolio['position'] == 'short', 'return'] *= -1
+
+	result_dict = {'sector':[], 'position':[], 'return':[], 'std':[]}
+
+	return_list = full_portfolio.groupby(["sector", "position"]).apply(__portfolio_report_helper)
+	for sector, position, weighted_return, weighted_std in return_list:
+		result_dict['sector'].append(sector)
+		result_dict['position'].append(position)
+		result_dict['return'].append(weighted_return)
+		result_dict['std'].append(weighted_std)
+
+	return_list = full_portfolio.groupby(["sector"]).apply(__portfolio_report_helper)
+	for sector, position, weighted_return, weighted_std in return_list:
+		result_dict['sector'].append(sector)
+		result_dict['position'].append("total")
+		result_dict['return'].append(weighted_return)
+		result_dict['std'].append(weighted_std)	
+
+	portfolio_return = pandas.DataFrame(result_dict)
+
+	portfolio_return.to_csv('./portfolio/return_report/%s_portfolio_return_report.csv'%date_prefix, index = False)
+	
 	return portfolio_return
 
+def __portfolio_report_helper(divided_portfolio):
+	first_sector = divided_portfolio['sector'].iloc[0]
+	first_position = divided_portfolio['position'].iloc[0]
+	# normalize weight
+	divided_portfolio['weight'] = divided_portfolio['weight'] / divided_portfolio['weight'].sum(skipna = True)
+	weighted_return = (divided_portfolio['return'] * divided_portfolio['weight']).sum(skipna = True)
+	weighted_std = np.sqrt((((divided_portfolio['return'] - weighted_return)**2)*divided_portfolio['weight']).sum(skipna = True))
+	return (first_sector, first_position. weighted_return, weighted_std)
+
 def StrategyPerformanceEvaluation():
+
 	pass
 
 # factors: list of field names, or "all" -> all fields will be downloaded
