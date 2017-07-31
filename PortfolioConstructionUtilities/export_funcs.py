@@ -8,8 +8,8 @@ import json
 def StockPerformancePrediction(stock_data, stock_filter_flag, preprocessing_file, model_savedir, predict_value_file):
 	test_dataset = DataPreparation.TestingDataPreparation(stock_data, stock_filter_flag = stock_filter_flag, preprocessing_file = preprocessing_file)
 	predict_df = LearnedModelExecution(test_dataset, model_savedir)
-	predict_df['buying_price'] = test_dataset['last_price']
-	predict_df = predict_df.rename(columns = {'target':'predicted value'})
+	predict_df['buying_price'] = stock_data['last_price']
+	predict_df = predict_df.rename(columns = {'pred':'predicted_value'})
 	predict_df.to_csv(predict_value_file, index = False)
 
 def LearnedModelExecution(test_dataset, model_savedir):
@@ -18,7 +18,7 @@ def LearnedModelExecution(test_dataset, model_savedir):
 
 def StockRanking(stock_file, ranked_stock_file):
 	df = pandas.read_csv(stock_file)
-	df.sort(columns = ['predicted value'], inplace = True)
+	df.sort_values(['predicted_value'], ascending = False, inplace = True)
 	df.to_csv(ranked_stock_file, index = False)
 
 def StockSelection(ranked_stock_file, n, portfolio_file, weight_method = "equal"):
@@ -38,18 +38,21 @@ def StockSelection(ranked_stock_file, n, portfolio_file, weight_method = "equal"
 		long_index = (0, n - 1)
 	else:
 		long_index = (0, n_stocks - 1)
-	ranked_stocks["position"] = ""
+
+	ranked_stocks.loc[:, "position"] = ""
 	if short_index is not None:
 		ranked_stocks.loc[short_index[0]:short_index[1], "position"] = "short"
-	ranked_stocks[long_index[0]:long_index[1], "position"] = "long"
+	ranked_stocks.loc[long_index[0]:long_index[1], "position"] = "long"
 
-	selected_stocks = ranked_stocks.loc[ranked_stocks["position"] != ""]
+	selected_indices = ranked_stocks["position"] != ""
+	selected_stocks = None
 	if weight_method == "equal":
-		selected_stocks = utils.set_equal_weights(selected_stocks)
+		selected_stocks = utils.set_equal_weights(ranked_stocks, selected_indices)
 	else:
 		raise Exception("Unexpected weight_method '%s'"%str(weight_method))
-	selected_stocks.to_csv(portfolio_file, index = False)
-	
+
+	selected_stocks[selected_indices].to_csv(portfolio_file, index = False)
+
 	return selected_stocks
 
 def SimulateTradingProcess(WorkingLocation, StockDataCode, simulate_config_file):
@@ -65,6 +68,7 @@ def SimulateTradingProcess(WorkingLocation, StockDataCode, simulate_config_file)
 def MachineLearningModelDevelopment(ML_sector_factors, ML_model_flag, paras_set, stock_filter_flag, B_top, B_bottom, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, period = None, date = None, customized_module_dir = ""):
 	models_map = {}
 	for sector in ML_sector_factors:
+		#print("Developing model for %s sector.."%sector)
 		stock_data = ML_sector_factors[sector]
 		preprocessing_file_path = "./model/preprocessing/%s_preprocessing_info.json"%sector
 		best_para = MLUtils.selectMetaparameters(ML_model_flag, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, period = period, date = date, customized_module_dir = customized_module_dir, paras_set = paras_set)
@@ -72,14 +76,15 @@ def MachineLearningModelDevelopment(ML_sector_factors, ML_model_flag, paras_set,
 		models_map[sector] = model
 	return models_map
 
-def PortfolioConstruction(ML_sector_factors, stock_filter_flag, n, trading_stock_quantity, stock_filter_flag, date_prefix, inter_sector_weight = "equal"):
+# Construct portfolio using trained models
+def PortfolioConstruction(ML_sector_factors, n, stock_filter_flag, date_prefix, inter_sector_weight = "equal"):
 	full_portfolio = None
 	n_sectors = len(ML_sector_factors)
 	full_portfolio_path = "./portfolio/full_portfolio/%s_full_portfolio.csv"%date_prefix
 	for sector in ML_sector_factors:
 		stock_data = ML_sector_factors[sector]
 		preprocessing_file_path = "./model/preprocessing/%s_preprocessing_info.json"%sector
-		model_path = "./model/%s/"%sector
+		model_path = "./model/%s"%sector
 		predicted_value_path = "./portfolio/predicted_value/%s_%s_predicted_value.csv"%(date_prefix, sector)
 		ranked_stocks_path = "./portfolio/ranked_stock/%s_%s_ranked_stock.csv"%(date_prefix, sector)
 		sector_portfolio_path = "./portfolio/sector_portfolio/%s_%s_portfolio.csv"%(date_prefix, sector)
@@ -140,8 +145,8 @@ def __portfolio_report_helper(divided_portfolio):
 	weighted_std = np.sqrt((((divided_portfolio['return'] - weighted_return)**2)*divided_portfolio['weight']).sum(skipna = True))
 	return (first_sector, first_position. weighted_return, weighted_std)
 
-def StrategyPerformanceEvaluation():
-
+def StrategyPerformanceEvaluation(strategy_performance_period):
+	
 	pass
 
 # factors: list of field names, or "all" -> all fields will be downloaded

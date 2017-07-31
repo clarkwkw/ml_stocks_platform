@@ -10,9 +10,9 @@ _id_fields = ['record_id', 'date', 'ticker', 'sector']
 def raise_warning(msg):
 	warnings.warn(msg, Warning)
 
-def set_equal_weights(stocks_df):
-	n_stocks = stocks_df.shape[0]
-	stocks_df['weight'] = 1/n_stocks
+def set_equal_weights(stocks_df, selected_indices):
+	n_stocks = np.sum(selected_indices)
+	stocks_df.loc[selected_indices, 'weight'] = 1.0/n_stocks
 	return stocks_df
 
 def cwd(directory):

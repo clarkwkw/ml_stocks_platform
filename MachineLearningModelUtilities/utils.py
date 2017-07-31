@@ -4,7 +4,7 @@ import pandas
 import random
 import warnings
 
-id_fields = ["date", "ticker", "record_id"]
+id_fields = ["date", "sector", "ticker", "record_id"]
 def split_dataset(X, y, valid_portion = 0.2):
 	if valid_portion > 1 or valid_portion < 0:
 		raise Exception("portion for the validation set should be between 0 and 1.")
@@ -15,7 +15,8 @@ def split_dataset(X, y, valid_portion = 0.2):
 	return X[train_indices, ], y[train_indices], X[valid_indices, ], y[valid_indices]
 
 def prediction_to_df(id_frame, predictions):
-	result = pandas.concat([id_frame, pandas.DataFrame({"pred": predictions})], axis = 1)
+	result = id_frame.copy()
+	result['pred'] = predictions	
 	return result
 
 def label_to_dist(labels):
