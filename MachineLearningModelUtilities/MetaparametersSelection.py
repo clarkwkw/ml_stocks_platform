@@ -1,3 +1,5 @@
+import config
+import debug
 from DataPreparation import ValidationDataPreparation, DataPreprocessing
 from SimpleSVMModel import SimpleSVMModel
 from SimpleNNModel import SimpleNNModel
@@ -26,19 +28,25 @@ def selectMetaparameters(model_flag, stock_data, stock_filter_flag, B_top, B_bot
 	best_quality = float('-inf')
 
 	unallocated_para_id = 0
+	unique_id = 0
 	avg_quality_list = []
 	n_folds = len(dataset)
-	with ThreadPoolExecutor(max_workers = 4) as executor:
+	with ThreadPoolExecutor(max_workers = config.max_thread) as executor:
 		futures = []
 		for meta_para in paras_set:
 			avg_quality_list.append(0)
 			for train_data, valid_data in dataset:
-				futures.append(executor.submit(__selectMetaparameters_helper, unallocated_para_id, train_data, valid_data, Model_class, trading_stock_quantity, para_tune_holding_flag, **meta_para))
+				futures.append(executor.submit(__selectMetaparameters_helper, unique_id, unallocated_para_id, train_data, valid_data, Model_class, trading_stock_quantity, para_tune_holding_flag, **meta_para))
+				unique_id += 1
 			unallocated_para_id += 1
 
+		debug.log("MetaparameterSelection: %d meta-parameter(s) with %d fold(s) each."%(unallocated_para_id, n_folds))
+		done = 0
 		for future in as_completed(futures):
-			quality, para_id = future.result()
+			quality, para_id, unique_id = future.result()
 			avg_quality_list[para_id] += 1.0/n_folds*quality
+			done += 1
+			debug.log("MetaparameterSelection: Done %d [id = %d]."%(done, unique_id))
 
 	for i in range(len(avg_quality_list)):
 		if avg_quality_list[i] > best_quality:
@@ -47,7 +55,7 @@ def selectMetaparameters(model_flag, stock_data, stock_filter_flag, B_top, B_bot
 
 	return best_meta_para
 
-def __selectMetaparameters_helper(para_id, train_data, valid_data, Model_class, trading_stock_quantity, para_tune_holding_flag, **meta_para):
+def __selectMetaparameters_helper(unique_id, para_id, train_data, valid_data, Model_class, trading_stock_quantity, para_tune_holding_flag, **meta_para):
 	train_factors, train_target = seperate_factors_target(train_data)
 	factors = get_factors_from_df(train_factors)
 
@@ -55,4 +63,4 @@ def __selectMetaparameters_helper(para_id, train_data, valid_data, Model_class, 
 	model.train(train_factors, train_target)
 
 	quality = evaluateModel(model, valid_data, trading_stock_quantity, para_tune_holding_flag)
-	return (quality, para_id)
+	return (quality, para_id, unique_id)

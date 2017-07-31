@@ -1,3 +1,4 @@
+import debug
 import MachineLearningModelUtilities as MLUtils
 import utils
 import DataPreparation
@@ -53,7 +54,7 @@ def StockSelection(ranked_stock_file, n, portfolio_file, weight_method = "equal"
 
 	selected_stocks[selected_indices].to_csv(portfolio_file, index = False)
 
-	return selected_stocks
+	return selected_stocks[selected_indices]
 
 def SimulateTradingProcess(WorkingLocation, StockDataCode, simulate_config_file):
 	os.cwd("./%s/%s"%(WorkingLocation, StockDataCode))
@@ -68,10 +69,13 @@ def SimulateTradingProcess(WorkingLocation, StockDataCode, simulate_config_file)
 def MachineLearningModelDevelopment(ML_sector_factors, ML_model_flag, paras_set, stock_filter_flag, B_top, B_bottom, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, period = None, date = None, customized_module_dir = ""):
 	models_map = {}
 	for sector in ML_sector_factors:
-		#print("Developing model for %s sector.."%sector)
+		debug.log("MachineLearningModelDevlopment: Developing model for %s sector.."%sector)
 		stock_data = ML_sector_factors[sector]
 		preprocessing_file_path = "./model/preprocessing/%s_preprocessing_info.json"%sector
+		debug.log("MachineLearningModelDevlopment: Step 1. Finding best parameters..")
 		best_para = MLUtils.selectMetaparameters(ML_model_flag, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, period = period, date = date, customized_module_dir = customized_module_dir, paras_set = paras_set)
+		debug.log("MachineLearningModelDevlopment: Best parameter [%s]"%str(best_para))
+		debug.log("MachineLearningModelDevlopment: Step 2. Building model..")
 		model = MLUtils.buildModel(ML_model_flag, preprocessing_file_path, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, customized_module_dir = customized_module_dir, **best_para)
 		models_map[sector] = model
 	return models_map
@@ -111,12 +115,12 @@ def PortfolioConstruction(ML_sector_factors, n, stock_filter_flag, date_prefix, 
 # selling_price: a dataframe containing Ticker and Selling Price columns
 def PortfolioReportGeneration(full_portfolio, selling_price, date_prefix):
 	full_portfolio = utils.fill_df(full_portfolio, selling_price, "ticker", "selling_price")
-	full_portfolio['return'] = divided_portfolio['selling_price'] / divided_portfolio['buying_price'] - 1
-	full_portfolio[full_portfolio['position'] == 'short', 'return'] *= -1
+	full_portfolio.loc[:, 'return'] = full_portfolio.loc[:, 'selling_price'] / full_portfolio.loc[:, 'buying_price'] - 1
+	full_portfolio.loc[full_portfolio['position'] == 'short', 'return'] *= -1
 
 	result_dict = {'sector':[], 'position':[], 'return':[], 'std':[]}
-
 	return_list = full_portfolio.groupby(["sector", "position"]).apply(__portfolio_report_helper)
+
 	for sector, position, weighted_return, weighted_std in return_list:
 		result_dict['sector'].append(sector)
 		result_dict['position'].append(position)
@@ -124,7 +128,7 @@ def PortfolioReportGeneration(full_portfolio, selling_price, date_prefix):
 		result_dict['std'].append(weighted_std)
 
 	return_list = full_portfolio.groupby(["sector"]).apply(__portfolio_report_helper)
-	for sector, position, weighted_return, weighted_std in return_list:
+	for sector, _, weighted_return, weighted_std in return_list:
 		result_dict['sector'].append(sector)
 		result_dict['position'].append("total")
 		result_dict['return'].append(weighted_return)
@@ -140,10 +144,10 @@ def __portfolio_report_helper(divided_portfolio):
 	first_sector = divided_portfolio['sector'].iloc[0]
 	first_position = divided_portfolio['position'].iloc[0]
 	# normalize weight
-	divided_portfolio['weight'] = divided_portfolio['weight'] / divided_portfolio['weight'].sum(skipna = True)
-	weighted_return = (divided_portfolio['return'] * divided_portfolio['weight']).sum(skipna = True)
-	weighted_std = np.sqrt((((divided_portfolio['return'] - weighted_return)**2)*divided_portfolio['weight']).sum(skipna = True))
-	return (first_sector, first_position. weighted_return, weighted_std)
+	divided_portfolio.loc[:, 'weight'] = divided_portfolio.loc[:, 'weight'] / divided_portfolio.loc[:, 'weight'].sum(skipna = True)
+	weighted_return = (divided_portfolio.loc[:, 'return'] * divided_portfolio.loc[:, 'weight']).sum(skipna = True)
+	weighted_std = np.sqrt((((divided_portfolio.loc[:, 'return'] - weighted_return)**2)*divided_portfolio.loc[:, 'weight']).sum(skipna = True))
+	return (first_sector, first_position, weighted_return, weighted_std)
 
 def StrategyPerformanceEvaluation(strategy_performance_period):
 	

@@ -33,7 +33,7 @@ def read_simulation_config(config_file):
 def fill_df(target_df, src_df, id_column, fill_column):
 	def fun(row):
 		id_value = row[id_column]
-		fill_value = src_df[src_df[id_column] == id_value, fill_column].iloc[0]
+		fill_value = src_df.loc[src_df[id_column] == id_value, fill_column].iloc[0]
 		row[fill_column] = fill_value
 		return row
 	target_df[fill_column] = np.NAN

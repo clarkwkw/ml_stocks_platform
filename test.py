@@ -1,4 +1,6 @@
+import config
 import argparse
+import debug
 import os
 import importlib
 import warnings
@@ -19,7 +21,7 @@ except ImportError:
 	exit(-1)
 
 
-if args.ignorewarnings:
+if args.ignorewarnings or config.ignore_warnings:
 	warnings.simplefilter("ignore")
 
 try:
