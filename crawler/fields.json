@@ -163,7 +163,7 @@
         "book_value": {
             "enabled": true,
             "freq": "quarterly",
-            "raw_field": "CURR_BOOK_VAL",
+            "raw_field": "TOT_COMMON_EQY",
             "ml_db_keep": true
         },
         "capital_expenditures": {
@@ -207,12 +207,6 @@
             "freq": "quarterly",
             "raw_field": "CURRENT_EV_TO_T12M_EBITDA",
             "ml_db_keep": false
-        },
-        "current_market_cap": {
-            "enabled": true,
-            "freq": "quarterly",
-            "raw_field": "CUR_MARKET_CAP",
-            "ml_db_keep": true
         },
         "current_ratio": {
             "enabled": true,
@@ -351,6 +345,12 @@
             "override": {
                 "PERIOD_OVERRIDE_YEARS": 3
             }
+        },
+        "market_cap": {
+            "enabled": true,
+            "freq": "quarterly",
+            "raw_field": "HISTORICAL_CAP",
+            "ml_db_keep": true
         },
         "net_change_in_cash": {
             "enabled": true,

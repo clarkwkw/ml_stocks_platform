@@ -1,13 +1,17 @@
+import config
 import json
 from GenericMLModel import GenericMLModel
 from utils import *
-from sklearn.svm import SVC
+from sklearn.svm import SVR
 from sklearn.externals import joblib
 
 class SimpleSVMModel(GenericMLModel):
 	def __init__(self, _factors = None, **kwargs):
 		super(self.__class__, self).__init__(_factors)
-		self._model = SVC(**kwargs)
+		if "max_iter" not in kwargs:
+			self._model = SVR(max_iter = config.svm_max_iter, **kwargs)
+		else:
+			self._model = SVR(**kwargs)
 
 	def train(self, machine_learning_factors, labels, **kwargs):
 		if self._trained:

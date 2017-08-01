@@ -89,7 +89,7 @@ fnm = {
     "earnings_growth_fy1_to_fy2": {
         "method": "min_max_scale"
     }, 
-    "current_market_cap": {
+    "market_cap": {
         "method": "min_max_scale"
     }, 
     "cash_from_investing": {

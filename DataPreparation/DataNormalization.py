@@ -6,9 +6,9 @@ from .factors_normalization_method import fnm
 
 def analyze_factors_statistics(stock_data):
     try:
-        factors = list(stock_data.drop(['record_id','ticker','date','return','label'],axis=1).columns)
+        factors = list(stock_data.drop(['record_id','ticker', 'sector', 'date','return','label'],axis=1).columns)
     except:
-        factors = list(stock_data.drop(['record_id','ticker','date'],axis=1).columns)
+        factors = list(stock_data.drop(['record_id','ticker', 'sector', 'date'],axis=1).columns)
 
     #Split the stock data by ticker
     tickers=stock_data['ticker'].unique()
@@ -35,9 +35,9 @@ def analyze_factors_statistics(stock_data):
 
 def DataNormalization(stock_data, validate_data = None, normalization_info = None):
     try:
-        factors = list(stock_data.drop(['record_id','ticker','date','return','label'],axis=1).columns)
+        factors = list(stock_data.drop(['record_id','ticker', 'sector', 'date','return','label'],axis=1).columns)
     except:
-        factors = list(stock_data.drop(['record_id','ticker','date'],axis=1).columns)
+        factors = list(stock_data.drop(['record_id','ticker','sector','date'],axis=1).columns)
 
     if normalization_info is None:
         info = analyze_factors_statistics(stock_data)
