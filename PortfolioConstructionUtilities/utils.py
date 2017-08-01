@@ -7,6 +7,20 @@ import sqlalchemy
 
 _id_fields = ['record_id', 'date', 'ticker', 'sector']
 
+class DateQueue:
+	def __init__(self, interval = 365):
+		self.queue = []
+		self.interval = interval
+	def pop(self, cur_date):
+		queue = self.queue
+		while len(queue) > 1 and (cur_date - queue[1][0]).days >= self.interval and (cur_date - queue[0][0]).days >= self.interval:
+			queue.pop(0)
+		if len(queue) == 0 or (cur_date - queue[0][0]).days < self.interval:
+			return None
+		return queue[0]
+	def push(self, date, val):
+		self.queue.append((date, val))
+
 def raise_warning(msg):
 	warnings.warn(msg, Warning)
 
@@ -19,16 +33,11 @@ def cwd(directory):
 	os.chdir(directory)
 
 def create_dir(path):
-    try:
-        os.makedirs(path)
-    except OSError as exception:
-        if exception.errno != errno.EEXIST:
-            raise
-
-def read_simulation_config(config_file):
-	with open(config_file, "r") as f:
-		config_dict = json.load(f)
-		return config_dict
+	try:
+		os.makedirs(path)
+	except OSError as exception:
+		if exception.errno != errno.EEXIST:
+			raise
 
 def fill_df(target_df, src_df, id_column, fill_column):
 	def fun(row):
