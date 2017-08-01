@@ -1,0 +1,13 @@
+{
+	"market_id" : "US",
+	"stock_data_code" : "USSJS",
+	"market_cap" : 100,
+	"sectors" : ["Energy","Materials"],
+	"period": {
+				"start": "2000-01-01",
+				"end": "2010-12-31"
+			},
+	"factors": ["total_revenue", "gross_profit", "operating_income", "income_before_tax", "income_after_tax", "net_income_before_xo_items", "net_income", "dividends", "diluted_normalised_eps", "cash_cash_equivalents", "short_term_investments", "account_receivable", "total_inventories", "total_current_assets", "total_assets", "short_term_liabilities", "total_current_liabilities", "total_long_term_debt", "total_debt", "total_liabilities", "total_equity", "total_shares", "depreciation", "cash_from_operating", "capital_expenditures", "cash_from_investing", "cash_from_financing", "net_change_in_cash", "snapshot_accrual", "accrual_bal_sheet", "accrual_cash_flow", "financial_health", "working_capital", "quick_ratio", "dividend_payout_ratio", "book_value", "book_value_minus_debt", "receivalbes_to_sales", "debt_to_assets", "debt_to_equity", "cash_to_assets", "liabilities_to_income", "return_on_equity", "sales_per_shares", "mom_3m", "mom_1m", "vol_change_3m", "vol_change_1m", "resist_level1", "resist_level2", "resist_level3", "high_price", "low_price"],
+	"use_loaded_data": false,
+	"save_downloaded_data": true
+}

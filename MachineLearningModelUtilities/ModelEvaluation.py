@@ -1,3 +1,4 @@
+import config
 import pandas
 from utils import seperate_factors_target, raise_warning
 import string
@@ -34,7 +35,7 @@ def __intraday_quality(df, para_tune_holding_flag, n):
 	else:
 		raise Exception("Unexpected para_tune_holding_flag '%s'"%str(para_tune_holding_flag))
 	if t < 0:
-		raise_warning("Insufficient no. of stock (%d) to evaluate on %s\nAll stocks will be considered and long position will be prioritized"%(df.shape[0], df['date'].unique()[0]))
+		raise_warning("Insufficient no. of stock (%d) to evaluate on %s\nAll stocks will be considered and long position will be prioritized"%(df.shape[0], df['date'].unique()[0].strftime(config.date_format)))
 
 	long_index, short_index = None, None
 	if para_tune_holding_flag == 'long' or para_tune_holding_flag == 'long_short':

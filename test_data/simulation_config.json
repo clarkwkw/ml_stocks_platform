@@ -1,0 +1,13 @@
+{
+  "run_code" : "001",
+  "model_flag" : "SVM",
+  "stock_filter_flag" : true,
+  "meta_paras": {},
+  "B_top" : 10.0,
+  "B_bottom" : 20.0,
+  "target_label_holding_period" : 1,
+  "model_training_frequency" : 28,
+  "portfolio_holding_period" : 91,
+  "trading_stock_quantity" : 10,
+  "strategy_performance_period" : 12
+}

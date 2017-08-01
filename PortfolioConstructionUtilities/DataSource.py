@@ -20,10 +20,10 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	else:
 		raise Exception("Unexpected value for sectors '%s'"%str(sectors))
 
-	if type(start_date) == str:
+	if start_date is not None:
 		condition_sqls.append("date >= '%s'"%start_date)
 
-	if type(end_date) == str:
+	if end_date is not None:
 		condition_sqls.append("date <= '%s'"%end_date)
 
 	if market_cap is not None:
@@ -33,12 +33,25 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 		condition_sql = "WHERE %s"%(" AND ".join(condition_sqls))
 
 	debug.log("DataSource: Firing MYSQL request..")
-	sql = "SELECT %s FROM %s %s ORDER BY sector asc;"%(factors_sql, ml_factor_table, condition_sql)
+	sql = "SELECT %s FROM %s %s;"%(factors_sql, ml_factor_table, condition_sql)
+	debug.log("DataSource: query: %s"%sql)
+	exit()
 	mysql_engine = utils.get_mysql_engine()
 	ml_factors = pandas.read_sql(sql, mysql_engine, parse_dates = ['date'])
+
+	debug.log("DataSource: Building index on raw data..")
+	ml_factors.sort(columns = ['sector'], inplace = True)
 	ml_factors.set_index(keys = ['sector'], drop = False, inplace = True)
 
-	debug.log("DataSource: Splitting dataframe into individual sectors..")
+	debug.log("DataSource: Getting price info..")
+	prices_df = ml_factors[['ticker', 'date', 'last_price']].copy()
+	price_df.rename(columns = {'last_price': 'price'})
+	prices_df.sort(columns = ['date'], inplace = True)
+	prices_df.set_index(keys = ['date'], drop = False, inplace = True)
+	if type(output_dir) is str:
+		prices_df.to_csv("%s/prices.csv"%output_dir, na_rep = "nan", index = False)
+
+	debug.log("DataSource: Splitting MLfactors into individual sectors..")
 	ML_sector_factors = {}
 	for sector in sectors:
 		ML_sector_factors[sector] = ml_factors.loc[ml_factors['sector'] == sector]
@@ -46,4 +59,15 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 		ML_sector_factors[sector].set_index(keys = ['date'], drop = False, inplace = True)
 		if type(output_dir) is str:
 			ML_sector_factors[sector].to_csv("%s/%s_ML_factor.csv"%(output_dir, sector), na_rep = "nan", index = False)
-	return ML_sector_factors
+	return ML_sector_factors, prices_df
+
+def LoadTableFromFile(sectors, input_dir):
+	prices_df = pandas.read_csv("%s/prices.csv"%input_dir, na_values = ["nan"], parse_dates = ["date"])
+	prices_df.set_index(keys = ['date'], drop = False, inplace = True)
+	
+	ML_sector_factors = {}
+	for sector in sectors:
+		ML_sector_factors[sector] = pandas.read_csv("%s/%s_ML_factor.csv"%(input_dir, sector), na_values = ["nan"], parse_dates = ["date"])
+		ML_sector_factors[sector].set_index(keys = ['date'], drop = False, inplace = True)
+
+	return ML_sector_factors, prices_df

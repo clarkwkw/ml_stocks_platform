@@ -1,3 +1,5 @@
+date_format = "%Y-%m-%d"
+
 debug_log = True
 
 ignore_warnings = True
