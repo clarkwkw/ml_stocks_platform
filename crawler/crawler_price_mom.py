@@ -19,7 +19,7 @@ first_date = "1996-03-02"
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
 
-periods = [(1, "price_mom_1m"), (3, "price_mom_3m"), (6, "price_mom_6m"), (12, "price_mom_12m")]
+periods = [(1, "bbg_mom_1m"), (3, "bbg_mom_3m"), (6, "bbg_mom_6m"), (12, "bbg_mom_12m")]
 max_thread_no = 8
 sectors = list(utilities.tickers_table.keys())
 
