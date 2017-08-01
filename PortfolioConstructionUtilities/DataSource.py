@@ -35,7 +35,6 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	debug.log("DataSource: Firing MYSQL request..")
 	sql = "SELECT %s FROM %s %s;"%(factors_sql, ml_factor_table, condition_sql)
 	debug.log("DataSource: query: %s"%sql)
-	exit()
 	mysql_engine = utils.get_mysql_engine()
 	ml_factors = pandas.read_sql(sql, mysql_engine, parse_dates = ['date'])
 
