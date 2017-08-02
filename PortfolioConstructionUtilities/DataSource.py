@@ -43,7 +43,7 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	ml_factors.set_index(keys = ['sector'], drop = False, inplace = True)
 
 	debug.log("DataSource: Getting price info..")
-	price_df = None
+	prices_df = None
 	if "last_price" in factors:
 		prices_df = ml_factors[['ticker', 'date', 'last_price']].copy()
 	else:
