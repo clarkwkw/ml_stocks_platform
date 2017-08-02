@@ -1,7 +1,7 @@
 {
   "run_code" : "001",
   "model_flag" : "SVM",
-  "stock_filter_flag" : true,
+  "stock_filter_flag" : false,
   "meta_paras": {},
   "B_top" : 10.0,
   "B_bottom" : 20.0,

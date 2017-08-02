@@ -15,13 +15,13 @@ import utilities
 
 print_status = utilities.print_status
 
-host = 'seis10.se.cuhk.edu.hk'
+host = '127.0.0.1'
 database = 'finanai'
 username = 'finanai'
 
 raw_table = 'US_bloomberg_factor'
 target_table = 'US_machine_learning_factor'
-max_thread_no = 2
+max_thread_no = 4
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -92,7 +92,7 @@ def fill_by_ticker_and_save(ticker, sector, mysql_conn, conn_mutex, download_sel
 		parsed_df = filling.fill_complex(parsed_df)
 		parsed_df = parsed_df[id_fields+utilities.ml_fields()]
 		parsed_df.replace([np.inf, -np.inf], np.nan, inplace = True)
-		parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
+		#parsed_df.to_csv(ticker+'.csv', na_rep = 'nan')
 		conn_mutex.acquire()
 		locked_by_me = True
 		parsed_df.to_sql(target_table, mysql_conn, if_exists = 'append', index = False, chunksize = 100)

@@ -10,6 +10,7 @@ from pandas.tseries.holiday import USFederalHolidayCalendar
 from pandas.tseries.offsets import CustomBusinessDay
 from DataSource import DownloadTableFileFromMySQL, LoadTableFromFile
 from ModelOperation import MachineLearningModelDevelopment
+from PortfolioOperation import PortfolioConstruction, PortfolioReportGeneration
 
 def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	__setup_dirs(stock_data_config_dict['stock_data_code'], simulation_config_dict['run_code'], stock_data_config_dict['sectors'])
@@ -30,9 +31,10 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	end_date = pandas.Timestamp(stock_data_config_dict['period']['end'])
 	date_queue = Date_Queue(start_date, end_date, stock_data_config_dict['market_id'])
 	date_queue.push(start_date + timedelta(days = simulation_config_dict["model_training_frequency"]))
-	
+
+	debug.log("TradingProcess: Starting simulation..")
 	while not date_queue.is_empty():
-		date = date_queue.pop()
+		date, _ = date_queue.pop()
 		trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
 
 def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info):
@@ -41,7 +43,8 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	dataset_start_date = cur_date - timedelta(days = simulation_config_dict["portfolio_holding_period"])
 	for sector in ML_sector_factors:
 		raw_df = ML_sector_factors[sector]
-		filtered_factors[sector] = raw_df[raw_df.loc['date'] >= dataset_start_date & raw_df.loc['date'] <= cur_date].copy()
+		filtered_factors[sector] = raw_df.loc[(raw_df['date'] >= dataset_start_date) & (raw_df['date'] <= cur_date)].copy()
+		filtered_factors[sector].is_copy = False
 
 	para_tune_holding_flag, para_tune_data_split_date, para_tune_data_split_period = None, None, None
 	if "para_tune_holding_flag" in simulation_config_dict:
@@ -55,35 +58,36 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 
 	# confirm next training date
 	next_train_date = cur_date + timedelta(days = simulation_config_dict["model_training_frequency"])
-	queue.push(train_date)
+	queue.push(next_train_date)
 
 	# build portfolio
 	build_date = queue.get_next_bday(cur_date)
 	build_date_str = build_date.strftime(config.date_format)
 
-	buying_prices = price_info[price_info.loc['date'] == build_date, ['ticker', 'price']]
+	buying_prices = price_info.loc[price_info['date'] == build_date, ['ticker', 'price']]
 	filtered_factors = {}
 	for sector in ML_sector_factors:
 		raw_df = ML_sector_factors[sector]
-		filtered_factors[sector] = raw_df[raw_df.loc['date'] == build_date].copy()
+		filtered_factors[sector] = raw_df.loc[raw_df['date'] == build_date].copy()
+		filtered_factors[sector].is_copy = False
 
 	full_portfolio = PortfolioConstruction(filtered_factors, buying_prices, 10, simulation_config_dict['stock_filter_flag'], build_date_str, trained_models_map = models_map)
 
 	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']))
 	holding_end_date_str = holding_end_date.strftime(config.date_format)
-	selling_prices = price_info[price_info.loc['date'] == holding_end_date, ['ticker', 'price']]
+	selling_prices = price_info.loc[price_info['date'] == holding_end_date, ['ticker', 'price']]
 	PortfolioReportGeneration(full_portfolio, selling_prices, holding_end_date_str)
 
 class Date_Queue:
 	def __init__(self, start_date, end_date, market_id):
-		self._business_days = __get_business_days(market_id, start_date, end_date)
+		self._business_days = get_business_days(market_id, start_date, end_date)
 		self._queue = []
 		self._cur_date = start_date
 		self._start_date = start_date
 		self._end_date = end_date
 
 	def is_empty(self):
-		return len(self._queue) > 0
+		return len(self._queue) == 0
 
 	def push(self, date, paras_tup = None):
 		if date < self._cur_date:
@@ -113,7 +117,7 @@ class Date_Queue:
 
 		return self._business_days[index]
 
-def __get_business_days(area, start_date, end_date):
+def get_business_days(area, start_date, end_date):
 	if area == 'US':
 		us_bd = CustomBusinessDay(calendar = USFederalHolidayCalendar())
 		return pandas.DatetimeIndex(start = start_date, end = end_date, freq = us_bd)
