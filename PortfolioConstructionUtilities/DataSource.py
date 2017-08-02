@@ -8,6 +8,8 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	factors_sql,condition_sql = None, ""
 	condition_sqls = []
 	if type(factors) is list:
+		if "last_price" not in factors:
+			factors.append("last_price")
 		factors.extend(utils._id_fields)
 		factors_sql = ",".join(factors)
 	elif factors == 'all':
@@ -43,15 +45,12 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	ml_factors.set_index(keys = ['sector'], drop = False, inplace = True)
 
 	debug.log("DataSource: Getting price info..")
-	prices_df = None
-	if 'last_price' in ml_factors:
-		prices_df = ml_factors[['ticker', 'date', 'last_price']].copy()
-		prices_df.is_copy = False
-	else:
-		prices_df = pandas.read_sql("SELECT date, ticker, last_price FROM %s %s;"%(ml_factor_table, condition_sql), mysql_engine, parse_dates = ['date'])
+	prices_df = ml_factors[['ticker', 'date', 'last_price']].copy()
+	prices_df.is_copy = False
 	prices_df.rename(columns = {'last_price': 'price'})
 	prices_df.sort_values(by = ['date'], inplace = True)
 	prices_df.set_index(keys = ['date'], drop = False, inplace = True)
+
 	if type(output_dir) is str:
 		prices_df.to_csv("%s/prices.csv"%output_dir, na_rep = "nan", index = False)
 
@@ -69,10 +68,11 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 def LoadTableFromFile(sectors, input_dir):
 	prices_df = pandas.read_csv("%s/prices.csv"%input_dir, na_values = ["nan"], parse_dates = ["date"])
 	prices_df.set_index(keys = ['date'], drop = False, inplace = True)
-	
+	debug.log("DataSource: Loading data from disk..")
 	ML_sector_factors = {}
 	for sector in sectors:
 		ML_sector_factors[sector] = pandas.read_csv("%s/%s_ML_factor.csv"%(input_dir, sector), na_values = ["nan"], parse_dates = ["date"])
+		ML_sector_factors[sector].sort_values(by = ['date'], inplace = True)
 		ML_sector_factors[sector].set_index(keys = ['date'], drop = False, inplace = True)
 
 	return ML_sector_factors, prices_df

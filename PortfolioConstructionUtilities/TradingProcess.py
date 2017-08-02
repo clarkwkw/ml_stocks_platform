@@ -42,7 +42,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	dataset_start_date = cur_date - timedelta(days = simulation_config_dict["portfolio_holding_period"])
 	for sector in ML_sector_factors:
 		raw_df = ML_sector_factors[sector]
-		filtered_factors[sector] = raw_df[raw_df.loc['date'] >= dataset_start_date & raw_df.loc['date'] <= cur_date].copy()
+		filtered_factors[sector] = raw_df.loc[(raw_df['date'] >= dataset_start_date) & (raw_df['date'] <= cur_date)].copy()
 		filtered_factors[sector].is_copy = False
 
 	para_tune_holding_flag, para_tune_data_split_date, para_tune_data_split_period = None, None, None
@@ -63,18 +63,18 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	build_date = queue.get_next_bday(cur_date)
 	build_date_str = build_date.strftime(config.date_format)
 
-	buying_prices = price_info[price_info.loc['date'] == build_date, ['ticker', 'price']]
+	buying_prices = price_info.loc[price_info['date'] == build_date, ['ticker', 'price']]
 	filtered_factors = {}
 	for sector in ML_sector_factors:
 		raw_df = ML_sector_factors[sector]
-		filtered_factors[sector] = raw_df[raw_df.loc['date'] == build_date].copy()
+		filtered_factors[sector] = raw_df.loc[raw_df['date'] == build_date].copy()
 		filtered_factors[sector].is_copy = False
 
 	full_portfolio = PortfolioConstruction(filtered_factors, buying_prices, 10, simulation_config_dict['stock_filter_flag'], build_date_str, trained_models_map = models_map)
 
 	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']))
 	holding_end_date_str = holding_end_date.strftime(config.date_format)
-	selling_prices = price_info[price_info.loc['date'] == holding_end_date, ['ticker', 'price']]
+	selling_prices = price_info.loc[price_info['date'] == holding_end_date, ['ticker', 'price']]
 	PortfolioReportGeneration(full_portfolio, selling_prices, holding_end_date_str)
 
 class Date_Queue:
