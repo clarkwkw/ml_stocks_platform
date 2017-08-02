@@ -8,8 +8,9 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	factors_sql,condition_sql = None, ""
 	condition_sqls = []
 	if type(factors) is list:
-		if "last_price" not in factors:
-			factors.append("last_price")
+		for factor in utils._necessary_factors:
+			if factor not in factors:
+				factors.append(factor)
 		factors.extend(utils._id_fields)
 		factors_sql = ",".join(factors)
 	elif factors == 'all':

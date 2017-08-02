@@ -6,6 +6,7 @@ import numpy as np
 import sqlalchemy
 
 _id_fields = ['record_id', 'date', 'ticker', 'sector']
+_necessary_factors = ['last_price', 'volume']
 
 def raise_warning(msg):
 	warnings.warn(msg, Warning)
