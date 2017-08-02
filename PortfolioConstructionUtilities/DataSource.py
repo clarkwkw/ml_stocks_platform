@@ -1,5 +1,6 @@
 import utils
 import pandas
+import config
 import debug
 
 # factors: list of field names, or "all" -> all fields will be downloaded
@@ -40,6 +41,10 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	debug.log("DataSource: query: %s"%sql)
 	mysql_engine = utils.get_mysql_engine()
 	ml_factors = pandas.read_sql(sql, mysql_engine, parse_dates = ['date'])
+	ml_factors.dropna(subset=['last_price'],inplace=True)
+	
+	if config.datasource_force_fill_zero:
+		ml_factors.fillna(value = 0, inplace = True)
 
 	debug.log("DataSource: Building index on raw data..")
 	ml_factors.sort_values(by = ['sector'], inplace = True)
