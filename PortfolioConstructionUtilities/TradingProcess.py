@@ -10,6 +10,7 @@ from pandas.tseries.holiday import USFederalHolidayCalendar
 from pandas.tseries.offsets import CustomBusinessDay
 from DataSource import DownloadTableFileFromMySQL, LoadTableFromFile
 from ModelOperation import MachineLearningModelDevelopment
+from PortfolioOperation import PortfolioConstruction, PortfolioReportGeneration
 
 def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	__setup_dirs(stock_data_config_dict['stock_data_code'], simulation_config_dict['run_code'], stock_data_config_dict['sectors'])
