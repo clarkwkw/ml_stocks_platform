@@ -1,4 +1,6 @@
 from StockOperation import *
+import config
+from datetime import timedelta
 import utils
 import numpy as np
 import pandas
@@ -75,6 +77,52 @@ def __portfolio_report_helper(divided_portfolio):
 	weighted_std = np.sqrt((((divided_portfolio.loc[:, 'return'] - weighted_return)**2)*divided_portfolio.loc[:, 'weight']).sum(skipna = True))
 	return (first_sector, first_position, weighted_return, weighted_std)
 
-def StrategyPerformanceEvaluation(strategy_performance_period):
-	
-	pass
+def StrategyPerformanceEvaluation(sectors, portfolio_dates, start_date, end_date, strategy_performance_period):
+	portfolio_dates.set_index(keys = ['sell'], drop = False, inplace = True)
+	period_start = start_date
+
+	while period_start <= end_date:
+		period_end = None
+		if strategy_performance_period == "whole":
+			period_end = end_date
+		else:
+			period_end = start_date + timedelta(days = strategy_performance_period)
+
+		portfolio_build_dates = portfolio_dates['sell'].between(left = period_start, right = period_end)
+		return_reports = []
+
+		for date in portfolio_build_dates:
+			date_prefix = date.strftime(config.date_format)
+			return_reports.append(pandas.read_csv('./portfolio/return_report/%s_portfolio_return_report.csv'%date_prefix))
+		full_return_reports = pandas.concat(return_reports, ignore_index = True)
+		
+		
+		result_dict = {'sector':[], 'position':[], 'return':[], 'std':[]}
+
+		return_list = full_return_reports.roupby(["sector", "position"]).apply(__strategy_report_helper)
+		for sector, position, sector_return, std in return_list:
+			result_dict['sector'].append(sector)
+			result_dict['position'].append(position)
+			result_dict['return'].append(sector_return)
+			result_dict['std'].append(std)
+
+		return_list = full_return_reports.roupby(["sector"]).apply(__strategy_report_helper)
+		for sector, _, sector_return, std in return_list:
+			result_dict['sector'].append(sector)
+			result_dict['position'].append("total")
+			result_dict['return'].append(sector_return)
+			result_dict['std'].append(std)
+
+		output_file_name = "[%s - %s]strategy_performance_report.csv"%(period_start.strftime(config.date_format), period_end.strftime(config.date_format))
+		pandas.to_csv("./portfolio/%s"%output_file_name, index = False)
+		period_start = period_end
+
+def __strategy_report_helper(divided_report):
+	first_sector = divided_report['sector'].iloc[0]
+	first_position = divided_report['position'].iloc[0]
+
+	mean_return = divided_report["return"].mean(skipna = True)
+	std = divided_report["return"].std(skipna = True)
+
+	return (first_sector, first_position, mean_return, std)
+
