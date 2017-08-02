@@ -30,7 +30,8 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	end_date = pandas.Timestamp(stock_data_config_dict['period']['end'])
 	date_queue = Date_Queue(start_date, end_date, stock_data_config_dict['market_id'])
 	date_queue.push(start_date + timedelta(days = simulation_config_dict["model_training_frequency"]))
-	
+
+	debug.log("TradingProcess: Starting simulation..")
 	while not date_queue.is_empty():
 		date = date_queue.pop()
 		trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
@@ -42,6 +43,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	for sector in ML_sector_factors:
 		raw_df = ML_sector_factors[sector]
 		filtered_factors[sector] = raw_df[raw_df.loc['date'] >= dataset_start_date & raw_df.loc['date'] <= cur_date].copy()
+		filtered_factors[sector].is_copy = False
 
 	para_tune_holding_flag, para_tune_data_split_date, para_tune_data_split_period = None, None, None
 	if "para_tune_holding_flag" in simulation_config_dict:
@@ -66,6 +68,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	for sector in ML_sector_factors:
 		raw_df = ML_sector_factors[sector]
 		filtered_factors[sector] = raw_df[raw_df.loc['date'] == build_date].copy()
+		filtered_factors[sector].is_copy = False
 
 	full_portfolio = PortfolioConstruction(filtered_factors, buying_prices, 10, simulation_config_dict['stock_filter_flag'], build_date_str, trained_models_map = models_map)
 
@@ -83,7 +86,7 @@ class Date_Queue:
 		self._end_date = end_date
 
 	def is_empty(self):
-		return len(self._queue) > 0
+		return len(self._queue) == 0
 
 	def push(self, date, paras_tup = None):
 		if date < self._cur_date:

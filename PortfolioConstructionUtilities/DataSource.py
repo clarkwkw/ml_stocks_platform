@@ -46,6 +46,7 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	prices_df = None
 	if 'last_price' in ml_factors:
 		prices_df = ml_factors[['ticker', 'date', 'last_price']].copy()
+		prices_df.is_copy = False
 	else:
 		prices_df = pandas.read_sql("SELECT date, ticker, last_price FROM %s %s;"%(ml_factor_table, condition_sql), mysql_engine, parse_dates = ['date'])
 	prices_df.rename(columns = {'last_price': 'price'})
@@ -62,6 +63,7 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 		ML_sector_factors[sector].set_index(keys = ['date'], drop = False, inplace = True)
 		if type(output_dir) is str:
 			ML_sector_factors[sector].to_csv("%s/%s_ML_factor.csv"%(output_dir, sector), na_rep = "nan", index = False)
+	debug.log("DataSource: Data is ready")
 	return ML_sector_factors, prices_df
 
 def LoadTableFromFile(sectors, input_dir):
