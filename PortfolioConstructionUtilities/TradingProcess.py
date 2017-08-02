@@ -57,7 +57,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 
 	# confirm next training date
 	next_train_date = cur_date + timedelta(days = simulation_config_dict["model_training_frequency"])
-	queue.push(train_date)
+	queue.push(next_train_date)
 
 	# build portfolio
 	build_date = queue.get_next_bday(cur_date)

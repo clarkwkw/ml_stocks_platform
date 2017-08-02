@@ -42,7 +42,7 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	mysql_engine = utils.get_mysql_engine()
 	ml_factors = pandas.read_sql(sql, mysql_engine, parse_dates = ['date'])
 	ml_factors.dropna(subset=['last_price'],inplace=True)
-	
+
 	if config.datasource_force_fill_zero:
 		ml_factors.fillna(value = 0, inplace = True)
 
@@ -64,6 +64,7 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	ML_sector_factors = {}
 	for sector in sectors:
 		ML_sector_factors[sector] = ml_factors.loc[ml_factors['sector'] == sector]
+		ML_sector_factors[sector].is_copy = False
 		ML_sector_factors[sector].sort_values(by = ['date'], inplace = True)
 		ML_sector_factors[sector].set_index(keys = ['date'], drop = False, inplace = True)
 		if type(output_dir) is str:
