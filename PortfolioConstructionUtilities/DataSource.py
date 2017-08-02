@@ -44,7 +44,7 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 
 	debug.log("DataSource: Getting price info..")
 	price_df = None
-	if "last_price" in factors
+	if "last_price" in factors:
 		prices_df = ml_factors[['ticker', 'date', 'last_price']].copy()
 	else:
 		prices_df = pandas.read_sql("SELECT date, ticker, last_price FROM %s %s;"%(ml_factor_table, condition_sql), mysql_engine, parse_dates = ['date'])
