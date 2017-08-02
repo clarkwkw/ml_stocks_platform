@@ -8,4 +8,4 @@ def log(msg, f = sys.stdout):
 
 	lines = msg.split("\n")
 	for line in lines:
-		print("> %s"%line, file = sys.stdout)
+		print("> %s"%line, file = f)

@@ -10,10 +10,10 @@ from pandas.tseries.holiday import USFederalHolidayCalendar
 from pandas.tseries.offsets import CustomBusinessDay
 from DataSource import DownloadTableFileFromMySQL, LoadTableFromFile
 from ModelOperation import MachineLearningModelDevelopment
-from PortfolioOperation import PortfolioConstruction, PortfolioReportGeneration
+from PortfolioOperation import PortfolioConstruction, PortfolioReportGeneration, StrategyPerformanceEvaluation
 
 def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
-	__setup_dirs(stock_data_config_dict['stock_data_code'], simulation_config_dict['run_code'], stock_data_config_dict['sectors'])
+	setup_dirs(stock_data_config_dict['stock_data_code'], simulation_config_dict['run_code'], stock_data_config_dict['sectors'])
 	
 	with open("run_config.json", "w") as f:
 		f.write(json.dumps(simulation_config_dict, indent = 4))
@@ -33,9 +33,16 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	date_queue.push(start_date + timedelta(days = simulation_config_dict["model_training_frequency"]))
 
 	debug.log("TradingProcess: Starting simulation..")
+	buy_dates = []
+	sell_dates = []
 	while not date_queue.is_empty():
 		date, _ = date_queue.pop()
-		trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
+		buy_date, sell_date = trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
+		buy_dates.append(buy_date)
+		sell_dates.append(sell_date)
+
+	trading_dates = pandas.DataFrame({'buy': buy_dates, 'sell': sell_dates})
+	StrategyPerformanceEvaluation(trading_dates, strategy_performance_period = simulation_config_dict['strategy_performance_period'])
 
 def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info):
 	# train_model
@@ -77,6 +84,8 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	holding_end_date_str = holding_end_date.strftime(config.date_format)
 	selling_prices = price_info.loc[price_info['date'] == holding_end_date, ['ticker', 'price']]
 	PortfolioReportGeneration(full_portfolio, selling_prices, holding_end_date_str)
+
+	return (build_date, holding_end_date)
 
 class Date_Queue:
 	def __init__(self, start_date, end_date, market_id):
@@ -124,10 +133,11 @@ def get_business_days(area, start_date, end_date):
 	else:
 		raise Exception("Unexpected value for area '%s'"%str(area))
 
-def __setup_dirs(stock_data_code, run_code, sectors):
-	utils.create_dir("./%s"%stock_data_code)
-	utils.create_dir("./%s/%s"%(stock_data_code, run_code))
-	os.chdir("./%s/%s"%(stock_data_code, run_code))
+def setup_dirs(stock_data_code = None, run_code = None, sectors = []):
+	if stock_data_code is not None:
+		utils.create_dir("./%s"%stock_data_code)
+		utils.create_dir("./%s/%s"%(stock_data_code, run_code))
+		os.chdir("./%s/%s"%(stock_data_code, run_code))
 
 	utils.create_dir("./model")
 	utils.create_dir("./model/preprocessing")

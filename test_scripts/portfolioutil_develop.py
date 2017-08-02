@@ -19,6 +19,7 @@ def test():
 	stock_data = {"Energy": energy_data, "Materials": materials_data}
 
 	os.chdir("./test_output")
+	PortfolioUtils.setup_dirs(sectors = ["Energy", "Materials"])
 
 	print("Developing models...")
 	models_map = PortfolioUtils.MachineLearningModelDevelopment(stock_data, "SVM", svm_paras, False, 10, 15, 3, 3, "long", period = 5)
