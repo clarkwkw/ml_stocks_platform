@@ -13,7 +13,7 @@ from ModelOperation import MachineLearningModelDevelopment
 from PortfolioOperation import PortfolioConstruction, PortfolioReportGeneration, StrategyPerformanceEvaluation
 
 def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
-	__setup_dirs(stock_data_config_dict['stock_data_code'], simulation_config_dict['run_code'], stock_data_config_dict['sectors'])
+	setup_dirs(stock_data_config_dict['stock_data_code'], simulation_config_dict['run_code'], stock_data_config_dict['sectors'])
 	
 	with open("run_config.json", "w") as f:
 		f.write(json.dumps(simulation_config_dict, indent = 4))
@@ -133,10 +133,11 @@ def get_business_days(area, start_date, end_date):
 	else:
 		raise Exception("Unexpected value for area '%s'"%str(area))
 
-def __setup_dirs(stock_data_code, run_code, sectors):
-	utils.create_dir("./%s"%stock_data_code)
-	utils.create_dir("./%s/%s"%(stock_data_code, run_code))
-	os.chdir("./%s/%s"%(stock_data_code, run_code))
+def setup_dirs(stock_data_code = None, run_code = None, sectors = []):
+	if stock_data_code is not None:
+		utils.create_dir("./%s"%stock_data_code)
+		utils.create_dir("./%s/%s"%(stock_data_code, run_code))
+		os.chdir("./%s/%s"%(stock_data_code, run_code))
 
 	utils.create_dir("./model")
 	utils.create_dir("./model/preprocessing")
