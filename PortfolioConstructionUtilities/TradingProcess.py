@@ -33,7 +33,7 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 
 	debug.log("TradingProcess: Starting simulation..")
 	while not date_queue.is_empty():
-		date = date_queue.pop()
+		date, _ = date_queue.pop()
 		trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
 
 def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info):
