@@ -39,13 +39,13 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	ml_factors = pandas.read_sql(sql, mysql_engine, parse_dates = ['date'])
 
 	debug.log("DataSource: Building index on raw data..")
-	ml_factors.sort(columns = ['sector'], inplace = True)
+	ml_factors.sort_values(by = ['sector'], inplace = True)
 	ml_factors.set_index(keys = ['sector'], drop = False, inplace = True)
 
 	debug.log("DataSource: Getting price info..")
 	prices_df = ml_factors[['ticker', 'date', 'last_price']].copy()
 	price_df.rename(columns = {'last_price': 'price'})
-	prices_df.sort(columns = ['date'], inplace = True)
+	prices_df.sort_values(by = ['date'], inplace = True)
 	prices_df.set_index(keys = ['date'], drop = False, inplace = True)
 	if type(output_dir) is str:
 		prices_df.to_csv("%s/prices.csv"%output_dir, na_rep = "nan", index = False)
@@ -54,7 +54,7 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	ML_sector_factors = {}
 	for sector in sectors:
 		ML_sector_factors[sector] = ml_factors.loc[ml_factors['sector'] == sector]
-		ML_sector_factors[sector].sort(columns = ['date'], inplace = True)
+		ML_sector_factors[sector].sort_values(by = ['date'], inplace = True)
 		ML_sector_factors[sector].set_index(keys = ['date'], drop = False, inplace = True)
 		if type(output_dir) is str:
 			ML_sector_factors[sector].to_csv("%s/%s_ML_factor.csv"%(output_dir, sector), na_rep = "nan", index = False)
