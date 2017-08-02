@@ -76,7 +76,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 
 class Date_Queue:
 	def __init__(self, start_date, end_date, market_id):
-		self._business_days = __get_business_days(market_id, start_date, end_date)
+		self._business_days = get_business_days(market_id, start_date, end_date)
 		self._queue = []
 		self._cur_date = start_date
 		self._start_date = start_date
@@ -113,7 +113,7 @@ class Date_Queue:
 
 		return self._business_days[index]
 
-def __get_business_days(area, start_date, end_date):
+def get_business_days(area, start_date, end_date):
 	if area == 'US':
 		us_bd = CustomBusinessDay(calendar = USFederalHolidayCalendar())
 		return pandas.DatetimeIndex(start = start_date, end = end_date, freq = us_bd)
