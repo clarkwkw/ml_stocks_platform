@@ -9,7 +9,7 @@ def StockPerformancePrediction(stock_data, buying_price, stock_filter_flag, prep
 	test_dataset = DataPreparation.TestingDataPreparation(stock_data, stock_filter_flag = stock_filter_flag, preprocessing_file = preprocessing_file)
 	predict_df = LearnedModelExecution(test_dataset, model_savedir, trained_model)
 	predict_df.to_csv("test_predict.csv")
-	predict_df.to_csv("test_buying_price.csv")
+	buying_price.to_csv("test_buying_price.csv")
 	predict_df = utils.fill_df(predict_df, "buying_price", buying_price, "price", "ticker")
 	predict_df.to_csv("test_predict_filled.csv")
 	predict_df.dropna(subset=['buying_price'],inplace=True)
