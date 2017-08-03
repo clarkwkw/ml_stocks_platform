@@ -5,7 +5,7 @@ import json
 from datetime import timedelta
 import utils
 import os
-import numpy
+import numpy as np
 import pandas
 from pandas.tseries.holiday import USFederalHolidayCalendar
 from pandas.tseries.offsets import CustomBusinessDay
