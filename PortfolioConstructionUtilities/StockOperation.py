@@ -10,7 +10,7 @@ def StockPerformancePrediction(stock_data, buying_price, stock_filter_flag, prep
 	predict_df = LearnedModelExecution(test_dataset, model_savedir, trained_model)
 	predict_df['buying_price'] = np.NAN
 	predict_df = utils.fill_df(predict_df, "buying_price", buying_price, "price", "ticker")
-	predict_df.dropna(subset=['price'],inplace=True)
+	predict_df.dropna(subset=['buying_price'],inplace=True)
 	predict_df = predict_df.rename(columns = {'pred':'predicted_value'})
 	predict_df.to_csv(predict_value_file, index = False)
 
