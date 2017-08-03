@@ -38,6 +38,7 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	sell_dates = []
 	while not date_queue.is_empty():
 		date, _ = date_queue.pop()
+		debug.log("TradingProcess: Training model on %s.."%(date.strftime(config.date_format)))
 		buy_date, sell_date = trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
 		buy_dates.append(buy_date)
 		sell_dates.append(sell_date)
