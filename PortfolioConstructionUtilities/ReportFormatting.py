@@ -3,9 +3,15 @@ import pandas
 import numbers
 import xlwt
 
-def reformat_report(src_report, target_path, sectors, positions):
+def reformat_report(src_report, target_path, sectors = None, positions = None):
 	if type(src_report) != pandas.DataFrame:
 		src_report = pandas.read_csv(src_report)
+
+	if sectors is None:
+		sectors = src_report['sector'].unique()
+
+	if positions is None:
+		positions = src_report['position'].unique()
 
 	formatter = Report_Formatter(sectors, positions)
 	for _, row in src_report.iterrows():
