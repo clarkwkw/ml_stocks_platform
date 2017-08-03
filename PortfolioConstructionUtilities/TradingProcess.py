@@ -83,8 +83,8 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	tradable_tickers = pandas.Series(np.intersect1d(buying_prices['ticker'].values, selling_prices['ticker'].values))
 	debug.log("TradingProcess: Tradable tickers: %d.."%tradable_tickers.size)
 
-	buying_prices = buying_prices[buying_prices['ticker'].isin(tradable_tickers)]
-	selling_prices = selling_prices[selling_prices['ticker'].isin(tradable_tickers)]
+	buying_prices = buying_prices.loc[buying_prices['ticker'].isin(tradable_tickers)]
+	selling_prices = selling_prices.loc[selling_prices['ticker'].isin(tradable_tickers)]
 
 	# build portfolio and 'buy' stocks
 	filtered_factors = {}
