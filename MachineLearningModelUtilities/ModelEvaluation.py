@@ -35,7 +35,9 @@ def __intraday_quality(df, para_tune_holding_flag, n):
 	else:
 		raise Exception("Unexpected para_tune_holding_flag '%s'"%str(para_tune_holding_flag))
 	if t < 0:
-		raise_warning("Insufficient no. of stock (%d) to evaluate on %s\nAll stocks will be considered and long position will be prioritized"%(df.shape[0], df['date'].unique()[0].strftime(config.date_format)))
+		pd_date = pandas.to_datetime(str(df['date'].unique()[0])) 
+		date_str = pd_date.strftime(config.date_format)
+		raise_warning("Insufficient no. of stock (%d) to evaluate on %s\nAll stocks will be considered and long position will be prioritized"%(df.shape[0], date_str))
 
 	long_index, short_index = None, None
 	if para_tune_holding_flag == 'long' or para_tune_holding_flag == 'long_short':
