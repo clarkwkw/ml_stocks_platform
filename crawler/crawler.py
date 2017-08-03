@@ -42,7 +42,7 @@ for sector in utilities.tickers_table.keys():
 	for (begin, end) in batches:
 		print_status("\t Batch %d/%d"%(i, len(batches)))
 		for (raw_fields, parsed_fields) in daily_fields:
-			result = LocalTerminal.get_historical(utilities.tickers_table[sector][begin:end], raw_fields, period = "DAILY", start = start_date, end = end_date)
+			result = LocalTerminal.get_historical(utilities.tickers_table[sector][begin:end], raw_fields, start = start_date, end = end_date)
 			result = result.as_map()
 			write_dict(csv_file, result, raw_fields, parsed_fields)
 
