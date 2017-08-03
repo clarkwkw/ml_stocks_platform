@@ -80,8 +80,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	# only provide stocks that have price info on both days
 	buying_prices = price_info.loc[price_info['date'] == build_date, ['ticker', 'price']]
 	selling_prices = price_info.loc[price_info['date'] == holding_end_date, ['ticker', 'price']]
-	buying_prices.to_csv("test_buying.csv")
-	selling_prices.to_csv("test_selling.csv")
+	
 	tradable_tickers = pandas.Series(np.intersect1d(buying_prices['ticker'].values, selling_prices['ticker'].values))
 	debug.log("TradingProcess: Tradable tickers: %d.."%tradable_tickers.size)
 

@@ -53,7 +53,7 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	debug.log("DataSource: Getting price info..")
 	prices_df = ml_factors[['ticker', 'date', 'last_price']].copy()
 	prices_df.is_copy = False
-	prices_df.rename(columns = {'last_price': 'price'})
+	prices_df.rename(columns = {'last_price': 'price'}, inplace = True)
 	prices_df.sort_values(by = ['date'], inplace = True)
 	prices_df.set_index(keys = ['date'], drop = False, inplace = True)
 
