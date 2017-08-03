@@ -57,10 +57,19 @@ def DataNormalization(stock_data, validate_data = None, normalization_info = Non
         ticker_data[key].sort_values(by=['date'],inplace=True)   
 
     #Normalize the stock data
+    unseen_stock = []
     for ticker in ticker_data:
         t = ticker_data[ticker]
+        try:
+            i = info[ticker]
+        except KeyError:
+            unseen_stock.append(ticker)
+            continue
         for factor in factors:
-            t[factor] = normalization_method[factors_method[factor]['method']](t[factor].as_matrix(),info[ticker][factor])
+            t[factor] = normalization_method[factors_method[factor]['method']](t[factor].as_matrix(),i[factor])
+            
+    for s in unseen_stock:
+        ticker_data.pop(s,None)
 
     #Join the ticker data
     stock_data = pd.concat([ticker_data[i] for i in ticker_data])   
