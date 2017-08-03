@@ -55,7 +55,7 @@ def __intraday_quality(df, para_tune_holding_flag, n):
 	if short_index is not None:
 		stocks_used += short_index[1] - short_index[0] + 1
 
-	df = df.sort(columns = ['pred'], ascending = False)
+	df = df.sort_values(by = ['pred'], ascending = False)
 
 	if long_index is not None:
 		avg_return += 1.0/stocks_used*df['return'][long_index[0]:long_index[1]].sum(skipna = True)
