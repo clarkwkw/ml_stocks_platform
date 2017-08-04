@@ -8,12 +8,12 @@ import utilities
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import multiprocessing
 
-host = "localhost"
+host = "127.0.0.1"
 database = "finanai"
 username = "finanai"
-raw_table = 'US_bloomberg_factor'
-target_table = 'US_machine_learning_factor'
-max_thread_no = 2
+raw_table = 'US_bloomberg_factor_2'
+target_table = 'US_machine_learning_factor_2'
+max_thread_no = 4
 
 id_fields = ['record_id', 'date', 'ticker', 'sector']
 
