@@ -6,9 +6,12 @@ import utilities
 
 batch_size = 1000
 
-#M/D/YYYY
-start_date = '12/31/1995'
-end_date = '12/31/2016'
+#YYYY-MM-DD
+start_date = '1995-12-31'
+end_date = '2016-12-31'
+
+end_date = ''.join(end_date.split('-'))
+start_date = ''.join(start_date.split('-'))
 
 def write_dict(csv_file, dict, raw_fields, parsed_fields):
 	for ticker in dict.keys():
