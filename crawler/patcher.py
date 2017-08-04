@@ -120,6 +120,9 @@ def fillmean(sectors, factors):
 		factors = factors.loc[~(factors['factors'].isin(id_fields)), 'factors']	
 	for sector in sectors:
 		for factor in factors:
+			if factor in utilities.keep_fields:
+				utilities.print_status("Skipping protected field %s - %s"%(sector, factor))
+				continue
 			utilities.print_status("Filling %s - %s"%(sector, factor))
 			sql = "UPDATE %s ml JOIN (SELECT sector, date, avg(%s) AS avg FROM %s WHERE sector = '%s' GROUP BY sector, date) val ON ml.sector = val.sector AND ml.date = val.date SET ml.%s = val.avg WHERE ml.%s IS NULL;"%(target_table, factor, target_table, sector, factor, factor)
 			with mysql_conn.begin() as conn:

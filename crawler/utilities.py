@@ -19,6 +19,7 @@ email_json = "./email.json"
 # For more options, 
 # see http://docs.sqlalchemy.org/en/latest/dialects/mysql.html#module-sqlalchemy.dialects.mysql.mysqlconnector
 db_connector = "mysqldb"
+keep_fields = ['last_price', 'volume']
 
 def print_status(msg):
 	print("> "+str(msg))

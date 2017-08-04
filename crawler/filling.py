@@ -1,7 +1,7 @@
 import numpy as np
 import pandas
 import re
-from utilities import print_status
+from utilities import print_status, keep_fields
 from filling_complex import *
 
 _fill_complex_funcs = [	
@@ -42,6 +42,8 @@ def fill_complex(df):
 def fill_direct_prev(df, fields):
 	prev_vals = {}
 	for field in fields:
+		if field in keep_fields:
+			continue
 		fill_prev = fill_direct_prev_factory(field, prev_vals)
 		df[field] = df[field].apply(fill_prev)
 	return df
