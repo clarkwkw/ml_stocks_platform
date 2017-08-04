@@ -322,7 +322,7 @@
         "last_price": {
             "enabled": true,
             "freq": "daily",
-            "raw_field": "PX_LAST",
+            "raw_field": "PX_LAST_ACTUAL",
             "ml_db_keep": true
         },
         "leverage": {
