@@ -4,6 +4,7 @@ from datetime import timedelta
 import utils
 import numpy as np
 import pandas
+from ReportFormatting import reformat_report
 
 # Construct portfolio using trained models
 # buying_price: a dataframe containing Ticker and Buying Price columns
@@ -95,27 +96,24 @@ def StrategyPerformanceEvaluation(sectors, portfolio_dates, start_date, end_date
 			date_prefix = date.strftime(config.date_format)
 			return_reports.append(pandas.read_csv('./portfolio/return_report/%s_portfolio_return_report.csv'%date_prefix))
 		full_return_reports = pandas.concat(return_reports, ignore_index = True)
-		
-		
-		result_dict = {'sector':[], 'position':[], 'return':[], 'std':[]}
 
-		return_list = full_return_reports.roupby(["sector", "position"]).apply(__strategy_report_helper)
-		for sector, position, sector_return, std in return_list:
-			result_dict['sector'].append(sector)
-			result_dict['position'].append(position)
-			result_dict['return'].append(sector_return)
-			result_dict['std'].append(std)
+		raw_strategy_report = generate_raw_strategy_report(full_return_reports)
+		output_file_name = "[%s - %s]strategy_performance_report.xls"%(period_start.strftime(config.date_format), period_end.strftime(config.date_format))
+		reformat_report(raw_strategy_report, output_file_name, sectors)
 
-		return_list = full_return_reports.roupby(["sector"]).apply(__strategy_report_helper)
-		for sector, _, sector_return, std in return_list:
-			result_dict['sector'].append(sector)
-			result_dict['position'].append("total")
-			result_dict['return'].append(sector_return)
-			result_dict['std'].append(std)
-
-		output_file_name = "[%s - %s]strategy_performance_report.csv"%(period_start.strftime(config.date_format), period_end.strftime(config.date_format))
-		pandas.to_csv("./portfolio/%s"%output_file_name, index = False)
 		period_start = period_end
+
+def generate_raw_strategy_report(combined_reports):
+	result_dict = {'sector':[], 'position':[], 'return':[], 'std':[]}
+
+	return_list = combined_reports.groupby(["sector", "position"]).apply(__strategy_report_helper)
+	for sector, position, sector_return, std in return_list:
+		result_dict['sector'].append(sector)
+		result_dict['position'].append(position)
+		result_dict['return'].append(sector_return)
+		result_dict['std'].append(std)
+
+	return pandas.DataFrame(result_dict)
 
 def __strategy_report_helper(divided_report):
 	first_sector = divided_report['sector'].iloc[0]

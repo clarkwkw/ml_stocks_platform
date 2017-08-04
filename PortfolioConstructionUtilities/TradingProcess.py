@@ -5,6 +5,7 @@ import json
 from datetime import timedelta
 import utils
 import os
+import numpy as np
 import pandas
 from pandas.tseries.holiday import USFederalHolidayCalendar
 from pandas.tseries.offsets import CustomBusinessDay
@@ -37,6 +38,7 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	sell_dates = []
 	while not date_queue.is_empty():
 		date, _ = date_queue.pop()
+		debug.log("TradingProcess: Training model on %s.."%(date.strftime(config.date_format)))
 		buy_date, sell_date = trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
 		buy_dates.append(buy_date)
 		sell_dates.append(sell_date)
@@ -67,11 +69,25 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	next_train_date = cur_date + timedelta(days = simulation_config_dict["model_training_frequency"])
 	queue.push(next_train_date)
 
-	# build portfolio
+	# confirm portfolio buy and sell date
 	build_date = queue.get_next_bday(cur_date)
 	build_date_str = build_date.strftime(config.date_format)
 
+	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']))
+	holding_end_date_str = holding_end_date.strftime(config.date_format)
+	
+
+	# only provide stocks that have price info on both days
 	buying_prices = price_info.loc[price_info['date'] == build_date, ['ticker', 'price']]
+	selling_prices = price_info.loc[price_info['date'] == holding_end_date, ['ticker', 'price']]
+	
+	tradable_tickers = pandas.Series(np.intersect1d(buying_prices['ticker'].values, selling_prices['ticker'].values))
+	debug.log("TradingProcess: Tradable tickers: %d.."%tradable_tickers.size)
+
+	buying_prices = buying_prices.loc[buying_prices['ticker'].isin(tradable_tickers)]
+	selling_prices = selling_prices.loc[selling_prices['ticker'].isin(tradable_tickers)]
+
+	# build portfolio and 'buy' stocks
 	filtered_factors = {}
 	for sector in ML_sector_factors:
 		raw_df = ML_sector_factors[sector]
@@ -80,9 +96,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 
 	full_portfolio = PortfolioConstruction(filtered_factors, buying_prices, 10, simulation_config_dict['stock_filter_flag'], build_date_str, trained_models_map = models_map)
 
-	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']))
-	holding_end_date_str = holding_end_date.strftime(config.date_format)
-	selling_prices = price_info.loc[price_info['date'] == holding_end_date, ['ticker', 'price']]
+	# build portfolio and 'sell' stocks
 	PortfolioReportGeneration(full_portfolio, selling_prices, holding_end_date_str)
 
 	return (build_date, holding_end_date)

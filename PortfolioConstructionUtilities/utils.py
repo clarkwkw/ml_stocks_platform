@@ -29,8 +29,9 @@ def create_dir(path):
 def fill_df(target_df, target_column, src_df, src_column, id_column):
 	def fun(row):
 		id_value = row[id_column]
-		fill_value = src_df.loc[src_df[id_column] == id_value, src_column].iloc[0]
-		row[target_column] = fill_value
+		fill_values = src_df.loc[src_df[id_column] == id_value, src_column]
+		if fill_values.size > 0:
+			row[target_column] = fill_values.iloc[0]
 		return row
 	target_df[target_column] = np.NAN
 	target_df = target_df.apply(fun, axis = 1)
