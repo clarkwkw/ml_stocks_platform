@@ -70,12 +70,19 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	queue.push(next_train_date)
 
 	# confirm portfolio buy and sell date
-	build_date = queue.get_next_bday(cur_date)
+	build_date = queue.get_next_bday(cur_date, False)
 	build_date_str = build_date.strftime(config.date_format)
 
-	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']))
+	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
 	holding_end_date_str = holding_end_date.strftime(config.date_format)
 	
+	if build_date is None:
+		return
+
+	if holding_end_date is None:
+		holding_end_date = queue.get_prev_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
+		if build_date >= holding_end_date:
+			return
 
 	# only provide stocks that have price info on both days
 	buying_prices = price_info.loc[price_info['date'] == build_date, ['ticker', 'price']]
@@ -127,12 +134,33 @@ class Date_Queue:
 		self._cur_date = date
 		return date, paras_tup
 
-	def get_next_bday(self, date):
+	def get_prev_bday(self, date, inclusive):
 		if type(date) is str:
 			date = pandas.Timestamp(date)
 
-		index = self._business_days.get_loc(date, "backfill")
-		if date == self._business_days[index]:
+		try:
+			index = self._business_days.get_loc(date, "fill")
+		except KeyError:
+			return None
+
+		if not inclusive and date == self._business_days[index]:
+			index -= 1
+
+		if index < 0:
+			return None
+
+		return self._business_days[index]
+
+	def get_next_bday(self, date, inclusive):
+		if type(date) is str:
+			date = pandas.Timestamp(date)
+
+		try:
+			index = self._business_days.get_loc(date, "backfill")
+		except KeyError:
+			return None
+
+		if not inclusive and date == self._business_days[index]:
 			index += 1
 
 		if index >= len(self._business_days):
