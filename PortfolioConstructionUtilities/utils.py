@@ -1,3 +1,4 @@
+import config
 import errno
 import json
 import os
@@ -38,12 +39,8 @@ def fill_df(target_df, target_column, src_df, src_column, id_column):
 	return target_df
 
 def get_mysql_engine():
-	config_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-	config = None
-	with open(config_dir+"/mysql.json", "r") as f:
-		config = json.load(f)
 	try:
-		engine = sqlalchemy.create_engine('mysql+%s://%s:%s@%s/%s'%(config["db_connector"], config["username"], config["password"], config["host"], config["database"]))
+		engine = sqlalchemy.create_engine('mysql+%s://%s:%s@%s/%s'%(config.sql_db_connector, config.sql_username, config.sql_password, config.sql_host, config.sql_database))
 		conn = engine.connect()
 		conn.close()
 	except sqlalchemy.exc.OperationalError as e:

@@ -1,7 +1,0 @@
-{
-	"host": "seis10.se.cuhk.edu.hk",
-	"username": "finanai",
-	"password": "",
-	"database": "finanai",
-	"db_connector": "mysqldb"
-}

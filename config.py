@@ -13,3 +13,14 @@ max_thread = 4
 datasource_force_fill_zero = True
 
 svm_max_iter = 1000
+
+# --- MYSQL Config ---
+sql_host = "seis10.se.cuhk.edu.hk"
+
+sql_username = "finanai"
+
+sql_password = ""
+
+sql_database = "finanai"
+
+sql_db_connector = "mysqldb"

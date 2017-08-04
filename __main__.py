@@ -37,7 +37,7 @@ def main():
 			warnings.simplefilter("ignore")
 
 	if args.testscript is not None:
-		test.test(args.testscript, args.ignorewarnings)
+		test.test(args.testscript)
 
 	elif args.formatreports is not None:
 		max_len = 0
