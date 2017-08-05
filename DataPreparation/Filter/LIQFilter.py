@@ -22,7 +22,8 @@ def calculate_r_log_vt_pt(t):
         else:
             sign = -1
         r_t.append(r)
-        log_v_p.append(sign*np.log(data.iloc[i].last_price*data.iloc[i].volume))
+        #modified the equation log(v(t)p(t)) in the financial paper by log(1+v(t)p(t)) to prevent overflow of small value
+        log_v_p.append(sign*np.log(1+data.iloc[i].last_price*data.iloc[i].volume))
     data['net_return'] = r_t
     data['sign_log_v_p'] = log_v_p
 
