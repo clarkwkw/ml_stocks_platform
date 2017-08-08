@@ -39,10 +39,10 @@ def fill_complex(df):
 		df = func(df)
 	return df
 
-def fill_direct_prev(df, fields):
+def fill_direct_prev(df, fields, skip_keep_fields = True):
 	prev_vals = {}
 	for field in fields:
-		if field in keep_fields:
+		if skip_keep_fields and field in keep_fields:
 			continue
 		fill_prev = fill_direct_prev_factory(field, prev_vals)
 		df[field] = df[field].apply(fill_prev)
