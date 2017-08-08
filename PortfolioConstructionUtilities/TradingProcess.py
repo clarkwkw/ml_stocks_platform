@@ -83,18 +83,9 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 		holding_end_date = queue.get_prev_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
 		if build_date >= holding_end_date:
 			return
-
-	# only provide stocks that have price info on both days
-	buying_prices = price_info.loc[price_info['date'] == build_date, ['ticker', 'price']]
-	selling_prices = price_info.loc[price_info['date'] == holding_end_date, ['ticker', 'price']]
 	
-	tradable_tickers = pandas.Series(np.intersect1d(buying_prices['ticker'].values, selling_prices['ticker'].values))
-	debug.log("TradingProcess: Tradable tickers: %d.."%tradable_tickers.size)
-
-	buying_prices = buying_prices.loc[buying_prices['ticker'].isin(tradable_tickers)]
-	selling_prices = selling_prices.loc[selling_prices['ticker'].isin(tradable_tickers)]
-
 	# build portfolio and 'buy' stocks
+	buying_prices = price_info.loc[price_info['date'] == build_date, ['ticker', 'price']]
 	filtered_factors = {}
 	for sector in ML_sector_factors:
 		raw_df = ML_sector_factors[sector]
@@ -104,6 +95,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	full_portfolio = PortfolioConstruction(filtered_factors, buying_prices, 10, simulation_config_dict['stock_filter_flag'], build_date_str, trained_models_map = models_map)
 
 	# build portfolio and 'sell' stocks
+	selling_prices = price_info.loc[price_info['date'] == holding_end_date, ['ticker', 'price']]
 	PortfolioReportGeneration(full_portfolio, selling_prices, holding_end_date_str)
 
 	return (build_date, holding_end_date)
