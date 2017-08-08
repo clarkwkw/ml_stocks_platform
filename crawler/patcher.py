@@ -8,11 +8,11 @@ import utilities
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import multiprocessing
 
-host = "127.0.0.1"
+host = "seis10.se.cuhk.edu.hk"
 database = "finanai"
 username = "finanai"
-raw_table = 'US_bloomberg_factor_2'
-target_table = 'US_machine_learning_factor_2'
+raw_table = 'US_bloomberg_factor'
+target_table = 'US_machine_learning_factor'
 max_thread_no = 4
 
 id_fields = ['record_id', 'date', 'ticker', 'sector']
@@ -107,7 +107,7 @@ def rebuild_by_ticker(ticker, factors, mysql_conn, mysql_mutex):
 				field = row['field']
 				val = row['value']
 				ml_table.loc[ml_table['date'] == date, field] = val
-		ml_table = filling.fill_direct_prev(ml_table, factors)
+		ml_table = filling.fill_direct_prev(ml_table, factors, False)
 		save_factors(ml_table, factors, mysql_conn, mysql_mutex)
 		return 0
 	except:
