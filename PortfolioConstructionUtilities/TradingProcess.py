@@ -26,7 +26,10 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	else:
 		if not stock_data_config_dict['save_downloaded_data']:
 			ML_factors_dir = None
-		ML_sector_factors, price_info = DownloadTableFileFromMySQL(stock_data_config_dict['market_id'], stock_data_config_dict['sectors'], stock_data_config_dict['factors'], stock_data_config_dict['market_cap'], start_date = stock_data_config_dict['period']['start'], end_date = stock_data_config_dict['period']['end'], output_dir = ML_factors_dir)
+		market_cap = None
+		if 'market_cap' in stock_data_config_dict:
+			market_cap = stock_data_config_dict['market_cap']
+		ML_sector_factors, price_info = DownloadTableFileFromMySQL(stock_data_config_dict['market_id'], stock_data_config_dict['sectors'], stock_data_config_dict['factors'], market_cap, start_date = stock_data_config_dict['period']['start'], end_date = stock_data_config_dict['period']['end'], output_dir = ML_factors_dir)
 	
 	start_date = pandas.Timestamp(stock_data_config_dict['period']['start'])
 	end_date = pandas.Timestamp(stock_data_config_dict['period']['end'])
@@ -89,10 +92,10 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	filtered_factors = {}
 	for sector in ML_sector_factors:
 		raw_df = ML_sector_factors[sector]
-		filtered_factors[sector] = raw_df.loc[raw_df['date'] == build_date].copy()
+		filtered_factors[sector] = raw_df.loc[(raw_df['date'] >= dataset_start_date) & (raw_df['date'] <= build_date)].copy()
 		filtered_factors[sector].is_copy = False
 
-	full_portfolio = PortfolioConstruction(filtered_factors, buying_prices, 10, simulation_config_dict['stock_filter_flag'], build_date_str, trained_models_map = models_map)
+	full_portfolio = PortfolioConstruction(filtered_factors, build_date, buying_prices, 10, simulation_config_dict['stock_filter_flag'], build_date_str, trained_models_map = models_map)
 
 	# build portfolio and 'sell' stocks
 	selling_prices = price_info.loc[price_info['date'] == holding_end_date, ['ticker', 'price']]
