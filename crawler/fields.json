@@ -322,7 +322,7 @@
         "last_price": {
             "enabled": true,
             "freq": "daily",
-            "raw_field": "PX_LAST_ACTUAL",
+            "raw_field": "PX_LAST",
             "ml_db_keep": true
         },
         "leverage": {
@@ -345,12 +345,6 @@
             "override": {
                 "PERIOD_OVERRIDE_YEARS": 3
             }
-        },
-        "market_cap": {
-            "enabled": true,
-            "freq": "quarterly",
-            "raw_field": "HISTORICAL_CAP",
-            "ml_db_keep": true
         },
         "net_change_in_cash": {
             "enabled": true,
@@ -571,6 +565,7 @@
         "free_cf_to_ev": "1 / %ev_to_trailing_12m_free_cf% * 100",
         "income_after_tax": "%income_before_tax% - %income_tax_expense%",
         "liabilities_to_income": "%total_liabilities% / %net_income%",
+        "market_cap": "%total_shares% * %last_price%",
         "net_earning_rev_fy1": "(%best_eps_numup_4w_fy1% - %best_eps_numdn_4w_fy1%) / (%best_eps_numup_4w_fy1% + %best_eps_numdn_4w_fy1%)*100 ",
         "net_earning_rev_fy2": "(%best_eps_numup_4w_fy2% - %best_eps_numdn_4w_fy2%) / (%best_eps_numup_4w_fy2% + %best_eps_numdn_4w_fy2%)*100 ",
         
