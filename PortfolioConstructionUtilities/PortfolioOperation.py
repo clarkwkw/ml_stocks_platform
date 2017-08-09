@@ -46,6 +46,8 @@ def PortfolioReportGeneration(full_portfolio, selling_price, date_prefix):
 	full_portfolio = utils.fill_df(full_portfolio, "selling_price", selling_price, "price", "ticker")
 	full_portfolio.loc[:, 'return'] = full_portfolio.loc[:, 'selling_price'] / full_portfolio.loc[:, 'buying_price'] - 1
 	full_portfolio.loc[full_portfolio['position'] == 'short', 'return'] *= -1
+	# If selling_price of some stocks could not be sold, set return to -1
+	full_portfolio['return'].fillna(-1, inplace = True)
 
 	result_dict = {'sector':[], 'position':[], 'return':[], 'std':[]}
 	return_list = full_portfolio.groupby(["sector", "position"]).apply(__portfolio_report_helper)
