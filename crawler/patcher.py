@@ -28,18 +28,21 @@ def parse_arg():
 	# Fillmean section
 	group1.add_argument("-m", "--fillmean", help = "fill the sector mean for missing values in the machine learning factor table", action = 'store_true')
 
+	# Patch section
+	group1.add_argument("-p", "--patchmom", help = "patch Bloomberg price momentum related fields", action = "store_true")
+
 	# Getdata section
 	group1.add_argument("-g", "--getdata", help = "get data from machine learning table", action = "store_true")
 	parser.add_argument("-t", "--tickers", nargs = "+", help = "[getdata] tickers to crawl, no. of tickers to crawl if only 1 integer is provided")
-
+	
 	# Common argument
 	parser.add_argument("-s", "--sectors", nargs = "+", help = "[mandatory] sector names")
-	parser.add_argument("-f", "--factors", nargs = "+", help = "[mandatory] direct fields to rebuild [-r]/ fields to fill with sector mean [-f]/ factors to download [-g]")
+	parser.add_argument("-f", "--factors", nargs = "+", help = "[mandatory for -r/-f/-g] direct fields to rebuild [-r]/ fields to fill with sector mean [-f]/ factors to download [-g]")
 	args =  parser.parse_args()
 
 	if type(args.sectors) is not list:
 		raise argparse.ArgumentTypeError("argument -s/--sectors: expected at least one string")
-	if type(args.factors) is not list:
+	if not args.patchmom and type(args.factors) is not list:
 		raise argparse.ArgumentTypeError("argument -f/--factors: expected at least one string")
 	if args.getdata and type(args.tickers) is not list:
 		raise argparse.ArgumentTypeError("argument -t/--tickers: expected at least one string")
@@ -152,6 +155,42 @@ def getdata(sectors, factors, tickers):
 		df = pandas.read_sql("SELECT %s FROM %s WHERE ticker in (%s);"%(factors_sql, target_table, tickers_sql), mysql_conn,  coerce_float = False, parse_dates = ["date"])
 		df.to_csv("%s-%d.csv"%(sector, n_tickers), index = False, na_rep = "nan")
 
+def patch_bbg_price_mom(sectors):
+	tickers_to_patch = []
+	finished_count = 0
+	futures = []
+	for sector in sectors:
+		tickers_to_patch.extend(utilities.tickers_table[sector])
+	utilities.print_status("Firing request for %d ticker(s)..."%len(tickers_to_patch))
+	mysql_conn = utilities.mysql_connection(host, database, username)
+	mysql_mutex = multiprocessing.Lock()
+	with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
+		for ticker in tickers_to_patch:
+			futures.append(executor.submit(patch_by_ticker, ticker, mysql_conn, mysql_mutex))
+		for _ in tqdm(as_completed(futures)):
+				finished_count += 1
+
+def patch_by_ticker(ticker, mysql_conn, mysql_mutex):
+	bbg_mom_raw_factors = ["bbg_mom_1m", "bbg_mom_3m", "bbg_mom_6m", "bbg_mom_12m", "volatility_realized_12m"]
+	bbg_mom_save_factors = ["bbg_mom_1m", "bbg_mom_3m", "bbg_mom_6m", "bbg_mom_12m", "bbg_mom_12m_vol_adj"]
+	try:
+		ml_table = get_ML_factors(ticker, mysql_conn = mysql_conn, mysql_mutex = mysql_mutex)
+		raw_table = get_raw_factors(ticker, bbg_mom_raw_factors, mysql_conn, mysql_mutex)
+		for factor in bbg_mom_raw_factors:
+			ml_table[factor] = np.NAN
+		for index, row in raw_table.iterrows():
+				date = row['date']
+				field = row['field']
+				val = row['value']
+				ml_table.loc[ml_table['date'] == date, field] = val
+		ml_table = filling.fill_direct_prev(ml_table, bbg_mom_raw_factors, False)
+		ml_table["bbg_mom_12m_vol_adj"] = ml_table["bbg_mom_12m"] / ml_table["volatility_realized_12m"]
+		ml_table.replace([np.inf, -np.inf], np.nan, inplace = True)
+		save_factors(ml_table, bbg_mom_save_factors, mysql_conn, mysql_mutex)
+		return 0
+	except:
+		traceback.print_exc()
+
 if __name__ == "__main__":
 	args = parse_arg()
 	if args.rebuild:
@@ -160,5 +199,7 @@ if __name__ == "__main__":
 		fillmean(args.sectors, args.factors)
 	elif args.getdata:
 		getdata(args.sectors, args.factors, args.tickers)
+	elif args.patchmom:
+		patch_bbg_price_mom(args.sectors)
 	else:
 		raise Exception("Please select a valid action")
