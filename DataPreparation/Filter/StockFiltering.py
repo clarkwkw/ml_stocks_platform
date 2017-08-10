@@ -30,6 +30,6 @@ def StockFiltering(stock_data, flag, filterd_stock_file):
 			print('Training Data has not performed Stock Filtering, Testing Data will also omit Stock Filtering.')
 			pass
 	else:
-		raise 'Invalid flag for StockFiltering (train/test only)'
+		raise Exception('Invalid flag for StockFiltering (train/test only)')
 
 	return stock_data
