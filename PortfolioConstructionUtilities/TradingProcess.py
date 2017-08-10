@@ -50,7 +50,7 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 
 	trading_dates = pandas.DataFrame({'buy': buy_dates, 'sell': sell_dates})
 	trading_dates.to_csv("trading_dates.csv", index = False)
-	StrategyPerformanceEvaluation(trading_dates, strategy_performance_period = simulation_config_dict['strategy_performance_period'])
+	StrategyPerformanceEvaluation(stock_data_config_dict['sectors'], trading_dates, start_date = stock_data_config_dict['period']['start'], end_date = stock_data_config_dict['period']['end'], strategy_performance_period = simulation_config_dict['strategy_performance_period'])
 
 def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info):
 	# confirm portfolio buy and sell date
