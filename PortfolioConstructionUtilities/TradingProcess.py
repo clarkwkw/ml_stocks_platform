@@ -53,11 +53,12 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info):
 	# confirm portfolio buy and sell date
 	build_date = queue.get_next_bday(cur_date, False)
-	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
 	
 	if build_date is None:
 		return
-
+		
+	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
+	
 	if holding_end_date is None:
 		holding_end_date = queue.get_prev_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
 		if build_date >= holding_end_date:
