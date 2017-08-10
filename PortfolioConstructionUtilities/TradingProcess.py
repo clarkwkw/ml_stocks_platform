@@ -136,7 +136,7 @@ class Date_Queue:
 			date = pandas.Timestamp(date)
 
 		try:
-			index = self._business_days.get_loc(date, "fill")
+			index = self._business_days.get_loc(date, "ffill")
 		except KeyError:
 			return None
 
