@@ -16,7 +16,9 @@ def calculate_r_log_vt_pt(t):
     log_v_p = [float('nan')]
 
     for i in range(1,t_len):
-        r = (data.iloc[i].last_price - data.iloc[i-1].last_price) / data.iloc[i-1].last_price * 100
+        r = (1.0*data.iloc[i].last_price/data.iloc[i-1].last_price - 1) * 100
+        if pd.isnull(r) or r == float("inf") or r == float("-inf"):
+            continue
         if r >= 0:
             sign = 1
         else:
