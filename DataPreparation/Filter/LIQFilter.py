@@ -59,11 +59,11 @@ def LIQFilter(stock_data):
         y_train = t['net_return'][1:].as_matrix()
         x_train = t['sign_log_v_p'][1:].as_matrix().reshape(-1, 1)
 
-        print("Regressing :%s"%ticker)
         #Build the regressor
-        lr = LinearRegression()
-        lr.fit(x_train,y_train)
-        ticker_lambda.append([ticker,lr.coef_[0]])
+        if y_train.shape[0] >= 1:
+            lr = LinearRegression()
+            lr.fit(x_train,y_train)
+            ticker_lambda.append([ticker,lr.coef_[0]])
         
     #Sort the tickers based on lambda and select top 50%
     ticker_lambda.sort(key=lambda x:x[1], reverse=True)
