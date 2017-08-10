@@ -8,6 +8,7 @@ import multiprocessing
 runtime = 0
 runtime_lock = multiprocessing.Lock()
 def TrainingDataPreparation(*args, **kwargs):
+	global runtime
 	start = timer()
 	result = TrainDP(*args, **kwargs)
 	end = timer()
@@ -17,6 +18,7 @@ def TrainingDataPreparation(*args, **kwargs):
 	return result
 
 def TestingDataPreparation(*args, **kwargs):
+	global runtime
 	start = timer()
 	result = TestDP(*args, **kwargs)
 	end = timer()
@@ -26,6 +28,7 @@ def TestingDataPreparation(*args, **kwargs):
 	return result
 
 def ValidationDataPreparation(*args, **kwargs):
+	global runtime
 	start = timer()
 	result = ValidDP(*args, **kwargs)
 	end = timer()
@@ -35,6 +38,7 @@ def ValidationDataPreparation(*args, **kwargs):
 	return result
 
 def DataPreprocessing(*args, **kwargs):
+	global runtime
 	start = timer()
 	result = DP(*args, **kwargs)
 	end = timer()
