@@ -43,11 +43,13 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	while not date_queue.is_empty():
 		date, _ = date_queue.pop()
 		debug.log("TradingProcess: Training model on %s.."%(date.strftime(config.date_format)))
-		buy_date, sell_date = trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
-		buy_dates.append(buy_date)
-		sell_dates.append(sell_date)
+		result = trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
+		if type(result) is tuple:
+			buy_dates.append(buy_date)
+			sell_dates.append(sell_date)
 
 	trading_dates = pandas.DataFrame({'buy': buy_dates, 'sell': sell_dates})
+	trading_dates.to_csv("trading_dates.csv", index = False)
 	StrategyPerformanceEvaluation(trading_dates, strategy_performance_period = simulation_config_dict['strategy_performance_period'])
 
 def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info):
@@ -56,7 +58,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	
 	if build_date is None:
 		return
-		
+
 	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
 	
 	if holding_end_date is None:
