@@ -119,7 +119,8 @@ class Date_Queue:
 		if date < self._cur_date:
 			raise Exception("Cannot schedule a task that happens in the past (cur_date = %s, date = %s)"%(self._cur_date.strftime(config.date_format), date.strftime(config.date_format)))
 		if self._cur_date >= self._end_date:
-			raise Expcetion("Cannot schedule a task that happens when it is currently at the end of the period")
+			utils.raise_warning("Cannot schedule a task that happens when it is currently at the end of the period")
+			return
 		if date >= self._end_date:
 			date = self._end_date
 
