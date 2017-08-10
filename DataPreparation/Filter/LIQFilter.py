@@ -59,6 +59,7 @@ def LIQFilter(stock_data):
         y_train = t['net_return'][1:].as_matrix()
         x_train = t['sign_log_v_p'][1:].as_matrix().reshape(-1, 1)
 
+        print("Regressing :%s"%ticker)
         #Build the regressor
         lr = LinearRegression()
         lr.fit(x_train,y_train)
