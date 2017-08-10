@@ -96,7 +96,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 		filtered_factors[sector] = raw_df.loc[(raw_df['date'] >= dataset_start_date) & (raw_df['date'] <= build_date)].copy()
 		filtered_factors[sector].is_copy = False
 
-	full_portfolio = PortfolioConstruction(filtered_factors, build_date, buying_prices, 10, simulation_config_dict['stock_filter_flag'], build_date_str, trained_models_map = models_map)
+	full_portfolio = PortfolioConstruction(filtered_factors, buying_prices, 10, simulation_config_dict['stock_filter_flag'], build_date_str, trained_models_map = models_map)
 
 	# build portfolio and 'sell' stocks
 	selling_prices = price_info.loc[price_info['date'] == holding_end_date, ['ticker', 'price']]
