@@ -26,10 +26,11 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	else:
 		if not stock_data_config_dict['save_downloaded_data']:
 			ML_factors_dir = None
-		market_cap = None
+		market_cap, include_null_cap = None, False
 		if 'market_cap' in stock_data_config_dict:
 			market_cap = stock_data_config_dict['market_cap']
-		ML_sector_factors, price_info = DownloadTableFileFromMySQL(stock_data_config_dict['market_id'], stock_data_config_dict['sectors'], stock_data_config_dict['factors'], market_cap, start_date = stock_data_config_dict['period']['start'], end_date = stock_data_config_dict['period']['end'], output_dir = ML_factors_dir)
+			include_null_cap = stock_data_config_dict['include_null_cap']
+		ML_sector_factors, price_info = DownloadTableFileFromMySQL(stock_data_config_dict['market_id'], stock_data_config_dict['sectors'], stock_data_config_dict['factors'], market_cap, include_null_cap, start_date = stock_data_config_dict['period']['start'], end_date = stock_data_config_dict['period']['end'], output_dir = ML_factors_dir)
 	
 	start_date = pandas.Timestamp(stock_data_config_dict['period']['start'])
 	end_date = pandas.Timestamp(stock_data_config_dict['period']['end'])

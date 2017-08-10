@@ -4,7 +4,7 @@ import config
 import debug
 
 # factors: list of field names, or "all" -> all fields will be downloaded
-def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap = None, start_date = None, end_date = None, output_dir = None):
+def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap = None, include_null_cap = False, start_date = None, end_date = None, output_dir = None):
 	ml_factor_table = "%s_machine_learning_factor"%market_id
 	factors_sql,condition_sql = None, ""
 	condition_sqls = []
@@ -31,7 +31,10 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 		condition_sqls.append("date <= '%s'"%end_date)
 
 	if market_cap is not None:
-		condition_sqls.append("market_cap >= %s"%str(market_cap))
+		if include_null_cap:
+			condition_sqls.append("(market_cap >= %s OR market_cap is NULL)"%str(market_cap))
+		else:
+			condition_sqls.append("market_cap >= %s"%str(market_cap))
 
 	if len(condition_sqls) > 0:
 		condition_sql = "WHERE %s"%(" AND ".join(condition_sqls))
