@@ -51,6 +51,18 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	StrategyPerformanceEvaluation(trading_dates, strategy_performance_period = simulation_config_dict['strategy_performance_period'])
 
 def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info):
+	# confirm portfolio buy and sell date
+	build_date = queue.get_next_bday(cur_date, False)
+	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
+	
+	if build_date is None:
+		return
+
+	if holding_end_date is None:
+		holding_end_date = queue.get_prev_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
+		if build_date >= holding_end_date:
+			return
+
 	# train_model
 	filtered_factors = {}
 	dataset_start_date = cur_date - timedelta(days = simulation_config_dict["portfolio_holding_period"])
@@ -72,19 +84,6 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	# confirm next training date
 	next_train_date = cur_date + timedelta(days = simulation_config_dict["model_training_frequency"])
 	queue.push(next_train_date)
-
-	# confirm portfolio buy and sell date
-	build_date = queue.get_next_bday(cur_date, False)
-	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
-	
-	
-	if build_date is None:
-		return
-
-	if holding_end_date is None:
-		holding_end_date = queue.get_prev_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
-		if build_date >= holding_end_date:
-			return
 
 	build_date_str = build_date.strftime(config.date_format)
 	holding_end_date_str = holding_end_date.strftime(config.date_format)
