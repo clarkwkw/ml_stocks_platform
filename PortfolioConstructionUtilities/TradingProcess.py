@@ -45,8 +45,8 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 		debug.log("TradingProcess: Training model on %s.."%(date.strftime(config.date_format)))
 		result = trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
 		if type(result) is tuple:
-			buy_dates.append(buy_date)
-			sell_dates.append(sell_date)
+			buy_dates.append(result[0])
+			sell_dates.append(result[1])
 
 	trading_dates = pandas.DataFrame({'buy': buy_dates, 'sell': sell_dates})
 	trading_dates.to_csv("trading_dates.csv", index = False)
