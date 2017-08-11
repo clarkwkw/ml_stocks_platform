@@ -15,6 +15,9 @@ def apply_parallel(dfGrouped, func):
     return result
 
 def calculate_lambda(ticker_data):
+    if ticker_data.shape[0] <= 1:
+        return ticker, float("-inf")
+        
     ticker_data["prev_price"] = np.NAN 
     ticker_data.loc[1:, "prev_price"] = ticker_data.loc[0:(ticker_data.shape[0]-1), "last_price"]
     ticker_data["net_return"] = (1.0*ticker_data["last_price"]/ticker_data["prev_price"] - 1)*100
