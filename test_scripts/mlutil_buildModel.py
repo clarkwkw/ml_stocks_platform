@@ -3,6 +3,7 @@ import MachineLearningModelUtilities as MLUtils
 import DataPreparation as DataPrep
 
 model_savedir = "./test_output/"
+customized_model_dir = "./test_scripts"
 def test():
     print("Loading data...")
     stock_data = pandas.read_csv('./test_data/10tickers_wo_sector_fill.csv')
@@ -11,6 +12,25 @@ def test():
 
     dataset = DataPrep.ValidationDataPreparation(stock_data, False, 10, 15, 1, period = 1)
     train_data, valid_data = dataset[len(dataset)//2]
+
+
+    print("Training Custom Model...")
+    model = MLUtils.buildModel("Custom", "./test_output/preprocessing_file.json", train_data, False, 10, 15, 1, customized_model_dir)
+    preprocessed_valid = DataPrep.DataPreprocessing(flag = "test", stock_data = valid_data, preprocessing_file = "./test_output/preprocessing_file.json")
+
+    model.save(model_savedir)
+
+    model = None
+    model = MLUtils.loadTrainedModel(model_savedir, customized_model_dir)
+    print("Evaluation long - 10")
+    print(MLUtils.evaluateModel(model, preprocessed_valid, 10, "long"))
+
+    print("Evaluation short - 10")
+    print(MLUtils.evaluateModel(model, preprocessed_valid, 10, "short"))
+
+    print("Evaluation long_short - 10")
+    print(MLUtils.evaluateModel(model, preprocessed_valid, 10, "long_short"))
+
 
     print("Training SVM...")
     model = MLUtils.buildModel("SVM", "./test_output/preprocessing_file.json", train_data, False, 10, 15, 1)

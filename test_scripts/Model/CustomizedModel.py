@@ -1,17 +1,13 @@
-import config
-import json
-from GenericMLModel import GenericMLModel
-from utils import *
-from sklearn.svm import SVR
+from MachineLearningModelUtilities import GenericMLModel
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.externals import joblib
+import json
 
-class SimpleSVMModel(GenericMLModel):
-	def __init__(self, _factors = None, **kwargs):
+metaparas_set = [{"alpha": 1.5}, {"alpha": 2.5}]
+class Model(GenericMLModel):
+	def __init__(self, _factors, **kwargs):
 		super(self.__class__, self).__init__(_factors)
-		if "max_iter" not in kwargs:
-			self._model = SVR(max_iter = config.svm_max_iter, **kwargs)
-		else:
-			self._model = SVR(**kwargs)
+		self._model = MultinomialNB(**kwargs)
 
 	def train(self, machine_learning_factors, labels, **kwargs):
 		if self._trained:
@@ -30,8 +26,8 @@ class SimpleSVMModel(GenericMLModel):
 	def save(self, savedir):
 		if not self._trained:
 			raise Exception("Model not trained.")
-		joblib.dump(self._model, savedir+'/svmmodel.pkl')
-		json_dict = {	'model_type': 'SVM', 
+		joblib.dump(self._model, savedir+'/MNBmodel.pkl')
+		json_dict = {	'model_type': 'Custom', 
 						'init_paras': {	'_factors': self._factors}
 					}
 		with open(savedir+'/model.conf', "w") as f:
@@ -41,7 +37,7 @@ class SimpleSVMModel(GenericMLModel):
 	def load(savedir):
 		with open(savedir+"/model.conf", "r") as f:
 			json_dict = json.load(f)
-		model = SimpleSVMModel(**json_dict["init_paras"])
-		model._model = joblib.load(savedir+"/svmmodel.pkl")
+		model = Model(**json_dict["init_paras"])
+		model._model = joblib.load(savedir+"/MNBmodel.pkl")
 		model._trained = True
 		return model

@@ -79,7 +79,7 @@ class SimpleNNModel(GenericMLModel):
 			tmp_result = self._sess.run(self._pred, feed_dict = {self._X: parsed_matrix})
 			tmp_result = dist_to_label(tmp_result)
 		tf.reset_default_graph()
-		return prediction_to_df(id_frame, tmp_result)
+		return self._prediction_to_df(id_frame, tmp_result)
 
 	def __network(self, X):
 		tmp_result = X

@@ -1,4 +1,5 @@
 import abc, six
+import imp
 import numpy as np
 import pandas
 import random
@@ -14,11 +15,6 @@ def split_dataset(X, y, valid_portion = 0.2):
 	valid_indices = indices[0:int(valid_portion*n_sample)]
 	return X[train_indices, ], y[train_indices], X[valid_indices, ], y[valid_indices]
 
-def prediction_to_df(id_frame, predictions):
-	result = id_frame.copy()
-	result['pred'] = predictions	
-	return result
-
 def label_to_dist(labels):
 	dists = []
 	for label in labels:
@@ -33,8 +29,8 @@ def dist_to_label(dists):
 	return labels
 
 def import_custom_module(customized_module_name, customized_module_dir):
-	file, filename, desc = imp.find_module(customized_module_name, path = customized_module_dir)
-	custom_module = imp.load_module(customized_module_name, file, filename, desc)
+	file, pathname, desc = imp.find_module(customized_module_name, [customized_module_dir])
+	custom_module = imp.load_module(customized_module_name, file, pathname, desc)
 	return custom_module
 
 def get_factors_from_df(df):

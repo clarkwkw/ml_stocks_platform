@@ -82,7 +82,10 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	if "para_tune_data_split_period" in simulation_config_dict:
 		para_tune_data_split_period = simulation_config_dict["para_tune_data_split_period"]
 
-	models_map = MachineLearningModelDevelopment(filtered_factors, simulation_config_dict["model_flag"], simulation_config_dict["meta_paras"], simulation_config_dict["stock_filter_flag"], simulation_config_dict["B_top"], simulation_config_dict["B_bottom"], simulation_config_dict["target_label_holding_period"], simulation_config_dict["trading_stock_quantity"], para_tune_holding_flag, period = para_tune_data_split_period, date = para_tune_data_split_date)
+	model_dir = None
+	if "model_class_dir" in simulation_config_dict:
+		model_dir = simulation_config_dict["model_class_dir"]
+	models_map = MachineLearningModelDevelopment(filtered_factors, simulation_config_dict["model_flag"], simulation_config_dict["meta_paras"], simulation_config_dict["stock_filter_flag"], simulation_config_dict["B_top"], simulation_config_dict["B_bottom"], simulation_config_dict["target_label_holding_period"], simulation_config_dict["trading_stock_quantity"], para_tune_holding_flag, period = para_tune_data_split_period, date = para_tune_data_split_date, customized_module_dir = model_dir)
 
 	# confirm next training date
 	next_train_date = cur_date + timedelta(days = simulation_config_dict["model_training_frequency"])
