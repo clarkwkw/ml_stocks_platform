@@ -24,11 +24,11 @@ def calculate_lambda(ticker_data):
     net_returns = []
     for row in ticker_data.itertuples():
         last_price = row.last_price
-        
+
         if pd.isnull(last_price):
             continue
 
-        if prev_price is not None and last_price != 0:
+        if prev_price is not None and prev_price != 0:
 
             net_return = (1.0*last_price/prev_price - 1)*100
 
