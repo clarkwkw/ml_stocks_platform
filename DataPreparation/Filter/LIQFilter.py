@@ -21,9 +21,9 @@ def calculate_lambda(ticker_data):
 
     # Suppress warning
     ticker_data.is_copy = False
-    
+
     ticker_data["prev_price"] = np.NAN 
-    ticker_data.loc[1:, "prev_price"] = ticker_data.loc[0:(ticker_data.shape[0]-1), "last_price"]
+    ticker_data["prev_price"].iloc[1:] = ticker_data["last_price"].iloc[0:(ticker_data.shape[0]-1)]
     ticker_data["net_return"] = (1.0*ticker_data["last_price"]/ticker_data["prev_price"] - 1)*100
     ticker_data["sign_log_v_p"] = 1
     ticker_data.loc[ticker_data["net_return"] < 0, "sign_log_v_p"] = -1
