@@ -97,7 +97,7 @@ def StrategyPerformanceEvaluation(sectors, portfolio_dates, start_date, end_date
 		else:
 			period_end = start_date + timedelta(days = strategy_performance_period)
 
-		portfolio_build_dates = portfolio_dates['sell'].between(left = period_start, right = period_end)
+		portfolio_build_dates = portfolio_dates.loc[portfolio_dates['sell'].between(left = period_start, right = period_end), 'sell']
 		return_reports = []
 
 		for date in portfolio_build_dates:
