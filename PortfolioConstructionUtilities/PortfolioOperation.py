@@ -82,6 +82,12 @@ def __portfolio_report_helper(divided_portfolio):
 
 def StrategyPerformanceEvaluation(sectors, portfolio_dates, start_date, end_date, strategy_performance_period):
 	portfolio_dates.set_index(keys = ['sell'], drop = False, inplace = True)
+	
+	if type(start_date) is not pandas.Timestamp:
+		start_date = pandas.Timestamp(start_date)
+	if type(end_date) is not pandas.Timestamp:
+		end_date = pandas.Timestamp(end_date)
+
 	period_start = start_date
 
 	while period_start <= end_date:
