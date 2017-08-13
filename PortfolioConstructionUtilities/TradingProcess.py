@@ -39,7 +39,7 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	if type(simulation_config_dict['meta_paras']) is dict:
 		date_queue.push(start_date + timedelta(days = simulation_config_dict["model_training_frequency"]))
 	else:
-		date_queue.push(start_date + relativedelta(years = config.simulate_reserved_data_duration))
+		date_queue.push(start_date + relativedelta(years = simulation_config_dict['para_tune_reserve_data']))
 
 	debug.log("TradingProcess: Starting simulation..")
 	buy_dates = []
@@ -75,7 +75,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	dataset_start_date = cur_date - timedelta(days = simulation_config_dict["portfolio_holding_period"])
 	for sector in ML_sector_factors:
 		raw_df = ML_sector_factors[sector]
-		if type(simulation_config_dict["meta_paras"]) is dict and not config.simulate_rolling_data_when_not_metapara:
+		if not simulation_config_dict["rolling_training_data"]:
 			filtered_factors[sector] = raw_df.loc[(raw_df['date'] >= dataset_start_date) & (raw_df['date'] <= cur_date)].copy()
 		else:
 			filtered_factors[sector] = raw_df.loc[raw_df['date'] <= cur_date].copy()
