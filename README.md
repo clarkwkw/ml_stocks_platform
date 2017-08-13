@@ -24,14 +24,15 @@
 
    `git clone https://github.com/clarkwkw/ml_stocks_platform.git`
 
-2. Change directory to the repository folder and run the bash script by issuing
+2. Edit basic settings in `config.py` to suit your need (especially the connection settings).
+3. Change directory to the repository folder and run the bash script by issuing
 
    `sh build.sh`
 
-3. Enter the path of Python 2 interpreter, leave it blank if you wish to use the default one
-4. The Python scripts are packed into a signle executable `mlsp`
-5. Move the executable to any folder you wish it to be stored
-6. (Optional) Add the folder containing the executable into $PATH variable by issuing
+4. Enter the path of Python 2 interpreter, leave it blank if you wish to use the default one
+5. The Python scripts are packed into a signle executable `mlsp`
+6. Move the executable to any folder you wish it to be stored
+7. (Optional) Add the folder containing the executable into $PATH variable by issuing
 
    `export PATH=$PATH:$(pwd)`
 
