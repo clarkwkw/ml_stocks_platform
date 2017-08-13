@@ -49,7 +49,9 @@
 
 3. Modify `simulation_config.json` if you wish to perform meta-parameter selection or to pass parameters to the model
 
-4. Start simulation by issuing `mlsp`
+4. Move `simulation_config.json` to a subdirectory named the same as your _runcode_ configured in the JSON file.
+
+5. Start simulation by issuing `mlsp`
 
 ## Documentation
 Please refer to the [wikipage](https://github.com/clarkwkw/summer_research/wiki).
