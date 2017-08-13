@@ -44,7 +44,7 @@
 
    `mlsp -g stock_data`
 
-Please follow instruction shown in the program to configure the parameters.
+   Please follow instruction shown in the program to configure the parameters.
 
 3. Modify `simulation_config.json` if you wish to perform meta-parameter selection or to pass parameters to the model
 
