@@ -83,7 +83,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 
 	para_tune_holding_flag, para_tune_data_split_period = None, None
 	if "para_tune_holding_flag" in simulation_config_dict:
-		para_tune_holding_flag = simulation_config_dict["simulation_config_dict"]
+		para_tune_holding_flag = simulation_config_dict["para_tune_holding_flag"]
 	if "para_tune_data_split_period" in simulation_config_dict:
 		para_tune_data_split_period = simulation_config_dict["para_tune_data_split_period"]
 
