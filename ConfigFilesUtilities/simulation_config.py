@@ -28,12 +28,16 @@ def generate_simulation_config():
 		config_dict['para_tune_data_split_period'] = get_input_number("No. of months of data per fold", lower_limit = 1, is_int = True)
 		config_dict['para_tune_reserve_data'] = get_input_number("No. year of data to be reserved for the 1st model", lower_limit = 1, is_int = True)
 
-		print("You will need to manually edit the 'meta_paras' field in '%s', it should be\n 1. a list of dictionaries, where each dicitionary represents a parameter set, or\n 2. 'model_def', if you have defined metaparameters set in the custom model script.")
+		print("> You will need to manually edit the 'meta_paras' field in '%s', it should be"%output_filename)
+		print("> 1. a list of dictionaries, where each dicitionary represents a parameter set, or")
+		print("> 2. 'model_def', if you have defined metaparameters set in the custom model script.")
 
 	else:
 		config_dict['meta_paras'] = {}
 		config_dict['rolling_training_data'] = get_input_bool("Construct training data in a rolling way")
-		print("If you wish to pass arguments to the model,\n you will need to manually edit the 'meta_paras' field in '%s', it should be:\n a dicitionary of parameters to be passed to the model."%output_filename)
+		print("> If you wish to pass arguments to the model,")
+		print("> you will need to manually edit the 'meta_paras' field in '%s', it should be:"%output_filename)
+		print("> a dicitionary of parameters to be passed to the model.")
 	
 	print("Other training settings: ")
 	
@@ -50,16 +54,15 @@ def generate_simulation_config():
 		
 		break
 
-	config_dict['model_training_frequency'] = get_input_number("Frequency (in no. days) to train a model", lower_limit = 1, is_int = True)
+	config_dict['model_training_frequency'] = get_input_number("Frequency (in days) to train a model", lower_limit = 1, is_int = True)
 	
-	config_dict['portfolio_holding_period'] = get_input_number("Duration (in no. days) to hold a portfolio", lower_limit = 1, is_int = True)
+	config_dict['portfolio_holding_period'] = get_input_number("Duration (in days) to hold a portfolio", lower_limit = 1, is_int = True)
 	
 	config_dict['trading_stock_quantity'] = get_input_number("No. of stocks to trade for long and short positions", lower_limit = 1, is_int = True)
 	
 	config_dict['target_label_holding_period'] = get_input_number("No. of days of reutrn to consider when generating labels", lower_limit = 1, upper_limit = config_dict['portfolio_holding_period'], is_int = True)
 
 	config_dict['strategy_performance_period'] = get_input_number("No. of months to consider when generating one strategy report", lower_limit = 1, is_int = True)
-
 
 	print("Generating config file '%s'.."%output_filename)
 	save_dict(config_dict, output_filename)
