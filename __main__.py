@@ -8,8 +8,12 @@ import os
 import pandas
 import importlib
 import warnings
-import test
 import PortfolioConstructionUtilities as PortfolioUtils
+try:
+	import testscripts
+	test_included = True
+except ImportError:
+	test_included = False
 
 def parse_args():
 	parser = argparse.ArgumentParser()
@@ -17,8 +21,8 @@ def parse_args():
 	parser.add_argument("-i", "--ignorewarnings", help = "ignore all warnings", action = "store_true")
 
 	action_group = parser.add_mutually_exclusive_group(required = False)
-
-	action_group.add_argument("-t", "--testscript", help = "execute test script install_path/%s"%test._test_scripts_dir)
+	if test_included:
+		action_group.add_argument("-t", "--testscript", help = "execute test script install_path/%s"%testscripts._test_scripts_dir)
 	action_group.add_argument("-f", "--formatreports", nargs = "+", help = "convert raw portfolio return report(s) / strategy performance report(s) into formatted xls file(s)")
 	action_group.add_argument("-s", "--strategyreport", nargs = "+", help = "convert raw portfolio return report(s) into a strategy performance report (xls file)")
 
@@ -34,10 +38,10 @@ def main():
 	args = parse_args()
 
 	if config.ignore_warnings or args.ignore_warnings:
-			warnings.simplefilter("ignore")
+		warnings.simplefilter("ignore")
 
-	if args.testscript is not None:
-		test.test(args.testscript)
+	if test_included and args.testscript is not None:
+		testscripts.test(args.testscript)
 
 	elif args.formatreports is not None:
 		max_len = 0

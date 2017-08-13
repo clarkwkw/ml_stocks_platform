@@ -1,6 +1,7 @@
 from StockOperation import *
 import config
-from datetime import timedelta
+import debug
+from dateutil.relativedelta import relativedelta
 import utils
 import numpy as np
 import pandas
@@ -95,19 +96,22 @@ def StrategyPerformanceEvaluation(sectors, portfolio_dates, start_date, end_date
 		if strategy_performance_period == "whole":
 			period_end = end_date
 		else:
-			period_end = start_date + timedelta(days = strategy_performance_period)
+			period_end = period_start + relativedelta(months = strategy_performance_period)
 
+		debug.log("StrategyPerformanceEvaluation: Evaluating period %s - %s.."%(period_start.strftime(config.date_format), period_end.strftime(config.date_format)))
 		portfolio_build_dates = portfolio_dates.loc[portfolio_dates['sell'].between(left = period_start, right = period_end), 'sell']
 		return_reports = []
 
 		for date in portfolio_build_dates:
 			date_prefix = date.strftime(config.date_format)
 			return_reports.append(pandas.read_csv('./portfolio/return_report/%s_portfolio_return_report.csv'%date_prefix))
-		full_return_reports = pandas.concat(return_reports, ignore_index = True)
 
-		raw_strategy_report = generate_raw_strategy_report(full_return_reports)
-		output_file_name = "[%s - %s]strategy_performance_report.xls"%(period_start.strftime(config.date_format), period_end.strftime(config.date_format))
-		reformat_report(raw_strategy_report, output_file_name, sectors)
+		if len(return_reports) > 0:
+			full_return_reports = pandas.concat(return_reports, ignore_index = True)
+
+			raw_strategy_report = generate_raw_strategy_report(full_return_reports)
+			output_file_name = "[%s - %s]strategy_performance_report.xls"%(period_start.strftime(config.date_format), period_end.strftime(config.date_format))
+			reformat_report(raw_strategy_report, output_file_name, sectors)
 
 		period_start = period_end
 
