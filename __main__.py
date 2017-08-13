@@ -93,11 +93,11 @@ def main():
 
 		try:
 			with open("./%s/simulation_config.json"%stock_data_config_dict['stock_data_code'], "r") as f:
-				content = '\n'.join(f.read_lines())
+				content = '\n'.join(f.readlines())
 				content = content.encode("ascii", "replace")
 				simulation_config_dict = json.loads(content)
 		except:
-			print("cannot open %s/simulation_config.json, abort")
+			print("cannot open %s/simulation_config.json, abort"%stock_data_config_dict['stock_data_code'])
 			exit(-1)
 
 		PortfolioUtils.SimulateTradingProcess(simulation_config_dict, stock_data_config_dict)
