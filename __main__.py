@@ -92,7 +92,7 @@ def main():
 			exit(-1)
 
 		try:
-			with open("./%s/simulation_config.json", "r") as f:
+			with open("./%s/simulation_config.json"%stock_data_config_dict['stock_data_code'], "r") as f:
 				simulation_config_dict = json.load(f)
 		except:
 			print("cannot open %s/simulation_config.json, abort")
