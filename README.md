@@ -24,7 +24,7 @@
 
    `git clone https://github.com/clarkwkw/ml_stocks_platform.git`
 
-2. Edit basic settings in `config.py` to suit your need (especially the connection settings).
+2. Edit basic settings in `config.py` to suit your need (especially the connection settings)
 3. Change directory to the repository folder and run the bash script by issuing
 
    `sh build.sh`
@@ -34,8 +34,7 @@
 6. Move the executable to any folder you wish it to be stored
 7. (Optional) Add the folder containing the executable into $PATH variable by issuing
 
-   `export PATH=$PATH:$(pwd)`, or
-   `setenv PATH $PATH\:$PWD` in c shell
+   `export PATH=$PATH:$(pwd)` or `setenv PATH $PATH\:$PWD` in c shell
 
 ## Basic Usage
 1. Change working directory to an empty folder
