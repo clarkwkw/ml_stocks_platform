@@ -81,7 +81,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 			filtered_factors[sector] = raw_df.loc[raw_df['date'] <= cur_date].copy()
 		filtered_factors[sector].is_copy = False
 
-	para_tune_holding_flag, para_tune_data_split_date, para_tune_data_split_period = None, None, None
+	para_tune_holding_flag, para_tune_data_split_period = None, None
 	if "para_tune_holding_flag" in simulation_config_dict:
 		para_tune_holding_flag = simulation_config_dict["simulation_config_dict"]
 	if "para_tune_data_split_period" in simulation_config_dict:
