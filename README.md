@@ -27,7 +27,7 @@
 2. Change directory to the repository folder and edit the program settings in `config.py` to suit your need (especially the connection settings)
 3.  Issue the following command to run the building script
 
-   `sh build.sh`
+    `sh build.sh`
 
 4. Enter the path of Python 2 interpreter, leave it blank if you wish to use the default one
 5. The Python scripts are packed into a signle executable `mlsp`
