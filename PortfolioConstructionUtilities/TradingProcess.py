@@ -43,14 +43,29 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	while not date_queue.is_empty():
 		date, _ = date_queue.pop()
 		debug.log("TradingProcess: Training model on %s.."%(date.strftime(config.date_format)))
-		buy_date, sell_date = trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
-		buy_dates.append(buy_date)
-		sell_dates.append(sell_date)
+		result = trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
+		if type(result) is tuple:
+			buy_dates.append(result[0])
+			sell_dates.append(result[1])
 
 	trading_dates = pandas.DataFrame({'buy': buy_dates, 'sell': sell_dates})
-	StrategyPerformanceEvaluation(trading_dates, strategy_performance_period = simulation_config_dict['strategy_performance_period'])
+	trading_dates.to_csv("trading_dates.csv", index = False)
+	StrategyPerformanceEvaluation(stock_data_config_dict['sectors'], trading_dates, start_date = stock_data_config_dict['period']['start'], end_date = stock_data_config_dict['period']['end'], strategy_performance_period = simulation_config_dict['strategy_performance_period'])
 
 def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info):
+	# confirm portfolio buy and sell date
+	build_date = queue.get_next_bday(cur_date, False)
+	
+	if build_date is None:
+		return
+
+	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
+	
+	if holding_end_date is None:
+		holding_end_date = queue.get_prev_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
+		if build_date >= holding_end_date:
+			return
+
 	# train_model
 	filtered_factors = {}
 	dataset_start_date = cur_date - timedelta(days = simulation_config_dict["portfolio_holding_period"])
@@ -67,26 +82,17 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	if "para_tune_data_split_period" in simulation_config_dict:
 		para_tune_data_split_period = simulation_config_dict["para_tune_data_split_period"]
 
-	models_map = MachineLearningModelDevelopment(filtered_factors, simulation_config_dict["model_flag"], simulation_config_dict["meta_paras"], simulation_config_dict["stock_filter_flag"], simulation_config_dict["B_top"], simulation_config_dict["B_bottom"], simulation_config_dict["target_label_holding_period"], simulation_config_dict["trading_stock_quantity"], para_tune_holding_flag, period = para_tune_data_split_period, date = para_tune_data_split_date)
+	model_dir = None
+	if "model_class_dir" in simulation_config_dict:
+		model_dir = simulation_config_dict["model_class_dir"]
+	models_map = MachineLearningModelDevelopment(filtered_factors, simulation_config_dict["model_flag"], simulation_config_dict["meta_paras"], simulation_config_dict["stock_filter_flag"], simulation_config_dict["B_top"], simulation_config_dict["B_bottom"], simulation_config_dict["target_label_holding_period"], simulation_config_dict["trading_stock_quantity"], para_tune_holding_flag, period = para_tune_data_split_period, date = para_tune_data_split_date, customized_module_dir = model_dir)
 
 	# confirm next training date
 	next_train_date = cur_date + timedelta(days = simulation_config_dict["model_training_frequency"])
 	queue.push(next_train_date)
 
-	# confirm portfolio buy and sell date
-	build_date = queue.get_next_bday(cur_date, False)
 	build_date_str = build_date.strftime(config.date_format)
-
-	holding_end_date = queue.get_next_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
 	holding_end_date_str = holding_end_date.strftime(config.date_format)
-	
-	if build_date is None:
-		return
-
-	if holding_end_date is None:
-		holding_end_date = queue.get_prev_bday(build_date + timedelta(days = simulation_config_dict['portfolio_holding_period']), inclusive = False)
-		if build_date >= holding_end_date:
-			return
 	
 	# build portfolio and 'buy' stocks
 	buying_prices = price_info.loc[price_info['date'] == build_date, ['ticker', 'price']]
@@ -119,7 +125,8 @@ class Date_Queue:
 		if date < self._cur_date:
 			raise Exception("Cannot schedule a task that happens in the past (cur_date = %s, date = %s)"%(self._cur_date.strftime(config.date_format), date.strftime(config.date_format)))
 		if self._cur_date >= self._end_date:
-			raise Expcetion("Cannot schedule a task that happens when it is currently at the end of the period")
+			utils.raise_warning("Cannot schedule a task that happens when it is currently at the end of the period")
+			return
 		if date >= self._end_date:
 			date = self._end_date
 
@@ -135,7 +142,7 @@ class Date_Queue:
 			date = pandas.Timestamp(date)
 
 		try:
-			index = self._business_days.get_loc(date, "fill")
+			index = self._business_days.get_loc(date, "ffill")
 		except KeyError:
 			return None
 

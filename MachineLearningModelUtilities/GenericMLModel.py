@@ -41,3 +41,8 @@ class GenericMLModel(object):
 			self._factors = raw_factors
 		parsed_matrix = df.as_matrix(self._factors)
 		return (parsed_matrix, id_frame)
+
+	def _prediction_to_df(self, id_frame, predictions):
+		result = id_frame.copy()
+		result['pred'] = predictions	
+		return result

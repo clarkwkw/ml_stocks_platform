@@ -12,10 +12,11 @@ def selectMetaparameters(model_flag, stock_data, stock_filter_flag, B_top, B_bot
 		Model_class = SimpleSVMModel
 	elif model_flag == "NN":
 		Model_class = SimpleNNModel
-	elif model_flag == "Customized":
-		custom_module = import_custom_module("CustomizedModel", customized_module_dir)
-		Model_class = custom_module.Model
-		paras_set = custom_module.metaparas_set
+	elif model_flag == "Custom":		
+		custom_module = import_custom_module("Model", customized_module_dir)
+		Model_class = custom_module.CustomizedModel.Model
+		if paras_set == "model_def":
+			paras_set = custom_module.CustomizedModel.metaparas_set
 	else:
 		raise Exception("Unexpected model_flag '%s'"%str(model_flag))
 

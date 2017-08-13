@@ -9,7 +9,7 @@ def MachineLearningModelDevelopment(ML_sector_factors, ML_model_flag, paras_set,
 		stock_data = ML_sector_factors[sector]
 		preprocessing_file_path = "./model/preprocessing/%s_preprocessing_info.json"%sector
 		best_para = None
-		if type(paras_set) is list:
+		if type(paras_set) is list or paras_set == "model_def":
 			debug.log("MachineLearningModelDevlopment: Step 1. Finding best parameters..")
 			best_para = MLUtils.selectMetaparameters(ML_model_flag, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, period = period, date = date, customized_module_dir = customized_module_dir, paras_set = paras_set)
 		elif type(paras_set) is dict:

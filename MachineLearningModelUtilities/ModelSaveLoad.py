@@ -12,15 +12,15 @@ def buildModel(model_flag, preprocessing_file, stock_data, stock_filter_flag, B_
 		model  = SimpleSVMModel(_factors = factors, **kwargs)
 	elif model_flag == "NN":
 		model = SimpleNNModel(_factors = factors, **kwargs)
-	elif model_flag == "Customized":
-		custom_module = import_custom_module("CustomizedModel", customized_module_dir)
-		model = custom_module.Model(_factors = factors, **kwargs)
+	elif model_flag == "Custom":
+		custom_module = import_custom_module("Model", customized_module_dir)
+		model = custom_module.CustomizedModel.Model(_factors = factors, **kwargs)
 	else:
 		raise Exception("Unexpected model_flag '%s'"%str(model_flag))
 	model.train(train_factors, target)
 	return model
 
-def loadTrainedModel(savedir):
+def loadTrainedModel(savedir, customized_module_dir = ""):
 	with open(savedir+'/model.conf') as f:
 		conf_file = json.load(f)
 		model_type = conf_file["model_type"]
@@ -29,7 +29,7 @@ def loadTrainedModel(savedir):
 		model = SimpleNNModel.load(savedir)
 	elif model_type == "SVM":
 		model = SimpleSVMModel.load(savedir)
-	elif model_type == "custom":
-		custom_module = import_custom_module("CustomizedModel", conf_file["modeldir"])
-		model = custom_module.Model.load(savedir)
+	elif model_type == "Custom":
+		custom_module = import_custom_module("Model", customized_module_dir)
+		model = custom_module.CustomizedModel.Model.load(savedir)
 	return model
