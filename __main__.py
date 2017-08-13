@@ -93,7 +93,9 @@ def main():
 
 		try:
 			with open("./%s/simulation_config.json"%stock_data_config_dict['stock_data_code'], "r") as f:
-				simulation_config_dict = json.load(f)
+				content = '\n'.join(f.read_lines())
+				content = content.encode("ascii", "replace")
+				simulation_config_dict = json.loads(content)
 		except:
 			print("cannot open %s/simulation_config.json, abort")
 			exit(-1)
