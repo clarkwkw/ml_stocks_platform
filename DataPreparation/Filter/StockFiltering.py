@@ -5,7 +5,7 @@ from  .PriceFilter import PriceFilter
 import pandas as pd
 import json
 
-def StockFiltering(stock_data, flag, filterd_stock_file):
+def StockFiltering(stock_data, flag, filterd_stock_file = None):
 	if flag == 'train':
 		#LIQ Filter
 		stock_data = LIQFilter(stock_data)
@@ -17,10 +17,11 @@ def StockFiltering(stock_data, flag, filterd_stock_file):
 		#Merge the result of DTV and Price Filter
 		stock_data = pd.merge(DTV, Price, how='inner', on=list(DTV.columns))
 
-		#Output the Filtered Stock List
-		with open(filterd_stock_file.split('_')[0] + '_filtered_stock_list.json','w') as f:
-			filtered_stocks = list(stock_data['ticker'].unique())
-			json.dump(filtered_stocks,f,indent=4)
+		if filterd_stock_file is not None:
+			#Output the Filtered Stock List
+			with open(filterd_stock_file.split('_')[0] + '_filtered_stock_list.json','w') as f:
+				filtered_stocks = list(stock_data['ticker'].unique())
+				json.dump(filtered_stocks,f,indent=4)
 
 	elif flag == 'test':
 		try:

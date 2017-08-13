@@ -1,3 +1,4 @@
 *.pyc
 .DS_Store
-mysql.json
+test_output
+mlsp

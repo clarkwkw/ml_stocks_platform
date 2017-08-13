@@ -10,7 +10,7 @@ except NameError:
 
 def save_dict(dict, path):
 	with open(path, "w") as f:
-		f.write(json.dumps(dict, indent = 4))
+		json.dump(dict, f, indent = 4)
 
 def get_input_str(title, options = None, end = ':'):
 	result = None

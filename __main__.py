@@ -4,6 +4,7 @@ import config
 import argparse
 import debug
 import json
+import json_utils
 import os
 import pandas
 import importlib
@@ -92,10 +93,10 @@ def main():
 			exit(-1)
 
 		try:
-			with open("./%s/simulation_config.json", "r") as f:
-				simulation_config_dict = json.load(f)
+			with open("./%s/simulation_config.json"%stock_data_config_dict['stock_data_code'], "r") as f:
+				simulation_config_dict = json.load(f, object_hook = json_utils._decode_dict)
 		except:
-			print("cannot open %s/simulation_config.json, abort")
+			print("cannot open %s/simulation_config.json, abort"%stock_data_config_dict['stock_data_code'])
 			exit(-1)
 
 		PortfolioUtils.SimulateTradingProcess(simulation_config_dict, stock_data_config_dict)
