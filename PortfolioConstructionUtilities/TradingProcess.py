@@ -3,6 +3,7 @@ import debug
 import config
 import json
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 import utils
 import os
 import numpy as np
@@ -35,7 +36,10 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	start_date = pandas.Timestamp(stock_data_config_dict['period']['start'])
 	end_date = pandas.Timestamp(stock_data_config_dict['period']['end'])
 	date_queue = Date_Queue(start_date, end_date, stock_data_config_dict['market_id'])
-	date_queue.push(start_date + timedelta(days = simulation_config_dict["model_training_frequency"]))
+	if type(simulation_config_dict['meta_paras']) is dict:
+		date_queue.push(start_date + timedelta(days = simulation_config_dict["model_training_frequency"]))
+	else:
+		date_queue.push(start_date + relativedelta(years = config.simulate_reserved_data_duration))
 
 	debug.log("TradingProcess: Starting simulation..")
 	buy_dates = []
@@ -71,21 +75,22 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	dataset_start_date = cur_date - timedelta(days = simulation_config_dict["portfolio_holding_period"])
 	for sector in ML_sector_factors:
 		raw_df = ML_sector_factors[sector]
-		filtered_factors[sector] = raw_df.loc[(raw_df['date'] >= dataset_start_date) & (raw_df['date'] <= cur_date)].copy()
+		if type(simulation_config_dict["meta_paras"]) is dict and not config.simulate_rolling_data_when_not_metapara:
+			filtered_factors[sector] = raw_df.loc[(raw_df['date'] >= dataset_start_date) & (raw_df['date'] <= cur_date)].copy()
+		else:
+			filtered_factors[sector] = raw_df.loc[raw_df['date'] <= cur_date].copy()
 		filtered_factors[sector].is_copy = False
 
 	para_tune_holding_flag, para_tune_data_split_date, para_tune_data_split_period = None, None, None
 	if "para_tune_holding_flag" in simulation_config_dict:
 		para_tune_holding_flag = simulation_config_dict["simulation_config_dict"]
-	if "para_tune_data_split_date" in simulation_config_dict:
-		para_tune_data_split_date = simulation_config_dict["para_tune_data_split_date"]
 	if "para_tune_data_split_period" in simulation_config_dict:
 		para_tune_data_split_period = simulation_config_dict["para_tune_data_split_period"]
 
 	model_dir = None
 	if "model_class_dir" in simulation_config_dict:
 		model_dir = simulation_config_dict["model_class_dir"]
-	models_map = MachineLearningModelDevelopment(filtered_factors, simulation_config_dict["model_flag"], simulation_config_dict["meta_paras"], simulation_config_dict["stock_filter_flag"], simulation_config_dict["B_top"], simulation_config_dict["B_bottom"], simulation_config_dict["target_label_holding_period"], simulation_config_dict["trading_stock_quantity"], para_tune_holding_flag, period = para_tune_data_split_period, date = para_tune_data_split_date, customized_module_dir = model_dir)
+	models_map = MachineLearningModelDevelopment(filtered_factors, simulation_config_dict["model_flag"], simulation_config_dict["meta_paras"], simulation_config_dict["stock_filter_flag"], simulation_config_dict["B_top"], simulation_config_dict["B_bottom"], simulation_config_dict["target_label_holding_period"], simulation_config_dict["trading_stock_quantity"], para_tune_holding_flag, period = para_tune_data_split_period, customized_module_dir = model_dir)
 
 	# confirm next training date
 	next_train_date = cur_date + timedelta(days = simulation_config_dict["model_training_frequency"])
