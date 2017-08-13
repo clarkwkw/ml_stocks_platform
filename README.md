@@ -34,7 +34,8 @@
 6. Move the executable to any folder you wish it to be stored
 7. (Optional) Add the folder containing the executable into $PATH variable by issuing
 
-   `export PATH=$PATH:$(pwd)`
+   `export PATH=$PATH:$(pwd)`, or
+   `setenv PATH $PATH\:$PWD` in c shell
 
 ## Basic Usage
 1. Change working directory to an empty folder
