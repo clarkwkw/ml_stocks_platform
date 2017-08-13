@@ -24,8 +24,8 @@
 
    `git clone https://github.com/clarkwkw/ml_stocks_platform.git`
 
-2. Edit basic settings in `config.py` to suit your need (especially the connection settings)
-3. Change directory to the repository folder and run the bash script by issuing
+2. Change directory to the repository folder and edit the program settings in `config.py` to suit your need (especially the connection settings)
+3.  Issue the following command to run the building script
 
    `sh build.sh`
 
