@@ -63,6 +63,27 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	if type(output_dir) is str:
 		prices_df.to_csv("%s/prices.csv"%output_dir, na_rep = "nan", index = False)
 
+	if type(output_dir) is str:
+		ml_factors.to_csv("%s/ML_factor_table_file.csv", na_rep = "nan", index = False)
+
+	ML_sector_factors = split_to_sectors(ml_factors, sectors)
+
+	debug.log("DataSource: Data is ready")
+	return ML_sector_factors, prices_df
+
+def LoadTableFromFile(sectors, input_dir):
+	debug.log("DataSource: Loading data from disk..")
+
+	ml_factors = pandas.read_csv("%s/ML_factor_table_file.csv"%input_dir, na_values = ["nan"], parse_dates = ["date"])
+	prices_df = pandas.read_csv("%s/prices.csv"%input_dir, na_values = ["nan"], parse_dates = ["date"])
+	prices_df.set_index(keys = ['date'], drop = False, inplace = True)
+
+	ML_sector_factors = split_to_sectors(ml_factors, sectors)
+
+	debug.log("DataSource: Data is ready")
+	return ML_sector_factors, prices_df
+
+def split_to_sectors(ml_factors, sectors):
 	debug.log("DataSource: Splitting MLfactors into individual sectors..")
 	ML_sector_factors = {}
 	for sector in sectors:
@@ -70,19 +91,4 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 		ML_sector_factors[sector].is_copy = False
 		ML_sector_factors[sector].sort_values(by = ['date'], inplace = True)
 		ML_sector_factors[sector].set_index(keys = ['date'], drop = False, inplace = True)
-		if type(output_dir) is str:
-			ML_sector_factors[sector].to_csv("%s/%s_ML_factor.csv"%(output_dir, sector), na_rep = "nan", index = False)
-	debug.log("DataSource: Data is ready")
-	return ML_sector_factors, prices_df
-
-def LoadTableFromFile(sectors, input_dir):
-	prices_df = pandas.read_csv("%s/prices.csv"%input_dir, na_values = ["nan"], parse_dates = ["date"])
-	prices_df.set_index(keys = ['date'], drop = False, inplace = True)
-	debug.log("DataSource: Loading data from disk..")
-	ML_sector_factors = {}
-	for sector in sectors:
-		ML_sector_factors[sector] = pandas.read_csv("%s/%s_ML_factor.csv"%(input_dir, sector), na_values = ["nan"], parse_dates = ["date"])
-		ML_sector_factors[sector].sort_values(by = ['date'], inplace = True)
-		ML_sector_factors[sector].set_index(keys = ['date'], drop = False, inplace = True)
-
-	return ML_sector_factors, prices_df
+	return ML_sector_factors
