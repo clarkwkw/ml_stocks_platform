@@ -6,7 +6,7 @@ output_filename = "stock_data_config.json"
 def generate_stock_data_config():
 	config_dict = {}
 
-	config_dict['market_id'] =  get_input_str("Model flag", options = ["US"])
+	config_dict['market_id'] =  get_input_str("Market ID", options = ["US"])
 	config_dict['stock_data_code'] =  get_input_str("Stock data code")
 	config_dict['market_cap'] = get_input_number("Minimum market capitalization (-1 if not filtering)", lower_limit = -1)
 	if config_dict['market_cap'] == -1:
