@@ -16,7 +16,7 @@ def MachineLearningModelDevelopment(ML_sector_factors, ML_model_flag, paras_set,
 			best_para = paras_set
 		else:
 			raise Exception("Unexpected type of paras_set %s"%str(type(paras_set)))
-		debug.log("MachineLearningModelDevlopment: Best parameter [%s]"%str(best_para))
+		debug.log("MachineLearningModelDevlopment: Best parameter %s"%str(best_para))
 		debug.log("MachineLearningModelDevlopment: Step 2. Building model..")
 		model = MLUtils.buildModel(ML_model_flag, preprocessing_file_path, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, customized_module_dir = customized_module_dir, **best_para)
 		models_map[sector] = model
