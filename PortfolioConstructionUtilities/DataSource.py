@@ -64,7 +64,7 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 		prices_df.to_csv("%s/prices.csv"%output_dir, na_rep = "nan", index = False)
 
 	if type(output_dir) is str:
-		ml_factors.to_csv("%s/ML_factor_table_file.csv", na_rep = "nan", index = False)
+		ml_factors.to_csv("%s/ML_factor_table_file.csv"%output_dir, na_rep = "nan", index = False)
 
 	ML_sector_factors = split_to_sectors(ml_factors, sectors)
 
