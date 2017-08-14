@@ -7,8 +7,10 @@ import json
 import json_utils
 import os
 import pandas
+from timeit import default_timer as timer
 import importlib
 import warnings
+import DataPreparation
 import PortfolioConstructionUtilities as PortfolioUtils
 import ConfigFilesUtilities
 try:
@@ -99,7 +101,16 @@ def main():
 			print("cannot open %s/simulation_config.json, abort"%stock_data_config_dict['stock_data_code'])
 			exit(-1)
 
+		start = timer()
 		PortfolioUtils.SimulateTradingProcess(simulation_config_dict, stock_data_config_dict)
+		end = timer()
+		total_runtime = end - start
+		prep_runtime = DataPreparation.runtime
+		
+		if config.record_main_runtime:
+			print(">> Execution time: {:02.0f}:{:02.0f}:{:05.2f}".format(total_runtime//3600, (total_runtime%3600)//60, total_runtime%60))
+			print(">> Preparation Module: {:02.0f}:{:02.0f}:{:05.2f}".format(prep_runtime//3600, (prep_runtime%3600)//60, prep_runtime%60))
+
 
 if __name__ == "__main__":
 	main()

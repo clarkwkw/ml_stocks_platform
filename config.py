@@ -7,6 +7,8 @@ ignore_warnings = True
 
 max_thread = 4
 
+record_main_runtime = True
+
 # --- Module specific settings ---
 
 # Fill missing values with zero when downloading data from MYSQL
