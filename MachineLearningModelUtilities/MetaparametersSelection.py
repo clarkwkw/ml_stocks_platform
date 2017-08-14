@@ -54,7 +54,7 @@ def selectMetaparameters(model_flag, stock_data, stock_filter_flag, B_top, B_bot
 			quality, para_id, unique_id = result
 			avg_quality_list[para_id] += 1.0/n_folds*quality
 			done += 1
-			debug.log("MetaparameterSelection: Done %d [id = %d]."%(done, unique_id))
+			debug.log("MetaparameterSelection: Done %d [id = %d] (%.3f)."%(done, unique_id, quality))
 
 	for i in range(len(avg_quality_list)):
 		if avg_quality_list[i] > best_quality:
