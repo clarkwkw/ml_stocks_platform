@@ -1,5 +1,6 @@
 import config
 import debug
+import traceback
 from DataPreparation import ValidationDataPreparation, DataPreprocessing
 from SimpleSVMModel import SimpleSVMModel
 from SimpleNNModel import SimpleNNModel
@@ -44,10 +45,16 @@ def selectMetaparameters(model_flag, stock_data, stock_filter_flag, B_top, B_bot
 		debug.log("MetaparameterSelection: %d meta-parameter(s) with %d fold(s) each."%(unallocated_para_id, n_folds))
 		done = 0
 		for future in as_completed(futures):
-			quality, para_id, unique_id = future.result()
+			result = future.result()
+			
+			if result == -1:
+				debug.log("MetaparameterSelection: encountered exception when selecting metaparameter, abort")
+				exit(-1)
+
+			quality, para_id, unique_id = result
 			avg_quality_list[para_id] += 1.0/n_folds*quality
 			done += 1
-			debug.log("MetaparameterSelection: Done %d [id = %d]."%(done, unique_id))
+			debug.log("MetaparameterSelection: Done %d [id = %d] (%.3f)."%(done, unique_id, quality))
 
 	for i in range(len(avg_quality_list)):
 		if avg_quality_list[i] > best_quality:
@@ -57,11 +64,15 @@ def selectMetaparameters(model_flag, stock_data, stock_filter_flag, B_top, B_bot
 	return best_meta_para
 
 def __selectMetaparameters_helper(unique_id, para_id, train_data, valid_data, Model_class, trading_stock_quantity, para_tune_holding_flag, **meta_para):
-	train_factors, train_target = seperate_factors_target(train_data)
-	factors = get_factors_from_df(train_factors)
+	try:
+		train_factors, train_target = seperate_factors_target(train_data)
+		factors = get_factors_from_df(train_factors)
 
-	model = Model_class(_factors = factors, **meta_para)
-	model.train(train_factors, train_target)
+		model = Model_class(_factors = factors, **meta_para)
+		model.train(train_factors, train_target)
 
-	quality = evaluateModel(model, valid_data, trading_stock_quantity, para_tune_holding_flag)
-	return (quality, para_id, unique_id)
+		quality = evaluateModel(model, valid_data, trading_stock_quantity, para_tune_holding_flag)
+		return (quality, para_id, unique_id)
+	except:
+		traceback.print_exc()
+		return -1

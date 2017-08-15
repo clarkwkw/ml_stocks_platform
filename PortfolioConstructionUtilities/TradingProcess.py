@@ -21,7 +21,7 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 		f.write(json.dumps(simulation_config_dict, indent = 4))
 	
 	ML_sector_factors, price_info = None, None
-	ML_factors_dir = "./model/sector_stock_dataset"
+	ML_factors_dir = ".."
 	if stock_data_config_dict['use_loaded_data']:
 		ML_sector_factors, price_info = LoadTableFromFile(stock_data_config_dict['sectors'], ML_factors_dir)
 	else:
@@ -191,7 +191,6 @@ def setup_dirs(stock_data_code = None, run_code = None, sectors = []):
 
 	utils.create_dir("./model")
 	utils.create_dir("./model/preprocessing")
-	utils.create_dir("./model/sector_stock_dataset")
 	for sector in sectors:
 		utils.create_dir("./model/%s"%sector)
 
