@@ -41,7 +41,7 @@ def calculate_lambda(ticker_data):
                 prev_price = last_price
                 continue
 
-            sign_log_v_p.append(np.log(1+last_price * volume))
+            sign_log_v_p.append(sign*np.log(1+last_price * volume))
             net_returns.append(net_return)
         prev_price = last_price
         
