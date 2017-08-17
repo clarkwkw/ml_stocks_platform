@@ -25,7 +25,7 @@ def generate_simulation_config():
 		config_dict['meta_paras'] = []
 		config_dict['rolling_training_data'] = True
 		config_dict['para_tune_holding_flag'] = get_input_str("Which kind of position to evaluate when selecting metaparameters", options = ["long", "short", "long_short"], end = "?")
-		config_dict['para_tune_reserve_data'] = get_input_number("No. year of data to be reserved for the 1st model", lower_limit = 1, is_int = True)
+		config_dict['reserve_train_data'] = get_input_number("No. year of data to be reserved for the 1st model", lower_limit = 1, is_int = True)
 		config_dict['para_tune_data_split_period'] = get_input_number("No. of year of data per fold", lower_limit = 1, upper_limit = config_dict['para_tune_reserve_data'], is_int = True)
 		
 		print("> You will need to manually edit the 'meta_paras' field in '%s', it should be"%output_filename)
@@ -35,6 +35,8 @@ def generate_simulation_config():
 	else:
 		config_dict['meta_paras'] = {}
 		config_dict['rolling_training_data'] = get_input_bool("Construct training data in a rolling way")
+		config_dict['reserve_train_data'] = get_input_number("No. year of data to be reserved for the 1st model", lower_limit = 0, is_int = True)
+
 		print("> If you wish to pass arguments to the model,")
 		print("> you will need to manually edit the 'meta_paras' field in '%s', it should be:"%output_filename)
 		print("> a dicitionary of parameters to be passed to the model.")
