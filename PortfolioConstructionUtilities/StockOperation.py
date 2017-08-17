@@ -7,7 +7,7 @@ from ModelOperation import *
 # buying_price: a dataframe containing Ticker and Buying Price columns
 def StockPerformancePrediction(stock_data, buying_price, stock_filter_flag, preprocessing_file, model_savedir, predict_value_file, trained_model = None):
 	test_dataset = DataPreparation.TestingDataPreparation(stock_data, stock_filter_flag = stock_filter_flag, preprocessing_file = preprocessing_file)
-	predict_df = LearnedModelExecution(test_dataset, model_savedir, trained_model)
+	predict_df = LearnedModelExecution(test_dataset, model_savedir, model = trained_model)
 	predict_df = utils.fill_df(predict_df, "buying_price", buying_price, "price", "ticker")
 	predict_df.dropna(subset=['buying_price'],inplace=True)
 	predict_df = predict_df.rename(columns = {'pred':'predicted_value'})

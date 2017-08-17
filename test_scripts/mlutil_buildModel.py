@@ -4,6 +4,7 @@ import DataPreparation as DataPrep
 
 model_savedir = "./test_output/"
 customized_model_dir = "./test_scripts"
+customized_model_name = "Model"
 def test():
     print("Loading data...")
     stock_data = pandas.read_csv('./test_data/10tickers_wo_sector_fill.csv')
@@ -15,13 +16,13 @@ def test():
 
 
     print("Training Custom Model...")
-    model = MLUtils.buildModel("Custom", "./test_output/preprocessing_file.json", train_data, False, 10, 15, 1, customized_model_dir)
+    model = MLUtils.buildModel("Custom", "./test_output/preprocessing_file.json", train_data, False, 10, 15, 1, customized_model_dir, customized_model_name)
     preprocessed_valid = DataPrep.DataPreprocessing(flag = "test", stock_data = valid_data, preprocessing_file = "./test_output/preprocessing_file.json")
 
     model.save(model_savedir)
 
     model = None
-    model = MLUtils.loadTrainedModel(model_savedir, customized_model_dir)
+    model = MLUtils.loadTrainedModel(model_savedir, customized_model_dir, customized_model_name)
     print("Evaluation long - 10")
     print(MLUtils.evaluateModel(model, preprocessed_valid, 10, "long"))
 

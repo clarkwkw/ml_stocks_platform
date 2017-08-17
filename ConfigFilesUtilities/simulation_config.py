@@ -12,7 +12,7 @@ def generate_simulation_config():
 	config_dict['model_flag'] = get_input_str("Model flag", options = ["SVM", "NN", "Custom"])
 
 	if config_dict['model_flag'] == "Custom":
-		config_dict['model_class_dir'] = get_input_str("Custom model directory (parent directory of Model)")
+		config_dict['custom_model_name'] = get_input_str("Custom model name")
 
 	config_dict['stock_filter_flag'] = get_input_bool("Filter stocks by LIQ, DTV and Price filters")
 
@@ -26,7 +26,7 @@ def generate_simulation_config():
 		config_dict['rolling_training_data'] = True
 		config_dict['para_tune_holding_flag'] = get_input_str("Which kind of position to evaluate when selecting metaparameters", options = ["long", "short", "long_short"], end = "?")
 		config_dict['reserve_train_data'] = get_input_number("No. year of data to be reserved for the 1st model", lower_limit = 1, is_int = True)
-		config_dict['para_tune_data_split_period'] = get_input_number("No. of year of data per fold", lower_limit = 1, upper_limit = config_dict['para_tune_reserve_data'], is_int = True)
+		config_dict['para_tune_data_split_period'] = get_input_number("No. of year of data per fold", lower_limit = 1, upper_limit = config_dict['reserve_train_data'], is_int = True)
 		
 		print("> You will need to manually edit the 'meta_paras' field in '%s', it should be"%output_filename)
 		print("> 1. a list of dictionaries, where each dicitionary represents a parameter set, or")
