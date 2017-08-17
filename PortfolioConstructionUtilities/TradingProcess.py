@@ -36,10 +36,10 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	start_date = pandas.Timestamp(stock_data_config_dict['period']['start'])
 	end_date = pandas.Timestamp(stock_data_config_dict['period']['end'])
 	date_queue = Date_Queue(start_date, end_date, stock_data_config_dict['market_id'])
-	if type(simulation_config_dict['meta_paras']) is dict:
+	if simulation_config_dict['reserve_train_data'] == 0:
 		date_queue.push(start_date + timedelta(days = simulation_config_dict["model_training_frequency"]))
 	else:
-		date_queue.push(start_date + relativedelta(years = simulation_config_dict['para_tune_reserve_data']))
+		date_queue.push(start_date + relativedelta(years = simulation_config_dict['reserve_train_data']))
 
 	debug.log("TradingProcess: Starting simulation..")
 	buy_dates = []
