@@ -46,3 +46,8 @@ def get_mysql_engine():
 	except sqlalchemy.exc.OperationalError as e:
 		raise Exception('Fail to connect to MYSQL database')
 	return engine
+
+def import_custom_module(customized_module_name, customized_module_dir):
+	file, pathname, desc = imp.find_module(customized_module_name, [customized_module_dir])
+	custom_module = imp.load_module(customized_module_name, file, pathname, desc)
+	return custom_module

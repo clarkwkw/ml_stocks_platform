@@ -12,7 +12,7 @@ def generate_simulation_config():
 	config_dict['model_flag'] = get_input_str("Model flag", options = ["SVM", "NN", "Custom"])
 
 	if config_dict['model_flag'] == "Custom":
-		config_dict['model_class_dir'] = get_input_str("Custom model directory (parent directory of Model)")
+		config_dict['custom_model_name'] = get_input_str("Custom model name")
 
 	config_dict['stock_filter_flag'] = get_input_bool("Filter stocks by LIQ, DTV and Price filters")
 

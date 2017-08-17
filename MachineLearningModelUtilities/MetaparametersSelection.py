@@ -8,13 +8,13 @@ from utils import get_factors_from_df, import_custom_module, seperate_factors_ta
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from ModelEvaluation import evaluateModel
 
-def selectMetaparameters(model_flag, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, period = None, date = None, customized_module_dir = "", paras_set = []):
+def selectMetaparameters(model_flag, stock_data, stock_filter_flag, B_top, B_bottom, target_label_holding_period, trading_stock_quantity, para_tune_holding_flag, period = None, date = None, customized_module_dir = "", customized_module_name = "", paras_set = []):
 	if model_flag == "SVM":
 		Model_class = SimpleSVMModel
 	elif model_flag == "NN":
 		Model_class = SimpleNNModel
 	elif model_flag == "Custom":		
-		custom_module = import_custom_module("Model", customized_module_dir)
+		custom_module = import_custom_module(customized_module_name, customized_module_dir)
 		Model_class = custom_module.CustomizedModel.Model
 		if paras_set == "model_def":
 			paras_set = custom_module.CustomizedModel.metaparas_set
