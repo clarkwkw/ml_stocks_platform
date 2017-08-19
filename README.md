@@ -53,5 +53,5 @@
 
 5. Start simulation by issuing `mlsp`
 
-## Documentation
-Please refer to the [wikipage](https://github.com/clarkwkw/summer_research/wiki).
+## Other Usage
+Please refer to the [wikipage](https://github.com/clarkwkw/ml_stocks_platform/wiki).
