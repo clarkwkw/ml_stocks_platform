@@ -201,5 +201,3 @@ def setup_dirs(stock_data_code = None, run_code = None, sectors = []):
 	utils.create_dir("./portfolio/predicted_value")
 	utils.create_dir("./portfolio/ranked_stock")
 	utils.create_dir("./portfolio/sector_portfolio")
-	for sector in sectors:
-		utils.create_dir("./portfolio/%s"%sector)
