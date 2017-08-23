@@ -2,6 +2,7 @@ from TrainingDataPreparation import TrainingDataPreparation as TrainDP
 from TestingDataPreparation  import TestingDataPreparation as TestDP
 from ValidationDataPreparation import ValidationDataPreparation as ValidDP
 from DataPreprocessing import DataPreprocessing as DP
+from TargetLabelGeneration import TargetLabelGeneration as TLG
 from timeit import default_timer as timer
 import multiprocessing
 
@@ -47,4 +48,14 @@ def DataPreprocessing(*args, **kwargs):
 	runtime_lock.release()
 	return result
 
-__all__ = [TrainingDataPreparation, TestingDataPreparation, ValidationDataPreparation, DataPreprocessing]
+def TargetLabelGeneration(*args, **kwargs):
+	global runtime
+	start = timer()
+	result = TLG(*args, **kwargs)
+	end = timer()
+	runtime_lock.acquire()
+	runtime += end - start
+	runtime_lock.release()
+	return result
+
+__all__ = [TrainingDataPreparation, TestingDataPreparation, ValidationDataPreparation, DataPreprocessing, TargetLabelGeneration]
