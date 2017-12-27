@@ -12,9 +12,9 @@ import utilities
 host = 'seis10.se.cuhk.edu.hk'
 database = 'finanai'
 username = 'finanai'
-raw_table = 'US_bloomberg_factor'
+raw_table = 'HK2_bloomberg_factor'
 out_folder = "./historical data"
-first_date = "1996-03-02"
+first_date = "2000-05-19"
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -41,6 +41,7 @@ def select_tickers(df_tickers, required_tickers):
 	return result
 
 def price_mom(end_datetime, period, field_name, sector, tickers_map):
+	mysql_mutex_acquired = False
 	try:
 		
 		delta = pandas.DateOffset(months = period)
@@ -48,8 +49,10 @@ def price_mom(end_datetime, period, field_name, sector, tickers_map):
 		end_date = ''.join(end_datetime.isoformat()[0:10].split('-'))
 		start_date = ''.join(start_datetime.isoformat()[0:10].split('-'))
 		mysql_mutex.acquire()
+		mysql_mutex_acquired = True
 		valid_tickers = pandas.read_sql("SELECT DISTINCT ticker FROM %s WHERE sector = '%s' AND date = '%s';"%(raw_table, sector, end_datetime.isoformat()[0:10]),  mysql_conn, coerce_float = False)
 		mysql_mutex.release()
+		mysql_mutex_acquired = False
 		selected_tickers = select_tickers(valid_tickers, tickers_map)
 		if len(selected_tickers) > 0:
 			tmp_result = LocalTerminal.get_reference_data(selected_tickers, 'CUST_TRR_RETURN_HOLDING_PER', CUST_TRR_START_DT=start_date, CUST_TRR_END_DT=end_date).as_map()
@@ -63,6 +66,8 @@ def price_mom(end_datetime, period, field_name, sector, tickers_map):
 			print_status("No ticker found on %s."%end_date)
 		return 0
 	except Exception as e:
+		if mysql_mutex_acquired:
+			mysql_mutex.release()
 		traceback.print_exc()
 		err_mutex.acquire()
 		errs.append(traceback.format_exc())
