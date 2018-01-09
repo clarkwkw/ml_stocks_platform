@@ -14,7 +14,7 @@ database = 'finanai'
 username = 'finanai'
 raw_table = 'HK2_bloomberg_factor'
 out_folder = "./historical data"
-first_date = "2000-05-19"
+first_date = "2008-05-20"
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -120,6 +120,7 @@ print_status("Crawling data...")
 for sector in sectors:
 	cur_sector = sector
 	total_date = len(end_dates)
+	finished_date = 0
 	tickers_map = {}
 	for ticker in utilities.tickers_table[sector]:
 		tickers_map[ticker] = True
