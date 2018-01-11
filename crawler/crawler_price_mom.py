@@ -14,7 +14,7 @@ database = 'finanai'
 username = 'finanai'
 raw_table = 'HK2_bloomberg_factor'
 out_folder = "./historical data"
-first_date = "2008-05-20"
+first_date = "2015-05-12"
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
@@ -32,6 +32,20 @@ errs = []
 err_mutex = multiprocessing.Lock()
 mysql_mutex = multiprocessing.Lock()
 exit_flag = False
+
+bbg_username, bbg_password = "", ""
+
+def ask_bbg_credentials():
+	global bbg_username, bbg_password
+	print("Please enter the credentials for Bloomberg terminal")
+	bbg_username = raw_input("Username: ")
+	bbg_password = utilities.get_password(msg = "Password: ")
+	bbg_start_now = ""
+	while bbg_start_now.lower() not in ["y", "n"]:
+		bbg_start_now = raw_input("Do you want to start the terminal now [y/n]? ")
+		if bbg_start_now.lower() == "y":
+			print("Please leave the windows untouched until the terminal is logined")
+			utilities.restart_bbg_session(bbg_username, bbg_password)
 
 def select_tickers(df_tickers, required_tickers):
 	result = []
@@ -72,6 +86,8 @@ def price_mom(end_datetime, period, field_name, sector, tickers_map):
 		err_mutex.acquire()
 		errs.append(traceback.format_exc())
 		err_mutex.release()
+		if "start session" in str(e).lower():
+			return -2
 		return -1
 
 def send_status_management():
@@ -111,7 +127,9 @@ def retry_crawler():
 	global sleep
 	sleep = False
 
+
 mysql_conn = utilities.mysql_connection(host, database, username)
+ask_bbg_credentials()
 end_dates = pandas.read_sql("SELECT DISTINCT date FROM %s WHERE date >= '%s' ORDER BY date asc"%(raw_table, first_date), mysql_conn, coerce_float = False, parse_dates = ["date"])["date"]
 
 email_thread = threading.Thread(target = send_status_management)
@@ -136,7 +154,14 @@ for sector in sectors:
 					if future.result() != 0:
 						retry = True
 						sleep = True
-						print_status("Exception occured when crawling date %s, retry after 3 hrs."%end_date)
+						if future.result() == -2:
+							utilities.restart_bbg_session(bbg_username, bbg_password)
+							print_status("Tried to restart bbg session, retry after 3 hrs."%end_date)
+							errs.append("Tried to restart Bloomberg terminal")
+						else:
+							print_status("Exception occured when crawling date %s, retry after 3 hrs."%end_date)
+						break
+
 			# In case of daily limit exceeded, retry after 3 hours
 			if sleep:
 				threading.Timer(3*60*60, retry_crawler).start()

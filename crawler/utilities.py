@@ -6,6 +6,8 @@ import smtplib
 import string
 from email.mime.text import MIMEText
 import getpass
+import time
+import win32com.client
 try:
 	import sqlalchemy
 except ImportError:
@@ -52,11 +54,29 @@ def mysql_connection(host, database, username, password = None):
 		password = get_password()
 	try:
 		engine = sqlalchemy.create_engine('mysql+%s://%s:%s@%s/%s'%(db_connector, username, password, host, database))
-	except sqlalchemy.exc.OperationalError as e:
+		pandas.read_sql("SHOW TABLES;", engine)
+	except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.ProgrammingError) as e:
 		print_status('Wrong credentials, abort')
 		exit(-1)
 	print_status("Connected")
 	return engine
+
+def restart_bbg_session(username, password):
+	time.sleep(1)
+	shell = win32com.client.DispatchEx("WScript.Shell")
+	shell.Run("C:\\blp\\Wintrv\\WINTRV.EXE")
+	time.sleep(10)
+	shell.AppActivate("1-BLOOMBERG")
+	time.sleep(1)
+
+	shell.SendKeys("{esc}")
+	time.sleep(1)
+
+	shell.SendKeys("login~")
+	time.sleep(1)
+
+	shell.SendKeys("%s{tab}%s{ENTER}"%(username, password))
+	time.sleep(1)
 
 def send_gmail(recepient, subject, body):
 	msg = MIMEText(body)
