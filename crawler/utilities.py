@@ -7,7 +7,7 @@ import string
 from email.mime.text import MIMEText
 import getpass
 import time
-import win32com.client
+import win32com.client, dde
 try:
 	import sqlalchemy
 except ImportError:
@@ -62,21 +62,14 @@ def mysql_connection(host, database, username, password = None):
 	return engine
 
 def restart_bbg_session(username, password):
-	time.sleep(1)
 	shell = win32com.client.DispatchEx("WScript.Shell")
 	shell.Run("C:\\blp\\Wintrv\\WINTRV.EXE")
 	time.sleep(10)
-	shell.AppActivate("1-BLOOMBERG")
-	time.sleep(1)
 
-	shell.SendKeys("{esc}")
-	time.sleep(1)
-
-	shell.SendKeys("login~")
-	time.sleep(1)
-
-	shell.SendKeys("%s{tab}%s{ENTER}"%(username, password))
-	time.sleep(1)
+	de = dde.DDEClient('WinBlp', 'bbk')
+	de.execute('<blp-0>LOGIN<GO>')
+	time.sleep(5)
+	de.execute('<blp-0>%s<TABR>%s<GO>'%(username, password))
 
 def send_gmail(recepient, subject, body):
 	msg = MIMEText(body)
