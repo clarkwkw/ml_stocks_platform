@@ -157,10 +157,11 @@ for sector in sectors:
 						if future.result() == -2:
 							utilities.restart_bbg_session(bbg_username, bbg_password)
 							print_status("Tried to restart bbg session, retry after 3 hrs.")
+							err_mutex.acquire()
 							errs.append("Tried to restart Bloomberg terminal")
+							err_mutex.release()
 						else:
 							print_status("Exception occured when crawling date %s, retry after 3 hrs."%end_date)
-						break
 
 			# In case of daily limit exceeded, retry after 3 hours
 			if sleep:
