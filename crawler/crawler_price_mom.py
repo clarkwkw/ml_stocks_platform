@@ -156,7 +156,7 @@ for sector in sectors:
 						sleep = True
 						if future.result() == -2:
 							utilities.restart_bbg_session(bbg_username, bbg_password)
-							print_status("Tried to restart bbg session, retry after 3 hrs."%end_date)
+							print_status("Tried to restart bbg session, retry after 3 hrs.")
 							errs.append("Tried to restart Bloomberg terminal")
 						else:
 							print_status("Exception occured when crawling date %s, retry after 3 hrs."%end_date)
