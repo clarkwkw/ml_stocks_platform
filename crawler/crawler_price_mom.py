@@ -14,14 +14,22 @@ database = 'finanai'
 username = 'finanai'
 raw_table = 'HK2_bloomberg_factor'
 out_folder = "./historical data"
-first_date = "2015-05-12"
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
 email_status_freq = 60
 
 periods = [(1, "bbg_mom_1m"), (3, "bbg_mom_3m"), (6, "bbg_mom_6m"), (12, "bbg_mom_12m")]
+# a list of tuples defining:
+# 1. sector name
+# 2. start date ("YYYY-MM-DD")
+# 3. end date ("YYYY-MM-DD" / None)
+sectors_conf = [
+	("Health Care", '1995-12-31', None),
+	("Industrials", '1995-12-31', None),
+	("Information Technology", '1995-12-31', None)
+]
+
 max_thread_no = 8
-sectors = list(utilities.tickers_table.keys())
 
 print_status = utilities.print_status
 cur_sector = "INIT"
@@ -130,12 +138,17 @@ def retry_crawler():
 
 mysql_conn = utilities.mysql_connection(host, database, username)
 ask_bbg_credentials()
-end_dates = pandas.read_sql("SELECT DISTINCT date FROM %s WHERE date >= '%s' ORDER BY date asc"%(raw_table, first_date), mysql_conn, coerce_float = False, parse_dates = ["date"])["date"]
+end_dates = pandas.read_sql("SELECT DISTINCT date FROM %s ORDER BY date asc"%raw_table, mysql_conn, coerce_float = False, parse_dates = ["date"])["date"]
 
 email_thread = threading.Thread(target = send_status_management)
 email_thread.start()
 print_status("Crawling data...")
-for sector in sectors:
+for sector. period_start, period_end in sectors_conf:
+	period_start = pandas.Timestamp(period_start)
+	period_end = None if period_end is None else pandas.Timestamp(period_end)
+	end_dates_selected = end_dates[end_dates >= period_start]
+	end_dates_selected = end_dates_selected if period_end is None else end_dates_selected[end_dates_selected <= period_end]
+	print("Crawling %s sector [%s - %s]"%(str(period_start)[0:10] - str(end_dates_selected[len(end_dates_selected) - 1][0:10])))
 	cur_sector = sector
 	total_date = len(end_dates)
 	finished_date = 0
