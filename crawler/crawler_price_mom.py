@@ -143,19 +143,19 @@ end_dates = pandas.read_sql("SELECT DISTINCT date FROM %s ORDER BY date asc"%raw
 email_thread = threading.Thread(target = send_status_management)
 email_thread.start()
 print_status("Crawling data...")
-for sector. period_start, period_end in sectors_conf:
+for sector, period_start, period_end in sectors_conf:
 	period_start = pandas.Timestamp(period_start)
 	period_end = None if period_end is None else pandas.Timestamp(period_end)
 	end_dates_selected = end_dates[end_dates >= period_start]
 	end_dates_selected = end_dates_selected if period_end is None else end_dates_selected[end_dates_selected <= period_end]
-	print("Crawling %s sector [%s - %s]"%(str(period_start)[0:10] - str(end_dates_selected[len(end_dates_selected) - 1][0:10])))
+	print("Crawling %s sector [%s - %s]"%(sector, str(period_start)[0:10], str(end_dates_selected[len(end_dates_selected) - 1])[0:10]))
 	cur_sector = sector
-	total_date = len(end_dates)
+	total_date = len(end_dates_selected)
 	finished_date = 0
 	tickers_map = {}
 	for ticker in utilities.tickers_table[sector]:
 		tickers_map[ticker] = True
-	for end_date in end_dates:
+	for end_date in end_dates_selected:
 		retry = True
 		while retry:
 			with ThreadPoolExecutor(max_workers = max_thread_no) as executor:
