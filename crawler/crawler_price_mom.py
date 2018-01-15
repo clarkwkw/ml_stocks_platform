@@ -24,9 +24,11 @@ periods = [(1, "bbg_mom_1m"), (3, "bbg_mom_3m"), (6, "bbg_mom_6m"), (12, "bbg_mo
 # 2. start date ("YYYY-MM-DD")
 # 3. end date ("YYYY-MM-DD" / None)
 sectors_conf = [
-	("Health Care", '1995-12-31', None),
-	("Industrials", '1995-12-31', None),
-	("Information Technology", '1995-12-31', None)
+	("Financials", '2014-02-28', None),
+	("Materials", '1995-12-31', None),
+	("Real Estate", '1995-12-31', None),
+	("Telecommunication Services", '1995-12-31', None),
+	("Utilities", '1995-12-31', None)
 ]
 
 max_thread_no = 8
@@ -146,9 +148,9 @@ print_status("Crawling data...")
 for sector, period_start, period_end in sectors_conf:
 	period_start = pandas.Timestamp(period_start)
 	period_end = None if period_end is None else pandas.Timestamp(period_end)
-	end_dates_selected = end_dates[end_dates >= period_start]
-	end_dates_selected = end_dates_selected if period_end is None else end_dates_selected[end_dates_selected <= period_end]
-	print("Crawling %s sector [%s - %s]"%(sector, str(period_start)[0:10], str(end_dates_selected[len(end_dates_selected) - 1])[0:10]))
+	end_dates_selected = end_dates.loc[end_dates >= period_start]
+	end_dates_selected = end_dates_selected if period_end is None else end_dates_selected.loc[end_dates_selected <= period_end]
+	print("Crawling %s sector [%s - %s]"%(sector, str(period_start)[0:10], str(end_dates_selected.iloc[-1])[0:10]))
 	cur_sector = sector
 	total_date = len(end_dates_selected)
 	finished_date = 0
