@@ -24,12 +24,10 @@ periods = [(1, "bbg_mom_1m"), (3, "bbg_mom_3m"), (6, "bbg_mom_6m"), (12, "bbg_mo
 # 2. start date ("YYYY-MM-DD")
 # 3. end date ("YYYY-MM-DD" / None)
 sectors_conf = [
-	("Financials", '2014-02-28', None),
-	("Materials", '1995-12-31', None),
-	("Real Estate", '1995-12-31', None),
-	("Telecommunication Services", '1995-12-31', None),
-	("Utilities", '1995-12-31', None)
+	("Industrials", '2006-11-01', None),
+	("Information Technology", '1995-12-31', None)
 ]
+
 
 max_thread_no = 8
 
@@ -164,20 +162,26 @@ for sector, period_start, period_end in sectors_conf:
 				futures = []
 				for period, field_name in periods:
 					futures.append(executor.submit(price_mom, end_date, period, field_name, sector, tickers_map))
-				retry = False
+				retry, acknowledged, bbg_restarted = False, False, False
+				
 				for future in futures:
-					if future.result() != 0:
+					if future.result() != 0 and not acknowledged:
+						acknowledged = True
 						retry = True
 						sleep = True
 						if future.result() == -2:
 							utilities.restart_bbg_session(bbg_username, bbg_password)
-							print_status("Tried to restart bbg session, retry after 3 hrs.")
+							bbg_restarted = True
 							err_mutex.acquire()
 							errs.append("Tried to restart Bloomberg terminal")
 							err_mutex.release()
-						else:
-							print_status("Exception occured when crawling date %s, retry after 3 hrs."%end_date)
-
+					
+				if retry:
+					if bbg_restarted:
+						print_status("Tried to restart bbg session, retry after 3 hrs.")
+					else:
+						print_status("Exception occured when crawling date %s, retry after 3 hrs."%end_date)
+			
 			# In case of daily limit exceeded, retry after 3 hours
 			if sleep:
 				threading.Timer(3*60*60, retry_crawler).start()

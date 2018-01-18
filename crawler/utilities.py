@@ -8,7 +8,7 @@ from email.mime.text import MIMEText
 import getpass
 import time
 import win32com.client, dde
-import os, traceback, sys
+import psutil
 try:
 	import sqlalchemy
 except ImportError:
@@ -28,11 +28,10 @@ def print_status(msg):
 	print("> "+str(msg))
 
 def pkill(process_name):
-	try:
-		killed = os.system('tskill ' + process_name)
-	except Exception, e:
-		killed = 0
-	return killed
+	process_name = process_name.lower()
+	for process in psutil.process_iter():
+		if process.name().lower() == process_name:
+			process.kill()
 
 def batch_data(series, batch_size):
 	length = len(series)
@@ -71,7 +70,7 @@ def mysql_connection(host, database, username, password = None):
 
 def restart_bbg_session(username, password):
 	pkill("WINTRV.exe")
-	
+
 	shell = win32com.client.DispatchEx("WScript.Shell")
 	shell.Run("C:\\blp\\Wintrv\\WINTRV.EXE")
 	time.sleep(10)
