@@ -73,7 +73,7 @@ def restart_bbg_session(username, password):
 
 	shell = win32com.client.DispatchEx("WScript.Shell")
 	shell.Run("C:\\blp\\Wintrv\\WINTRV.EXE")
-	time.sleep(10)
+	time.sleep(20)
 
 	de = dde.DDEClient('WinBlp', 'bbk')
 	de.execute('<blp-0>LOGIN<GO>')
