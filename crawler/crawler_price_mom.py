@@ -12,7 +12,7 @@ import utilities
 host = 'seis10.se.cuhk.edu.hk'
 database = 'finanai'
 username = 'finanai'
-raw_table = 'HK2_bloomberg_factor'
+raw_table = 'US_bloomberg_factor'
 out_folder = "./historical data"
 
 email_status_dest = "clarkwkw@yahoo.com.hk"
@@ -24,8 +24,10 @@ periods = [(1, "bbg_mom_1m"), (3, "bbg_mom_3m"), (6, "bbg_mom_6m"), (12, "bbg_mo
 # 2. start date ("YYYY-MM-DD")
 # 3. end date ("YYYY-MM-DD" / None)
 sectors_conf = [
-	("Industrials", '2006-11-01', None),
-	("Information Technology", '1995-12-31', None)
+	("Energy", '1995-12-31', None),
+	("Materials", '1995-12-31', None),
+	("Industrials", '1995-12-31', None),
+	("Consumer Discretionary", '1995-12-31', None)
 ]
 
 
