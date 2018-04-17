@@ -8,11 +8,11 @@ from email.mime.text import MIMEText
 import getpass
 import time
 try:
-	WIN32_IMPORTED = True
+	PROCESS_UTIL_IMPORTED = True
+	import psutil
 	import win32com.client, dde
 except:
-	WIN32_IMPORTED = False
-import psutil
+	PROCESS_UTIL_IMPORTED = False
 try:
 	import sqlalchemy
 except ImportError:
@@ -73,7 +73,7 @@ def mysql_connection(host, database, username, password = None):
 	return engine
 
 def restart_bbg_session(username, password):
-	if not WIN32_IMPORTED:
+	if not PROCESS_UTIL_IMPORTED:
 		return
 	pkill("WINTRV.exe")
 
