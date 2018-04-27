@@ -121,15 +121,27 @@ def fillmean(sectors, factors):
 	if len(factors) == 1 and factors[0] == 'all':
 		factors = pandas.read_sql("SELECT COLUMN_NAME as factors FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s';"%(database, target_table), mysql_conn, coerce_float = False)
 		factors = factors.loc[~(factors['factors'].isin(id_fields)), 'factors']	
+
 	for sector in sectors:
 		for factor in factors:
 			if factor in utilities.keep_fields:
 				utilities.print_status("Skipping protected field %s - %s"%(sector, factor))
 				continue
 			utilities.print_status("Filling %s - %s"%(sector, factor))
-			sql = "UPDATE %s ml JOIN (SELECT sector, date, avg(%s) AS avg FROM %s WHERE sector = '%s' GROUP BY sector, date) val ON ml.sector = val.sector AND ml.date = val.date SET ml.%s = val.avg WHERE ml.%s IS NULL;"%(target_table, factor, target_table, sector, factor, factor)
-			with mysql_conn.begin() as conn:
-				conn.execute(sql)
+			
+			conn.execute("LOCK TABLES %s as ml WRITE, %s READ;"%(target_table, target_table))
+			err = None
+			try:
+				sql = "UPDATE %s ml JOIN (SELECT sector, date, avg(%s) AS avg FROM %s WHERE sector = '%s' GROUP BY sector, date) val ON ml.sector = val.sector AND ml.date = val.date SET ml.%s = val.avg WHERE ml.%s IS NULL;"%(target_table, factor, target_table, sector, factor, factor)
+				with mysql_conn.begin() as conn:
+					conn.execute(sql)
+			except Exception as e:
+				err = e
+			finally:
+				conn.execute("UNLOCK TABLES;")
+
+			if err is not None:
+				raise err
 
 def getdata(sectors, factors, tickers):
 	mysql_conn = utilities.mysql_connection(host, database, username)
