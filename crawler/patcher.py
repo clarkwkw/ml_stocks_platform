@@ -129,20 +129,11 @@ def fillmean(sectors, factors):
 				continue
 			utilities.print_status("Filling %s - %s"%(sector, factor))
 
-			conn.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED; SET @@AUTOCOMMIT=0; LOCK TABLES %s as ml WRITE, %s READ;"%(target_table, target_table))
-			err = None
-			try:
-				sql = "UPDATE %s ml JOIN (SELECT sector, date, avg(%s) AS avg FROM %s WHERE sector = '%s' GROUP BY sector, date) val ON ml.sector = val.sector AND ml.date = val.date SET ml.%s = val.avg WHERE ml.%s IS NULL;"%(target_table, factor, target_table, sector, factor, factor)
-				with mysql_conn.begin() as conn:
-					conn.execute(sql)
-			except Exception as e:
-				err = e
-			finally:
-				conn.execute("UNLOCK TABLES;")
-
-			if err is not None:
-				raise err
-
+			sql = "UPDATE %s ml JOIN (SELECT sector, date, avg(%s) AS avg FROM %s WHERE sector = '%s' GROUP BY sector, date) val ON ml.sector = val.sector AND ml.date = val.date SET ml.%s = val.avg WHERE ml.%s IS NULL;"%(target_table, factor, target_table, sector, factor, factor)
+			with mysql_conn.begin() as conn:
+				conn.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED; SET @@AUTOCOMMIT=0; LOCK TABLES %s as ml WRITE, %s READ;"%(target_table, target_table))
+				conn.execute(sql)
+			
 def getdata(sectors, factors, tickers):
 	mysql_conn = utilities.mysql_connection(host, database, username)
 	if len(factors) == 1 and factors[0] == 'all':
