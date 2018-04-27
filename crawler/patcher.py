@@ -8,7 +8,7 @@ import utilities
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import multiprocessing
 
-host = "seis10.se.cuhk.edu.hk"
+host = "127.0.0.1"
 database = "finanai"
 username = "finanai"
 raw_table = 'US_bloomberg_factor'
@@ -131,7 +131,6 @@ def fillmean(sectors, factors):
 
 			sql = "UPDATE %s ml JOIN (SELECT sector, date, avg(%s) AS avg FROM %s WHERE sector = '%s' GROUP BY sector, date) val ON ml.sector = val.sector AND ml.date = val.date SET ml.%s = val.avg WHERE ml.%s IS NULL;"%(target_table, factor, target_table, sector, factor, factor)
 			with mysql_conn.begin() as conn:
-				conn.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED; SET @@AUTOCOMMIT=0; LOCK TABLES %s as ml WRITE, %s READ;"%(target_table, target_table))
 				conn.execute(sql)
 			
 def getdata(sectors, factors, tickers):
