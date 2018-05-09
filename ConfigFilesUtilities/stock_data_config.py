@@ -15,6 +15,8 @@ def generate_stock_data_config():
 		config_dict['include_null_cap'] = get_input_bool("Include stocks whose market capitalization is NULL")
 
 	config_dict['sectors'] = get_input_str_list("Sectors")
+	if len(config_dict['sectors']) == 1 and config_dict['sectors'][0].strip().lower() == "all":
+		config_dict['sectors'] = "all"
 
 	config_dict['period'] = {}
 	config_dict['period']['start'] = get_input_str("Dataset start date (YYYY-MM-DD)")

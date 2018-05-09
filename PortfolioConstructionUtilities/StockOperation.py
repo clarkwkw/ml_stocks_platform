@@ -2,6 +2,7 @@ import utils
 import DataPreparation
 import pandas
 import numpy as np
+import math
 from ModelOperation import *
 
 # buying_price: a dataframe containing Ticker and Buying Price columns
@@ -21,6 +22,10 @@ def StockRanking(stock_file, ranked_stock_file):
 def StockSelection(ranked_stock_file, n, portfolio_file, weight_method = "equal"):
 	ranked_stocks = pandas.read_csv(ranked_stock_file)
 	n_stocks = ranked_stocks.shape[0]
+
+	if n < 1:
+		n = math.ceil(n_stocks*n)
+
 	if n_stocks <= 0:
 		raise Exception("No stock to select.")
 	if n_stocks < 2*n:

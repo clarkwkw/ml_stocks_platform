@@ -21,6 +21,8 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 
 	if type(sectors) is list:
 		condition_sqls.append("sector IN ('%s')"%("', '".join(sectors)))
+	elif sectors.lower().strip() == "all":
+		pass
 	else:
 		raise Exception("Unexpected value for sectors '%s'"%str(sectors))
 
