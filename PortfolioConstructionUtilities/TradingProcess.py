@@ -83,7 +83,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 
 	prev_trained_date, models_map = queue.get_models()
 
-	if prev_trained_date is None or prev_trained_date + timedelta(days = simulation_config_dict["model_training_frequency"], inclusive = False) <= cur_date:
+	if prev_trained_date is None or prev_trained_date + timedelta(days = simulation_config_dict["model_training_frequency"]) <= cur_date:
 		debug.log("TradingProcess: Training model on %s.."%(cur_date.strftime(config.date_format)))
 		para_tune_holding_flag, para_tune_data_split_period = None, None
 		if "para_tune_holding_flag" in simulation_config_dict:
