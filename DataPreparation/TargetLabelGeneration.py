@@ -69,6 +69,8 @@ def TargetLabelGeneration(stock_data, B_top, B_bottom, target_label_holding_peri
     if not isinstance(target_label_holding_period, int):
         raise Exception('target_label_holding_period must be a integer.')
 
+    first_date = stock_data["date"].iloc[0]
+    last_date = stock_data["date"].iloc[-1]
     stock_data["return"] = np.NAN
     stock_data["vol(t)"] = np.NAN
     stock_data["volatility-adjusted return"] = np.NAN
@@ -76,14 +78,17 @@ def TargetLabelGeneration(stock_data, B_top, B_bottom, target_label_holding_peri
 
     # Split the stock data by ticker and calculate r(t) and vol(t)
     stock_datas = apply_parallel(stock_data.groupby(['ticker'], group_keys = False), calculate_vol, target_label_holding_period = target_label_holding_period)
-
     stock_data = pd.concat(stock_datas)
+
     grouped = stock_data.groupby(['date'], group_keys = False)
 
     # Split the stock data by date and sort the tickers based on return
     stock_datas = apply_parallel(grouped, sort_and_label, B_top = B_top, B_bottom = B_bottom)
 
-    stock_data = pd.concat(stock_datas)
+    try:
+        stock_data = pd.concat(stock_datas)
+    except ValueError:
+        raise Exception("Cannot label outstanding stocks, possibly because 'target_label_holding_period' (%d) requires more days of training data than given (%s - %s)"%(target_label_holding_period, first_date, last_date))
     
     stock_data.drop(['vol(t)', 'volatility-adjusted return'], axis = 1, inplace = True)
 

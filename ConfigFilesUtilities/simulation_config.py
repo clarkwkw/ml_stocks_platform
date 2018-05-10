@@ -64,7 +64,7 @@ def generate_simulation_config():
 
 	config_dict['trading_stock_quantity'] = get_input_number("No. of stocks / Proportion of stocks (0 < n < 1) to trade for long and short positions", lower_limit = 1, is_int = True)
 	
-	config_dict['target_label_holding_period'] = get_input_number("No. of days of reutrn to consider when generating labels", lower_limit = 1, upper_limit = config_dict['portfolio_holding_period'], is_int = True)
+	config_dict['target_label_holding_period'] = get_input_number("No. of days of reutrn to consider when generating labels", lower_limit = 1, upper_limit = config_dict['portfolio_holding_period'] - 1, is_int = True)
 
 	config_dict['strategy_performance_period'] = get_input_number("No. of months to consider when generating one strategy report", lower_limit = 1, is_int = True)
 

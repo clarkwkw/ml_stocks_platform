@@ -46,7 +46,7 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	sell_dates = []
 	while not date_queue.is_empty():
 		date, _ = date_queue.pop()
-		debug.log("TradingProcess: Training model on %s.."%(date.strftime(config.date_format)))
+		debug.log("TradingProcess: Trading on %s.."%(date.strftime(config.date_format)))
 		result = trade(ML_sector_factors, date_queue, date, simulation_config_dict, price_info)
 		if type(result) is tuple:
 			buy_dates.append(result[0])
@@ -84,6 +84,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 	prev_trained_date, models_map = queue.get_models()
 
 	if prev_trained_date is None or prev_trained_date + timedelta(simulation_config_dict["model_training_frequency"]) <= cur_date:
+		debug.log("TradingProcess: Training model on %s.."%(cur_date.strftime(config.date_format)))
 		para_tune_holding_flag, para_tune_data_split_period = None, None
 		if "para_tune_holding_flag" in simulation_config_dict:
 			para_tune_holding_flag = simulation_config_dict["para_tune_holding_flag"]
@@ -94,6 +95,7 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 		if "custom_model_name" in simulation_config_dict:
 			model_dir = "../../CustomModels"
 			model_name = simulation_config_dict["custom_model_name"]
+
 		models_map = MachineLearningModelDevelopment(filtered_factors, simulation_config_dict["model_flag"], simulation_config_dict["meta_paras"], simulation_config_dict["stock_filter_flag"], simulation_config_dict["B_top"], simulation_config_dict["B_bottom"], simulation_config_dict["target_label_holding_period"], simulation_config_dict["trading_stock_quantity"], para_tune_holding_flag, period = para_tune_data_split_period, customized_module_dir = model_dir, customized_module_name = model_name)
 
 		queue.register_models(cur_date, models_map)

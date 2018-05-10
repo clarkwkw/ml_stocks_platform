@@ -81,6 +81,9 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 def LoadTableFromFile(sectors, input_dir):
 	debug.log("DataSource: Loading data from disk..")
 
+	if type(sectors) is not list and sectors.strip().lower() == "all":
+		sectors = ["all"]
+
 	ml_factors = pandas.read_csv("%s/ML_factor_table_file.csv"%input_dir, na_values = ["nan"], parse_dates = ["date"])
 	prices_df = pandas.read_csv("%s/prices.csv"%input_dir, na_values = ["nan"], parse_dates = ["date"])
 	prices_df.set_index(keys = ['date'], drop = False, inplace = True)
@@ -93,9 +96,6 @@ def LoadTableFromFile(sectors, input_dir):
 def split_to_sectors(ml_factors, sectors):
 	debug.log("DataSource: Splitting MLfactors into individual sectors..")
 	ML_sector_factors = {}
-
-	if sectors.strip().lower() == "all":
-		sectors = ["all"]
 		
 	for sector in sectors:
 		ML_sector_factors[sector] = ml_factors.loc[ml_factors['sector'] == sector]
