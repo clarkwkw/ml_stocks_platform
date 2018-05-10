@@ -25,6 +25,7 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 		condition_sqls.append("sector IN ('%s')"%("', '".join(sectors)))
 	elif sectors.lower().strip() == "all":
 		all_sectors = True
+		sectors = ["all"]
 	else:
 		raise Exception("Unexpected value for sectors '%s'"%str(sectors))
 
@@ -96,7 +97,10 @@ def LoadTableFromFile(sectors, input_dir):
 def split_to_sectors(ml_factors, sectors):
 	debug.log("DataSource: Splitting MLfactors into individual sectors..")
 	ML_sector_factors = {}
-		
+
+	if type(sectors) is not list and sectors.strip().lower() == "all":
+		sectors = ["all"]
+
 	for sector in sectors:
 		ML_sector_factors[sector] = ml_factors.loc[ml_factors['sector'] == sector]
 		ML_sector_factors[sector].is_copy = False
