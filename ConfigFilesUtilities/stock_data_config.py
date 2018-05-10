@@ -24,6 +24,9 @@ def generate_stock_data_config():
 
 	config_dict['factors'] = get_input_str_list("Factors")
 
+	if len(config_dict['factors']) == 1 and config_dict['factors'][0].strip().lower() == "all":
+		config_dict['factors'] = "all"
+
 	config_dict['use_loaded_data'] = get_input_bool("Use previously downloaded data")
 
 	config_dict['save_downloaded_data'] = get_input_bool("Save downloaded data to file")
