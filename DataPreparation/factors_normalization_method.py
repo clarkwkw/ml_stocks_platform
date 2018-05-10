@@ -337,5 +337,20 @@ fnm = {
     }, 
     "return_on_equity": {
         "method": "min_max_scale"
+    },
+    "bbg_mom_1m": {
+        "method": "min_max_scale"
+    },
+    "bbg_mom_3m": {
+        "method": "min_max_scale"
+    },
+    "bbg_mom_6m": {
+        "method": "min_max_scale"
+    },
+    "bbg_mom_12m": {
+        "method": "min_max_scale"
+    },
+    "bbg_mom_12m_vol_adj": {
+        "method": "min_max_scale"
     }
 }

@@ -41,9 +41,8 @@ def vol_calculator_factory(target_label_holding_period, kappa):
         return row
     return vol_calculator
 
-
 def calculate_vol(ticker_data, target_label_holding_period, kappa = 2./(180+1)):
-    ticker_data = ticker_data.apply(vol_calculator_factory(target_label_holding_period, kappa), axis = 1)
+    ticker_data = ticker_data.apply(vol_calculator_factory(target_label_holding_period, kappa), axis = 1).copy()
     ticker_data['volatility-adjusted return'] = ticker_data['volatility-adjusted return'].shift(-1)
     ticker_data['return'] = ticker_data['return'].shift(-1)
     ticker_data.drop(ticker_data.index[ticker_data.shape[0]-1], inplace=True)
@@ -53,7 +52,7 @@ def calculate_vol(ticker_data, target_label_holding_period, kappa = 2./(180+1)):
     return ticker_data
 
 def sort_and_label(stock_data, B_top, B_bottom):
-    stock_data.sort_values(by = ['volatility-adjusted return'], inplace = True, ascending = False)
+    stock_data = stock_data.sort_values(by = ['volatility-adjusted return'], inplace = False, ascending = False).copy()
     l_top = int(m.ceil(stock_data.shape[0]*(B_top/100.)))
     l_bottom = int(m.ceil(stock_data.shape[0]*(B_bottom/100.)))
     if l_top + l_bottom < stock_data.shape[0]:
@@ -79,7 +78,6 @@ def TargetLabelGeneration(stock_data, B_top, B_bottom, target_label_holding_peri
     stock_datas = apply_parallel(stock_data.groupby(['ticker'], group_keys = False), calculate_vol, target_label_holding_period = target_label_holding_period)
 
     stock_data = pd.concat(stock_datas)
-
     grouped = stock_data.groupby(['date'], group_keys = False)
 
     # Split the stock data by date and sort the tickers based on return

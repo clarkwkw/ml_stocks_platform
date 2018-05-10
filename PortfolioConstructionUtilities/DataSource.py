@@ -20,9 +20,10 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 		raise Exception("Unexpected value for factors '%s'"%str(factors))
 
 	if type(sectors) is list:
-		condition_sqls.append("sector IN ('%s')"%("', '".join(sectors)))
-	elif sectors.lower().strip() == "all":
-		pass
+		if len(sectors) > 1 and "all" not in sectors:
+			condition_sqls.append("sector IN ('%s')"%("', '".join(sectors)))
+		else:
+			pass
 	else:
 		raise Exception("Unexpected value for sectors '%s'"%str(sectors))
 
@@ -54,6 +55,11 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	debug.log("DataSource: Building index on raw data..")
 	ml_factors.sort_values(by = ['sector'], inplace = True)
 	ml_factors.set_index(keys = ['sector'], drop = False, inplace = True)
+	if type(sectors) is list:
+		if len(sectors) == 1 and "all" in sectors:
+			ml_factors['sector'] = "all"
+		else:
+			raise Exception("Unexpected value for sectors '%s'"%str(sectors))
 
 	debug.log("DataSource: Getting price info..")
 	prices_df = ml_factors[['ticker', 'date', 'last_price']].copy()
@@ -68,6 +74,9 @@ def DownloadTableFileFromMySQL(market_id, sectors = [], factors = [], market_cap
 	if type(output_dir) is str:
 		ml_factors.to_csv("%s/ML_factor_table_file.csv"%output_dir, na_rep = "nan", index = False)
 
+	# if sectors.lower().strip() == "all":
+	# 	ML_sector_factors = {"all":ml_factors}
+	# else:
 	ML_sector_factors = split_to_sectors(ml_factors, sectors)
 
 	debug.log("DataSource: Data is ready")
@@ -77,9 +86,17 @@ def LoadTableFromFile(sectors, input_dir):
 	debug.log("DataSource: Loading data from disk..")
 
 	ml_factors = pandas.read_csv("%s/ML_factor_table_file.csv"%input_dir, na_values = ["nan"], parse_dates = ["date"])
+	if type(sectors) is list:
+		if len(sectors) == 1 and "all" in sectors:
+			ml_factors['sector'] = "all"
+		else:
+			raise Exception("Unexpected value for sectors '%s'"%str(sectors))
 	prices_df = pandas.read_csv("%s/prices.csv"%input_dir, na_values = ["nan"], parse_dates = ["date"])
 	prices_df.set_index(keys = ['date'], drop = False, inplace = True)
 
+	# if sectors.lower().strip() == "all":
+	# 	ML_sector_factors = {"all":ml_factors}
+	# else:
 	ML_sector_factors = split_to_sectors(ml_factors, sectors)
 
 	debug.log("DataSource: Data is ready")
