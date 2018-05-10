@@ -37,7 +37,7 @@ def SimulateTradingProcess(simulation_config_dict, stock_data_config_dict):
 	end_date = pandas.Timestamp(stock_data_config_dict['period']['end'])
 	date_queue = Date_Queue(start_date, end_date, stock_data_config_dict['market_id'])
 	if simulation_config_dict['reserve_train_data'] == 0:
-		date_queue.push(start_date + timedelta(days = simulation_config_dict["model_training_frequency"]))
+		date_queue.push(start_date + timedelta(days = simulation_config_dict["portfolio_holding_period"]))
 	else:
 		date_queue.push(start_date + relativedelta(years = simulation_config_dict['reserve_train_data']))
 
@@ -70,21 +70,22 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 		if build_date >= holding_end_date:
 			return
 
-	# train_model
-	filtered_factors = {}
-	dataset_start_date = cur_date - timedelta(days = simulation_config_dict["portfolio_holding_period"])
-	for sector in ML_sector_factors:
-		raw_df = ML_sector_factors[sector]
-		if not simulation_config_dict["rolling_training_data"]:
-			filtered_factors[sector] = raw_df.loc[(raw_df['date'] >= dataset_start_date) & (raw_df['date'] <= cur_date)].copy()
-		else:
-			filtered_factors[sector] = raw_df.loc[raw_df['date'] <= cur_date].copy()
-		filtered_factors[sector].is_copy = False
-
 	prev_trained_date, models_map = queue.get_models()
 
 	if prev_trained_date is None or prev_trained_date + timedelta(days = simulation_config_dict["model_training_frequency"]) <= cur_date:
 		debug.log("TradingProcess: Training model on %s.."%(cur_date.strftime(config.date_format)))
+		
+		# train_model
+		filtered_factors = {}
+		dataset_start_date = cur_date - timedelta(days = simulation_config_dict["portfolio_holding_period"])
+		for sector in ML_sector_factors:
+			raw_df = ML_sector_factors[sector]
+			if not simulation_config_dict["rolling_training_data"]:
+				filtered_factors[sector] = raw_df.loc[(raw_df['date'] >= dataset_start_date) & (raw_df['date'] <= cur_date)].copy()
+			else:
+				filtered_factors[sector] = raw_df.loc[raw_df['date'] <= cur_date].copy()
+			filtered_factors[sector].is_copy = False
+
 		para_tune_holding_flag, para_tune_data_split_period = None, None
 		if "para_tune_holding_flag" in simulation_config_dict:
 			para_tune_holding_flag = simulation_config_dict["para_tune_holding_flag"]
