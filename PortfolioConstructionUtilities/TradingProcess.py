@@ -81,21 +81,26 @@ def trade(ML_sector_factors, queue, cur_date, simulation_config_dict, price_info
 			filtered_factors[sector] = raw_df.loc[raw_df['date'] <= cur_date].copy()
 		filtered_factors[sector].is_copy = False
 
-	para_tune_holding_flag, para_tune_data_split_period = None, None
-	if "para_tune_holding_flag" in simulation_config_dict:
-		para_tune_holding_flag = simulation_config_dict["para_tune_holding_flag"]
-	if "para_tune_data_split_period" in simulation_config_dict:
-		para_tune_data_split_period = simulation_config_dict["para_tune_data_split_period"]
+	prev_trained_date, models_map = queue.get_models()
 
-	model_dir, model_name = None, None
-	if "custom_model_name" in simulation_config_dict:
-		model_dir = "../../CustomModels"
-		model_name = simulation_config_dict["custom_model_name"]
-	models_map = MachineLearningModelDevelopment(filtered_factors, simulation_config_dict["model_flag"], simulation_config_dict["meta_paras"], simulation_config_dict["stock_filter_flag"], simulation_config_dict["B_top"], simulation_config_dict["B_bottom"], simulation_config_dict["target_label_holding_period"], simulation_config_dict["trading_stock_quantity"], para_tune_holding_flag, period = para_tune_data_split_period, customized_module_dir = model_dir, customized_module_name = model_name)
+	if prev_trained_date is None or prev_trained_date + timedelta(simulation_config_dict["model_training_frequency"]) <= cur_date:
+		para_tune_holding_flag, para_tune_data_split_period = None, None
+		if "para_tune_holding_flag" in simulation_config_dict:
+			para_tune_holding_flag = simulation_config_dict["para_tune_holding_flag"]
+		if "para_tune_data_split_period" in simulation_config_dict:
+			para_tune_data_split_period = simulation_config_dict["para_tune_data_split_period"]
 
-	# confirm next training date
-	next_train_date = cur_date + timedelta(days = simulation_config_dict["model_training_frequency"])
-	queue.push(next_train_date)
+		model_dir, model_name = None, None
+		if "custom_model_name" in simulation_config_dict:
+			model_dir = "../../CustomModels"
+			model_name = simulation_config_dict["custom_model_name"]
+		models_map = MachineLearningModelDevelopment(filtered_factors, simulation_config_dict["model_flag"], simulation_config_dict["meta_paras"], simulation_config_dict["stock_filter_flag"], simulation_config_dict["B_top"], simulation_config_dict["B_bottom"], simulation_config_dict["target_label_holding_period"], simulation_config_dict["trading_stock_quantity"], para_tune_holding_flag, period = para_tune_data_split_period, customized_module_dir = model_dir, customized_module_name = model_name)
+
+		queue.register_models(cur_date, models_map)
+
+	# confirm next trading date
+	next_trading_date = cur_date + timedelta(days = simulation_config_dict["trading_frequency"])
+	queue.push(next_trading_date)
 
 	build_date_str = build_date.strftime(config.date_format)
 	holding_end_date_str = holding_end_date.strftime(config.date_format)
@@ -123,6 +128,8 @@ class Date_Queue:
 		self._cur_date = start_date
 		self._start_date = start_date
 		self._end_date = end_date
+		self._models_map = None
+		self._models_trained_date = None
 
 	def is_empty(self):
 		return len(self._queue) == 0
@@ -137,6 +144,15 @@ class Date_Queue:
 			date = self._end_date
 
 		heapq.heappush(self._queue, (date, paras_tup))
+
+	def register_models(self, trained_date, models_map):
+		if trained_date < self._cur_date:
+			raise Exception("Cannot register a model that was trained in the past")
+
+		self._models_map, self.trained_date = models_map, trained_date
+
+	def get_models(self):
+		return self._trained_date, self._models_map
 
 	def pop(self):
 		date, paras_tup = heapq.heappop(self._queue)
