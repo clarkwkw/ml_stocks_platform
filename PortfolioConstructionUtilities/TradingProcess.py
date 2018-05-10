@@ -152,7 +152,7 @@ class Date_Queue:
 		self._models_map, self.trained_date = models_map, trained_date
 
 	def get_models(self):
-		return self._trained_date, self._models_map
+		return self._models_trained_date, self._models_map
 
 	def pop(self):
 		date, paras_tup = heapq.heappop(self._queue)
