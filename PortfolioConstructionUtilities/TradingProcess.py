@@ -151,7 +151,7 @@ class Date_Queue:
 		if trained_date < self._cur_date:
 			raise Exception("Cannot register a model that was trained in the past")
 
-		self._models_map, self.trained_date = models_map, trained_date
+		self._models_map, self._models_trained_date = models_map, trained_date
 
 	def get_models(self):
 		return self._models_trained_date, self._models_map
