@@ -69,8 +69,11 @@ def TargetLabelGeneration(stock_data, B_top, B_bottom, target_label_holding_peri
     if not isinstance(target_label_holding_period, int):
         raise Exception('target_label_holding_period must be a integer.')
 
-    first_date = stock_data["date"].iloc[0]
-    last_date = stock_data["date"].iloc[-1]
+    if stock_data.shape[0] > 0:
+        first_date, last_date = stock_data["date"].iloc[0], stock_data["date"].iloc[-1]
+    else:
+        raise Exception('Cannot generate label when stock_data contains zero row')
+        
     stock_data["return"] = np.NAN
     stock_data["vol(t)"] = np.NAN
     stock_data["volatility-adjusted return"] = np.NAN
