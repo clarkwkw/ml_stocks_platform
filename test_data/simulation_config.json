@@ -1,13 +1,16 @@
 {
-  "run_code" : "001",
-  "model_flag" : "SVM",
-  "stock_filter_flag" : false,
-  "meta_paras": {},
-  "B_top" : 10.0,
-  "B_bottom" : 20.0,
-  "target_label_holding_period" : 1,
-  "model_training_frequency" : 28,
-  "portfolio_holding_period" : 91,
-  "trading_stock_quantity" : 10,
-  "strategy_performance_period" : 12
+    "meta_paras": {}, 
+    "model_flag": "NN", 
+    "B_top": 10.0, 
+    "B_bottom": 20.0, 
+    "run_code": "US001", 
+    "trading_stock_quantity": 10, 
+    "strategy_performance_period": 12, 
+    "trading_frequency": 28, 
+    "reserve_train_data": 0, 
+    "rolling_training_data": false, 
+    "stock_filter_flag": false, 
+    "portfolio_holding_period": 91, 
+    "target_label_holding_period": 1, 
+    "model_training_frequency": 28
 }
