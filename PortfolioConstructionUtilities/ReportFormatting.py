@@ -9,6 +9,9 @@ def reformat_report(src_report, target_path, sectors = None, positions = None):
 
 	if sectors is None:
 		sectors = src_report['sector'].unique()
+		
+	elif type(sectors) is not list and sectors.strip().lower() == "all":
+		sectors = ["all"]
 
 	if positions is None:
 		positions = src_report['position'].unique()
@@ -34,6 +37,10 @@ def reformat_report(src_report, target_path, sectors = None, positions = None):
 class Report_Formatter:
 	def __init__(self, sectors, positions, max_horizontal_sector = 3):
 		self._sector_index = {}
+
+		if type(sectors) is not list and sectors.strip().lower() == "all":
+			sectors = ["all"]
+
 		self.n_sector = len(sectors)
 		for i in range(self.n_sector):
 			self._sector_index[sectors[i]] = i
